@@ -1,0 +1,3 @@
+
+#include "CVGameplayAbilityTargetData_SingleTarget.h"
+#include UE_INLINE_GENERATED_CPP_BY_NAME(CVGameplayAbilityTargetData_SingleTarget)

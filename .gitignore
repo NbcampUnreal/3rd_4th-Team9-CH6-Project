@@ -1,25 +1,66 @@
-
+## ──────────────────────────────
+## Unreal Engine Build / Cache Folders
+## ──────────────────────────────
 Binaries/
 Build/
 DerivedDataCache/
 Intermediate/
 Saved/
 
+## ──────────────────────────────
+## Plugin Build Outputs
+## ──────────────────────────────
+Plugins/**/Binaries/
+Plugins/**/Intermediate/
+
+## ──────────────────────────────
+## IDE / OS / Editor Cache
+## ──────────────────────────────
+.vs/
+.idea/
+.vscode/
+.DS_Store
+
+## ──────────────────────────────
+## Visual Studio / Rider Artifacts
+## ──────────────────────────────
 *.sln
 *.suo
-*.xcodeproj
-*.xcworkspace
 *.VC.db
 *.VC.VC.opendb
+*.ipch
+*.opensdf
+*.sdf
 
+## ──────────────────────────────
+## Temporary / Log Files
+## ──────────────────────────────
 *.log
 *.tmp
 
+## ──────────────────────────────
+## Backups / Local Settings
+## ──────────────────────────────
+*_Backup/
+*.bak
+*.local
+*.user
+*.userprefs
+
+## ──────────────────────────────
+## macOS / Linux Metadata
+## ──────────────────────────────
 .DS_Store
+Thumbs.db
 
-.vscode/
-.idea/
-
-# Visual Studio cache
-.vs/
-*.ipch
+## ──────────────────────────────
+## Notes
+## ──────────────────────────────
+## 아래 폴더들은 엔진이 자동 생성하는 캐시/빌드 결과물이므로
+## 로컬마다 달라지고, 원격 저장소에는 올리지 않아야 함.
+##
+## 만약 프로젝트 실행 오류가 발생할 경우,
+## 다음 폴더를 삭제 후 새로 빌드하면 대부분 해결됨:
+##   Binaries/, Intermediate/, DerivedDataCache/
+##   .uproject → "Generate Visual Studio project files"
+##   Visual Studio에서 Rebuild 실행
