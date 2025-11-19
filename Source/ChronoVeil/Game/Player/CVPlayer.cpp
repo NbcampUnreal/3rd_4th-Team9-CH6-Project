@@ -15,17 +15,14 @@ ACVPlayer::ACVPlayer()
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 
-	// Attachments	
 	FirstPersonMesh->SetupAttachment(GetMesh());
 	SpringArm->SetupAttachment(FirstPersonMesh, FName("S_Camera"));
 	Camera->SetupAttachment(SpringArm);
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -88), FRotator(0, -90, 0));
 
-	// Default Settings
 	Tags.Add(FName("Player"));
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
-	// Camera Settings
 	Camera->bUsePawnControlRotation = true;
 	Camera->bEnableFirstPersonFieldOfView = true;
 	Camera->bEnableFirstPersonScale = true;

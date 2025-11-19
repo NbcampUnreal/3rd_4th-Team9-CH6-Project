@@ -1,4 +1,3 @@
-// CVExperienceManagerComponent.cpp
 #include "Game/GameModes/CVExperienceManagerComponent.h"
 #include "Game/GameModes/CVExperienceDefinition.h"
 #include "Engine/AssetManager.h"
@@ -68,7 +67,7 @@ void UCVExperienceManagerComponent::StartExperienceLoad()
 {
     LoadState = ECVExperienceLoadState::Loading;
 
-    // 경량 모드: 별도 번들/플러그인 없음 → 즉시 완료 처리
+    // 경량 모드: 별도 번들/플러그인 없음 -> 즉시 처리함.
     OnExperienceLoadComplete();
 }
 PRAGMA_ENABLE_OPTIMIZATION

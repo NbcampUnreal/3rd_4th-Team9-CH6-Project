@@ -28,6 +28,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ACVCharacter")
 	ACVPlayerState* GetCVPlayerState() const;
 
+	UFUNCTION()
+	void OnRep_PawnData();
+
 	UFUNCTION(BlueprintCallable, Category = "ACVCharacter")
 	virtual UCVAbilitySystemComponent* GetCVAbilitySystemComponent() const;
 
@@ -42,7 +45,7 @@ public:
 	//TArray<FCVCharacterPartHandle>& GetCharacterPartHandles() { return CharacterPartHandles; }
 
 protected:
-	UPROPERTY(EditDefaultsOnly, Replicated, Category = "PawnData")
+	UPROPERTY(EditDefaultsOnly, ReplicatedUsing = OnRep_PawnData, Category = "PawnData")
 	TObjectPtr<const UCVPawnData> PawnData;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CV|Character")
@@ -51,7 +54,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CV|Character")
 	TObjectPtr<UCVHeroComponent> HeroComponent;
 
-	UCVCharacterPartComponent* GetITCharacterPartComponent();
+	//UCVCharacterPartComponent* GetCVCharacterPartComponent();
 
 private:
 	//TArray<FCVCharacterPartHandle> CharacterPartHandles;

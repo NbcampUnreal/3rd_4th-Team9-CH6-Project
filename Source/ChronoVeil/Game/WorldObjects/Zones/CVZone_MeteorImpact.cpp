@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Game/WorldObjects/Zones/CVZone_MeteorImpact.h"
 #include "GameFramework/Character.h"
 #include "Components/SphereComponent.h"
@@ -14,10 +11,15 @@
 
 ACVZone_MeteorImpact::ACVZone_MeteorImpact()
 {
+    UE_LOG(LogTemp, Warning, TEXT("MeteorImpact: Constructor %s"), *GetName());
+
     Collision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
     Collision->InitSphereRadius(150.f);
     Collision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
     SetRootComponent(Collision);
+
+    ZoneShape = Collision;
+    TickInterval = 0.f;
 
     MeteorVFX = CreateDefaultSubobject<UNiagaraComponent>(TEXT("MeteorVFX"));
     MeteorVFX->SetupAttachment(RootComponent);
@@ -31,6 +33,12 @@ ACVZone_MeteorImpact::ACVZone_MeteorImpact()
 void ACVZone_MeteorImpact::BeginPlay()
 {
     Super::BeginPlay();
+
+    UE_LOG(LogTemp, Warning, TEXT("MeteorImpact::BeginPlay %s, Class=%s, FallingVFX=%s, ImpactVFX=%s"),
+        *GetName(),
+        *GetNameSafe(GetClass()),
+        *GetNameSafe(FallingVFX),
+        *GetNameSafe(ImpactVFX));
 
     DrawDebugSphere(
         GetWorld(),
@@ -74,16 +82,6 @@ void ACVZone_MeteorImpact::OnImpact()
     if (!HasAuthority())
     {
         return;
-    }
-
-    if (ImpactVFX)
-    {
-        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-            GetWorld(),
-            ImpactVFX,
-            GetActorLocation() + FVector(0, 0, -70.f),
-            FRotator::ZeroRotator
-        );
     }
 
     // Collider 범위 내 대상에게 피해

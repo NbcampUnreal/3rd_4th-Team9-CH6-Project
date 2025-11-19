@@ -1,4 +1,3 @@
-//// Source/ChronoVeil/Game/GameFeatures/GameFeatureAction_WorldActionBase.cpp
 //
 //#include "Game/GameFeatures/GameFeatureAction_WorldActionBase.h"
 //#include "Engine/Engine.h"

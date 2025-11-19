@@ -9,19 +9,27 @@ class CHRONOVEIL_API UCVGA_Move_Flash : public UCVGA_Move_Base
 {
 	GENERATED_BODY()
 
+public:
+    UCVGA_Move_Flash();
+
 protected:
-	// 최대 점멸 거리
-	UPROPERTY(EditDefaultsOnly, Category = "Move|Flash")
-	float MaxFlashDistance = 800.f;
+    // 최대 플래시 거리
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Flash")
+    float MaxFlashDistance = 800.f;
 
-	// 바닥에서 약간 띄워서 텔레포트할 오프셋
-	UPROPERTY(EditDefaultsOnly, Category = "Move|Flash")
-	float TeleportHeightOffset = 0.f;
+    // 충돌 감지용 캡슐 반지름 보정
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Flash")
+    float FlashTraceRadius = 10.f;
 
-	virtual void ActivateAbility(
-		const FGameplayAbilitySpecHandle Handle,
-		const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo,
-		const FGameplayEventData* TriggerEventData
-	) override;
+    // 벽 바로 앞에 서기 위한 여유 거리
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Flash")
+    float WallSafeDistance = 10.f;
+
+protected:
+    virtual void PerformMove(
+        const FGameplayAbilitySpecHandle Handle,
+        const FGameplayAbilityActorInfo* ActorInfo,
+        const FGameplayAbilityActivationInfo ActivationInfo,
+        const FGameplayEventData* TriggerEventData
+    ) override;
 };

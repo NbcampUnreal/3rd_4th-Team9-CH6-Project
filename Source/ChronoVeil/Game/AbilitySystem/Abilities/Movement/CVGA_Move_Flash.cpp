@@ -1,63 +1,73 @@
-// Source/ChronoVeil/Game/AbilitySystem/Abilities/Movement/CVGA_Move_Flash.cpp
-
 #include "Game/AbilitySystem/Abilities/Movement/CVGA_Move_Flash.h"
 #include "Game/Character/CVCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "DrawDebugHelpers.h"
+#include "Components/CapsuleComponent.h"
+#include "Engine/World.h"
 
-void UCVGA_Move_Flash::ActivateAbility(
-	const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo,
-	const FGameplayEventData* TriggerEventData)
+UCVGA_Move_Flash::UCVGA_Move_Flash()
 {
-	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		return;
-	}
+    // Flash도 LocalPredicted 가능하지만, 텔레포트 특성상 서버 우선으로 보는 경우도 있음.
+}
 
-	ACVCharacter* Character = nullptr;
-	if (ActorInfo && ActorInfo->AvatarActor.IsValid())
-	{
-		Character = Cast<ACVCharacter>(ActorInfo->AvatarActor.Get());
-	}
+void UCVGA_Move_Flash::PerformMove(
+    const FGameplayAbilitySpecHandle Handle,
+    const FGameplayAbilityActorInfo* ActorInfo,
+    const FGameplayAbilityActivationInfo ActivationInfo,
+    const FGameplayEventData* TriggerEventData)
+{
+    ACVCharacter* Character = GetCVCharacter(ActorInfo);
+    if (!Character)
+    {
+        return;
+    }
 
-	if (Character)
-	{
-		UWorld* World = Character->GetWorld();
-		if (World)
-		{
-			const FVector Start = Character->GetActorLocation();
-			const FRotator ControlRot(0.f, Character->GetControlRotation().Yaw, 0.f);
-			const FVector Forward = ControlRot.Vector();
+    UWorld* World = Character->GetWorld();
+    if (!World)
+    {
+        return;
+    }
 
-			const FVector End = Start + Forward * MaxFlashDistance;
+    UCapsuleComponent* Capsule = Character->GetCapsuleComponent();
+    if (!Capsule)
+    {
+        return;
+    }
 
-			FHitResult Hit;
-			FCollisionQueryParams Params(SCENE_QUERY_STAT(FlashTrace), false, Character);
+    const FVector Forward = Character->GetActorForwardVector().GetSafeNormal2D();
+    if (Forward.IsNearlyZero())
+    {
+        return;
+    }
 
-			FVector TargetLocation = End;
+    const FVector Start = Character->GetActorLocation();
+    const FVector End = Start + Forward * MaxFlashDistance;
 
-			// 앞에 벽이 있으면 그 바로 앞까지만
-			if (World->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
-			{
-				// 약간 뒤로 밀어줘서 벽 안에 박히지 않게
-				TargetLocation = Hit.Location - Forward * 50.f;
-			}
+    const float CapsuleRadius = Capsule->GetScaledCapsuleRadius() + FlashTraceRadius;
+    const float CapsuleHalfHeight = Capsule->GetScaledCapsuleHalfHeight();
 
-			// Z는 캡슐 절반높이를 고려해 바닥에 박히지 않도록 할 수도 있음
-			TargetLocation.Z = Start.Z + TeleportHeightOffset;
+    FCollisionShape CapsuleShape = FCollisionShape::MakeCapsule(CapsuleRadius, CapsuleHalfHeight);
 
-			// 텔레포트 (Collision 고려)
-			Character->TeleportTo(TargetLocation, Character->GetActorRotation(), false, true);
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(FlashTrace), false, Character);
+    FHitResult Hit;
 
-#if WITH_EDITOR
-			// 디버그 확인용
-			// DrawDebugLine(World, Start, TargetLocation, FColor::Cyan, false, 1.f, 0, 2.f);
-#endif
-		}
-	}
+    bool bHit = World->SweepSingleByChannel(
+        Hit,
+        Start,
+        End,
+        FQuat::Identity,
+        ECC_Visibility,
+        CapsuleShape,
+        Params
+    );
 
-	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+    FVector TargetLocation = End;
+
+    if (bHit)
+    {
+        // 벽 앞쪽으로 한 칸 물려서 텔레포트
+        TargetLocation = Hit.Location - Forward * WallSafeDistance;
+    }
+
+    // 바닥 보정이 필요하면 여기서 TraceDown 해서 높이 맞추는 것도 가능
+    Character->TeleportTo(TargetLocation, Character->GetActorRotation(), false, true);
 }

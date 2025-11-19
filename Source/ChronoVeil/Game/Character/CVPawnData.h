@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/DataAsset.h"
-//#include "Cosmetics/CVCharacterPartType.h"
+//#include "Cosmetics/CVCharacterPartType.h" // Cosmetic 난이도가 높아서 나중에 적용할지 말지 결정할 예정.
 #include "CVPawnData.generated.h"
 
 class UCVAbilitySet;
@@ -20,7 +20,7 @@ class CHRONOVEIL_API UCVPawnData : public UDataAsset
 public:
 	UCVPawnData(const FObjectInitializer& ObjectInitializer);
 
-	// Pawn 또는 Character에 부여할(grand) Ability 정보
+	// Pawn 또는 Character에 부여할(grant) Ability 정보
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PawnData|Abilities")
 	TArray<TObjectPtr<UCVAbilitySet>> AbilitySets;
 

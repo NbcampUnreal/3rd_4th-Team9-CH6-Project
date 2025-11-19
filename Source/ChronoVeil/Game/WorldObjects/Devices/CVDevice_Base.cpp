@@ -1,10 +1,29 @@
 #include "Game/WorldObjects/Devices/CVDevice_Base.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
+
 
 ACVDevice_Base::ACVDevice_Base()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	Collision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
+	Collision->InitSphereRadius(50.f);
+	Collision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	SetRootComponent(Collision);
+
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh->SetupAttachment(Collision);
+
+	Collision->OnComponentBeginOverlap.AddDynamic(
+		this,
+		&ACVDevice_Base::OnDeviceOverlap
+	);
+
+	bReplicates = true;
+	SetReplicateMovement(true);
 }
 
 void ACVDevice_Base::BeginPlay()
@@ -36,24 +55,23 @@ void ACVDevice_Base::HandleLifeTimeExpired()
 		return;
 	}
 
-	// 공통: 수명 끝나면 파괴
 	Destroy();
 }
 
 void ACVDevice_Base::OnDamaged(float Damage, AActor* DamageCauser)
 {
-	// 여기서는 아무것도 안 함.
-	// 파괴 가능한 장치에서 오버라이드해서 체력 깎고 0 이하면 Destroy() 같은 패턴으로 사용.
+
 }
 
-void ACVDevice_Base::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ACVDevice_Base::OnDeviceOverlap(
+	UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+	bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (!HasAuthority())
 	{
 		return;
 	}
-
 
 	if (!OtherActor || OtherActor == this)
 	{

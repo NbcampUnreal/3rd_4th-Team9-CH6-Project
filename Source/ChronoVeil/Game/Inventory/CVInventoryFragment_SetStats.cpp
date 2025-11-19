@@ -1,5 +1,3 @@
-// Source/ChronoVeil/Game/Inventory/CVInventoryFragment_SetStats.cpp
-
 #include "Game/Inventory/CVInventoryFragment_SetStats.h"
 #include "Game/Inventory/CVInventoryItemInstance.h"
 

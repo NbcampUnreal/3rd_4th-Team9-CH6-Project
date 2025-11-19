@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Game/WorldObjects/Devices/CVDevice_ToyTower.h"
 
 ACVDevice_ToyTower::ACVDevice_ToyTower()
@@ -26,6 +23,11 @@ void ACVDevice_ToyTower::BeginPlay()
 void ACVDevice_ToyTower::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (!HasAuthority())
+	{
+		return;
+	}
 
 	if (!bIsMoving)
 	{

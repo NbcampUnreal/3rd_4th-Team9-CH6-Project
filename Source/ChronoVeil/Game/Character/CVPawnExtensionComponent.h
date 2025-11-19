@@ -1,4 +1,4 @@
-// 1.
+
 //#pragma once
 //
 //#include "CoreMinimal.h"

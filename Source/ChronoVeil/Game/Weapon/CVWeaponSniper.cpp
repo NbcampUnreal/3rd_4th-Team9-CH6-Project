@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Game/Weapon/CVWeaponSniper.h"
 
 ACVWeaponSniper::ACVWeaponSniper()
@@ -12,6 +9,5 @@ ACVWeaponSniper::ACVWeaponSniper()
 
 void ACVWeaponSniper::Fire()
 {
-	// AWP heavy damage, single shot; reuse base
 	ACVWeaponBase::Fire();
 }

@@ -39,23 +39,19 @@ struct FCVGameplayTagStackContainer
 
 	FCVGameplayTagStackContainer() {}
 
-	/** add/remove stack count by gameplay-tag */
 	void AddStack(FGameplayTag Tag, int32 StackCount);
 	void RemoveStack(FGameplayTag Tag, int32 StackCount);
 
-	/** get the count by the gameplay tag */
 	int32 GetStackCount(FGameplayTag Tag) const
 	{
 		return TagToCountMap.FindRef(Tag);
 	}
 
-	/** whether gameplay tag exists in CVGameplayTagStackContainer */
 	bool ContainsTag(FGameplayTag Tag) const
 	{
 		return TagToCountMap.Contains(Tag);
 	}
 
-	/** Blueprint에서 쉽게 쓰고 싶으면 이 이름을 써도 된다 */
 	bool HasTag(FGameplayTag Tag) const
 	{
 		return ContainsTag(Tag);

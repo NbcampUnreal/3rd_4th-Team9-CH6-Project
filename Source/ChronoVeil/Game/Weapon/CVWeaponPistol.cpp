@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Game/Weapon/CVWeaponPistol.h"
 
 ACVWeaponPistol::ACVWeaponPistol()
@@ -12,6 +9,5 @@ ACVWeaponPistol::ACVWeaponPistol()
 
 void ACVWeaponPistol::Fire()
 {
-	// Pistol fires single shot; reuse base
 	ACVWeaponBase::Fire();
 }

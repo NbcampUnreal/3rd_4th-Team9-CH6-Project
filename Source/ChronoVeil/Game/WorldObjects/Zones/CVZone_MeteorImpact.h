@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -33,11 +31,10 @@ protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "VFX")
     UNiagaraSystem* ImpactVFX;
 
-    // 메테오 낙하 후 충돌까지 지연 시간
+    // 메테오 낙하 후 충돌까지 지연 시간 : 연출용 마그마(내가만든 맴버 : ImpactVFX)가 5초뒤에 발생하게 하려고 함
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meteor")
     float ImpactDelay = 5.0f;
 
-    // 피해량
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meteor")
     float Damage = 50.f;
 

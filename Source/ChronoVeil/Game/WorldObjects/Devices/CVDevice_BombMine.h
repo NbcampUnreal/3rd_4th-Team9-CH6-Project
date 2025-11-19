@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -34,11 +32,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mine")
 	float TriggerRadius = 120.f;
 
-	// Æø¹ß±îÁö µô·¹ÀÌ
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mine")
 	float ExplosionDelay = 1.f;
 
-	// Æø¹ß µ¥¹ÌÁö/¹Ý°æ
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mine")
 	int32 ExplosionDamage = 50;
 
@@ -53,7 +49,7 @@ protected:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void OnItemOverlap(
+	virtual void OnDeviceOverlap(
 		UPrimitiveComponent* OverlappedComp,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,

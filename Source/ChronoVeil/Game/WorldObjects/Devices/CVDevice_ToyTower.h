@@ -1,12 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Game/WorldObjects/Devices/CVDevice_Base.h"
 #include "CVDevice_ToyTower.generated.h"
-
-
 
 UCLASS()
 class CHRONOVEIL_API ACVDevice_ToyTower : public ACVDevice_Base

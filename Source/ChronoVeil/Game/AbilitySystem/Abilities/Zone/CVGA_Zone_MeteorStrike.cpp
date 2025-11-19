@@ -1,14 +1,12 @@
 #include "Game/AbilitySystem/Abilities/Zone/CVGA_Zone_MeteorStrike.h"
 #include "Game/WorldObjects/Zones/CVZone_MeteorImpact.h"
-#include "NiagaraFunctionLibrary.h"
 #include "GameFramework/Actor.h"
-#include "TimerManager.h"
+#include "GameFramework/Pawn.h"
 
 UCVGA_Zone_MeteorStrike::UCVGA_Zone_MeteorStrike()
 {
-    SpawnOffset = FVector(200.f, 0.f, 0.f);
+    SpawnOffset = FVector(500.f, 0.f, 0.f);
 }
-
 
 void UCVGA_Zone_MeteorStrike::ActivateAbility(
     const FGameplayAbilitySpecHandle Handle,
@@ -17,9 +15,21 @@ void UCVGA_Zone_MeteorStrike::ActivateAbility(
     const FGameplayEventData* TriggerEventData
 )
 {
-    if (!ActorInfo || !ActorInfo->AvatarActor.IsValid())
+    if (!HasAuthority(ActivationInfo))
     {
         EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        return;
+    }
+
+    if (!ActorInfo || !ActorInfo->AvatarActor.IsValid() || !MeteorImpactZoneClass)
+    {
+        EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        return;
+    }
+
+    if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+    {
+        EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
         return;
     }
 
@@ -31,19 +41,15 @@ void UCVGA_Zone_MeteorStrike::ActivateAbility(
         return;
     }
 
-    FVector ForwardAdjustedOffset = Avatar->GetActorRotation().RotateVector(SpawnOffset);
-    FVector SpawnLoc = Avatar->GetActorLocation()
-        + Avatar->GetActorForwardVector() * 500.f;
-    FRotator SpawnRot = FRotator::ZeroRotator;
+    const FVector SpawnLoc =
+        Avatar->GetActorLocation() +
+        Avatar->GetActorRotation().RotateVector(SpawnOffset);
 
-    FActorSpawnParameters Params;
-    Params.Owner = Avatar;
-    Params.Instigator = Cast<APawn>(Avatar);
-    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+    const FRotator SpawnRot = FRotator::ZeroRotator;
+    const FTransform SpawnTM(SpawnRot, SpawnLoc);
 
-    ACVZone_MeteorImpact* Meteor = World->SpawnActor<ACVZone_MeteorImpact>(MeteorImpactZoneClass, SpawnLoc, SpawnRot, Params);
+    ACVZone_Base* MeteorZone = SpawnZone(MeteorImpactZoneClass, SpawnTM, ActorInfo);
 
     EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }
-
 

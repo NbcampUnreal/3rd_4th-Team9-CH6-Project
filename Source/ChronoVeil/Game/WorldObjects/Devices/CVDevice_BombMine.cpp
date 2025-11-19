@@ -1,5 +1,3 @@
-
-
 #include "Game/WorldObjects/Devices/CVDevice_BombMine.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraFunctionLibrary.h"
@@ -9,7 +7,6 @@
 
 ACVDevice_BombMine::ACVDevice_BombMine()
 {
-	// 상속한 클래스의 Collision 사용
 	if (Collision)
 	{
 		Collision->SetSphereRadius(TriggerRadius);
@@ -23,7 +20,7 @@ void ACVDevice_BombMine::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 도화선(점화)VFX를 아이템에 붙여 재생
+	// 도화선(점화)VFX를 Device에 붙여 재생
 	if (FuseVFX)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAttached(
@@ -38,7 +35,7 @@ void ACVDevice_BombMine::BeginPlay()
 	}
 }
 
-void ACVDevice_BombMine::OnItemOverlap(
+void ACVDevice_BombMine::OnDeviceOverlap(
 	UPrimitiveComponent* OverlappedComp,
 	AActor* OtherActor,
 	UPrimitiveComponent* OtherComp,
@@ -46,7 +43,17 @@ void ACVDevice_BombMine::OnItemOverlap(
 	bool bFromSweep,
 	const FHitResult& SweepResult)
 {
-	// 일단 쿨다운 이펙트 대신 하드코딩으로 한번만 폭발하게 구현.
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (!OtherActor || OtherActor == this)
+	{
+		return;
+	}
+
+	// 일단 쿨다운 이펙트 대신 하드코딩으로 한번만 폭발하게 구현. 나중에 쿨다운클래스(Effect클래스)만들어야할듯.
 	if (!bArmed && OtherActor && OtherActor != this)
 	{
 		bArmed = true;
@@ -64,6 +71,11 @@ void ACVDevice_BombMine::OnItemOverlap(
 
 void ACVDevice_BombMine::Explode()
 {
+	if (!HasAuthority())
+	{
+		return;
+	}
+
 	if (ExplosionVFX)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(

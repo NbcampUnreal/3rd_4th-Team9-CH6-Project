@@ -1,5 +1,3 @@
-// Source/ChronoVeil/Game/Inventory/CVInventoryFragment_SetStats.h
-
 #pragma once
 
 #include "CoreMinimal.h"

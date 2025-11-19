@@ -8,34 +8,43 @@
 
 class UProjectileMovementComponent;
 class USphereComponent;
-
+class UStaticMeshComponent;
 
 UCLASS()
 class CHRONOVEIL_API ACVProjectile_Base : public ACVWorldObject_Base
 {
-	GENERATED_BODY()
-	
+    GENERATED_BODY()
+
 public:
-	ACVProjectile_Base();
+    ACVProjectile_Base();
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CV|Projectile")
-	TObjectPtr<USphereComponent> Collision;
+    UPROPERTY(VisibleAnywhere, Category = "CV|Projectile")
+    TObjectPtr<USphereComponent> Collision;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CV|Projectile")
-	TObjectPtr<UProjectileMovementComponent> Movement;
+    UPROPERTY(VisibleAnywhere, Category = "CV|Projectile")
+    UStaticMeshComponent* Mesh;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CV|Projectile")
-	float LifeTime = 5.f;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CV|Projectile")
+    TObjectPtr<UProjectileMovementComponent> Movement;
 
-	FTimerHandle LifeHandle;
+    // 기본 수명 (초). 0이면 무한.
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CV|Projectile")
+    float LifeTime = 5.f;
 
-	virtual void BeginPlay() override;
+    FTimerHandle LifeHandle;
 
-	UFUNCTION()
-	virtual void OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+    virtual void BeginPlay() override;
 
-	virtual void HandleImpact(const FHitResult& Hit);
-	virtual void HandleLifeTimeExpired();
+    UFUNCTION()
+    virtual void OnProjectileHit(
+        UPrimitiveComponent* HitComp,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        FVector NormalImpulse,
+        const FHitResult& Hit);
+
+    // 파생 클래스에서 충돌 처리용
+    virtual void HandleImpact(const FHitResult& Hit);
+    virtual void HandleLifeTimeExpired();
 };

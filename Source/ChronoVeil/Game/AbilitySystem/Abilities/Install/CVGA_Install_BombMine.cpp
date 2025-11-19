@@ -1,12 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Game/AbilitySystem/Abilities/Install/CVGA_Install_BombMine.h"
 #include "Game/WorldObjects/Devices/CVDevice_BombMine.h"
 
 UCVGA_Install_BombMine::UCVGA_Install_BombMine()
 {
-    InstallClass = ACVDevice_BombMine::StaticClass();
+    DeviceClass = ACVDevice_BombMine::StaticClass();
 }
 
 void UCVGA_Install_BombMine::ActivateAbility(
@@ -15,17 +12,19 @@ void UCVGA_Install_BombMine::ActivateAbility(
     const FGameplayAbilityActivationInfo ActivationInfo,
     const FGameplayEventData* TriggerEventData)
 {
-    if (CommitAbility(Handle, ActorInfo, ActivationInfo))
+    if (!HasAuthority(ActivationInfo))
     {
-        AActor* Avatar = ActorInfo->AvatarActor.Get();
-        if (Avatar && InstallClass)
-        {
-            FVector SpawnLoc = Avatar->GetActorLocation() + Avatar->GetActorForwardVector() * 200.f;
-            FRotator SpawnRot = Avatar->GetActorRotation();
-
-            SpawnItem(SpawnLoc, SpawnRot);
-        }
+        EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        return;
     }
+
+    if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+    {
+        EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+        return;
+    }
+
+    SpawnSingleDevice(ActorInfo);
 
     EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }

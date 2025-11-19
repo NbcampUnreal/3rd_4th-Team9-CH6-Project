@@ -1,4 +1,3 @@
-//// Source/ChronoVeil/Game/GameFeatures/GameFeatureAction_AddWidgets.cpp
 //
 //#include "Game/GameFeatures/GameFeatureAction_AddWidgets.h"
 //#include "CommonUIExtensions.h"

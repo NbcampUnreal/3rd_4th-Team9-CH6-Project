@@ -1,7 +1,6 @@
 #include "Game/AbilitySystem/Abilities/CVGameplayAbility.h"
 #include "Game/Character/CVCharacter.h"
 #include "Game/AbilitySystem/CVAbilitySystemComponent.h"
-//#include "Game/System/CVLogChannel.h"
 
 UCVGameplayAbility::UCVGameplayAbility()
 {

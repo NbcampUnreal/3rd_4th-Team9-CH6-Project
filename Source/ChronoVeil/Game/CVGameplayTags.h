@@ -17,23 +17,21 @@ public:
 	static const FCVGameplayTags& Get() { return GameplayTags; }
 	static void InitializeNativeTags();
 
-	/** GameFrameworkComponentManager InitState.* */
+	// GameFrameworkComponentManager InitState
 	FGameplayTag InitState_Spawned;
 	FGameplayTag InitState_DataAvailable;
 	FGameplayTag InitState_DataInitialized;
 	FGameplayTag InitState_GameplayReady;
 
-	/** Enhanced Input 기본 태그 */
-	FGameplayTag InputTag_Move;
-	FGameplayTag InputTag_Look_Mouse;
-	FGameplayTag InputTag_Look_Aim;
-	FGameplayTag InputTag_Crouch;
-	// TODO: 필요 시 추가: InputTag_Weapon_Fire / Reload / ADS, Input.Layer.* 등
+	// Enhanced Input 기본 태그
+	FGameplayTag InputTag_Native_Move;
+	FGameplayTag InputTag_Native_Look_Mouse;
+	FGameplayTag InputTag_Native_Look_Aim;
+	FGameplayTag InputTag_Native_Crouch;
+	// TODO: 필요 시 추가해야함. : InputTag_Weapon_Fire / Reload / ADS, Input.Layer. 등등..
 
-	/* Ability 태그 */
 	FGameplayTag Ability_InputBlocked;
 
-	// 쿨타임 태그
 	FGameplayTag Cooldown_Obstacle;
 
 private:

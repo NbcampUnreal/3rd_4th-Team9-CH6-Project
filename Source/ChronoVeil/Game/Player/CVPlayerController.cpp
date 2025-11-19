@@ -43,6 +43,7 @@
 #include "Game/Player/CVPlayerController.h"
 #include "Game/Player/CVPlayerState.h"
 #include "Game/AbilitySystem/CVAbilitySystemComponent.h"
+#include "Game/Input/CVEnhancedInputComponent.h"
 #include "Game/Camera/CVPlayerCameraManager.h"
 
 
@@ -50,6 +51,16 @@ ACVPlayerController::ACVPlayerController(const FObjectInitializer& ObjectInitial
 	: Super(ObjectInitializer)
 {
 	PlayerCameraManagerClass = ACVPlayerCameraManager::StaticClass();
+}
+
+void ACVPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+ACVPlayerState* ACVPlayerController::GetCVPlayerState() const
+{
+	return GetPlayerState<ACVPlayerState>();
 }
 
 UCVAbilitySystemComponent* ACVPlayerController::GetCVAbilitySystemComponent() const
@@ -62,11 +73,6 @@ UCVAbilitySystemComponent* ACVPlayerController::GetCVAbilitySystemComponent() co
 	return nullptr;
 }
 
-ACVPlayerState* ACVPlayerController::GetCVPlayerState() const
-{
-	return GetPlayerState<ACVPlayerState>();
-}
-
 void ACVPlayerController::PostProcessInput(const float DeltaTime, const bool bGamePaused)
 {
 	UCVAbilitySystemComponent* CVASC = GetCVAbilitySystemComponent();
@@ -77,3 +83,16 @@ void ACVPlayerController::PostProcessInput(const float DeltaTime, const bool bGa
 
 	Super::PostProcessInput(DeltaTime, bGamePaused);
 }
+
+//void ACVPlayerController::SetupInputComponent()
+//{
+//	Super::SetupInputComponent();
+//
+//	// 방어 + 디버깅용 로그
+//	if (!InputComponent->IsA<UCVEnhancedInputComponent>())
+//	{
+//		UE_LOG(LogTemp, Warning,
+//			TEXT("CVPlayerController::SetupInputComponent - InputComponent is %s (Expected: UCVEnhancedInputComponent)"),
+//			*GetNameSafe(InputComponent ? InputComponent->GetClass() : nullptr));
+//	}
+//}

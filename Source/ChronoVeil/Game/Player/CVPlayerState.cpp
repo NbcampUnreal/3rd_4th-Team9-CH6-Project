@@ -1,4 +1,3 @@
-//// CVPlayerState.cpp
 //#include "Game/Player/CVPlayerState.h"
 //#include "Game/GameModes/CVExperienceManagerComponent.h"
 //#include "Game/GameModes/CVGameModeBase.h"

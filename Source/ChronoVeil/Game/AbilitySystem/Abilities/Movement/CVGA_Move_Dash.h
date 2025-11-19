@@ -7,17 +7,25 @@
 UCLASS()
 class CHRONOVEIL_API UCVGA_Move_Dash : public UCVGA_Move_Base
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
+
+public:
+    UCVGA_Move_Dash();
 
 protected:
-	// 대시 세기
-	UPROPERTY(EditDefaultsOnly, Category = "Move|Dash")
-	float DashStrength = 1200.f;
+    // 지면 기준 대시 속도 (LaunchCharacter에 들어갈 값)
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash")
+    float DashStrength = 2000.f;
 
-	virtual void ActivateAbility(
-		const FGameplayAbilitySpecHandle Handle,
-		const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo,
-		const FGameplayEventData* TriggerEventData
-	) override;
+    // 대시 방향을 순수 Forward만 쓸지, 입력 벡터를 섞을지 여부
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash")
+    bool bUseInputDirection = true;
+
+protected:
+    virtual void PerformMove(
+        const FGameplayAbilitySpecHandle Handle,
+        const FGameplayAbilityActorInfo* ActorInfo,
+        const FGameplayAbilityActivationInfo ActivationInfo,
+        const FGameplayEventData* TriggerEventData
+    ) override;
 };

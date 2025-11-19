@@ -10,8 +10,6 @@ void FCVGameplayTagStackContainer::AddStack(FGameplayTag Tag, int32 StackCount)
 
 	if (StackCount > 0)
 	{
-		// linear search...
-		// - Stacks 개수가 수십 개 수준일 거라면 이 정도면 충분
 		for (FCVGameplayTagStack& Stack : Stacks)
 		{
 			if (Stack.Tag == Tag)
@@ -37,7 +35,7 @@ void FCVGameplayTagStackContainer::RemoveStack(FGameplayTag Tag, int32 StackCoun
 
 	if (StackCount > 0)
 	{
-		// Iterator 사용: 순회 중 원소 삭제에 유리
+		// Iterator 사용 : 순회 중 원소 삭제에 유리
 		for (auto It = Stacks.CreateIterator(); It; ++It)
 		{
 			FCVGameplayTagStack& Stack = *It;

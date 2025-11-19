@@ -1,13 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Game/AbilitySystem/Abilities/Install/CVGA_Install_HpPotion.h"
 #include "Game/WorldObjects/Devices/CVDevice_HpPotion.h"
 
-
 UCVGA_Install_HpPotion::UCVGA_Install_HpPotion()
 {
-    InstallClass = ACVDevice_HpPotion::StaticClass();
+    DeviceClass = ACVDevice_HpPotion::StaticClass();
 }
 
 void UCVGA_Install_HpPotion::ActivateAbility(
@@ -16,17 +12,19 @@ void UCVGA_Install_HpPotion::ActivateAbility(
     const FGameplayAbilityActivationInfo ActivationInfo,
     const FGameplayEventData* TriggerEventData)
 {
-    if (CommitAbility(Handle, ActorInfo, ActivationInfo))
+    if (!HasAuthority(ActivationInfo))
     {
-        AActor* Avatar = ActorInfo->AvatarActor.Get();
-        if (Avatar)
-        {
-            FVector SpawnLoc = Avatar->GetActorLocation() + Avatar->GetActorForwardVector() * 200.f;
-            FRotator SpawnRot = Avatar->GetActorRotation();
-
-            SpawnItem(SpawnLoc, SpawnRot);
-        }
+        EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        return;
     }
+
+    if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+    {
+        EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+        return;
+    }
+
+    SpawnSingleDevice(ActorInfo);
 
     EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }

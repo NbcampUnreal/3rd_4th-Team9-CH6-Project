@@ -9,21 +9,18 @@
 class UNiagaraSystem;
 class USphereComponent;
 class UStaticMeshComponent;
+class UProjectileMovementComponent;
+class USoundBase;
 
 UCLASS()
 class CHRONOVEIL_API ACVProjectile_ClusterGrenade : public ACVProjectile_Base
 {
-	GENERATED_BODY()
-	
+    GENERATED_BODY()
+
 public:
     ACVProjectile_ClusterGrenade();
 
 protected:
-    virtual void BeginPlay() override;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-    UStaticMeshComponent* MeshComp;
-
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     USphereComponent* ExplosionRadiusComp;
 
@@ -48,11 +45,17 @@ protected:
     FTimerHandle TimerHandle_Explode;
 
 protected:
-    UFUNCTION()
-    void OnGrenadeHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
-        UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+    virtual void BeginPlay() override;
 
-    // 폭발 처리 : 서버에서 처리함.
+    // Base의 OnProjectileHit를 override 해서 튕김/감속 처리
+    virtual void OnProjectileHit(
+        UPrimitiveComponent* HitComp,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        FVector NormalImpulse,
+        const FHitResult& Hit) override;
+
+    // 폭발 처리 : 서버에서 처리
     void Explode();
 
     // 클라 전체에 폭발 FX 반영

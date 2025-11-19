@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "Abilities/GameplayAbilityTargetTypes.h"
@@ -19,7 +18,7 @@ public:
 		return FCVGameplayAbilityTargetData_SingleTargetHit::StaticStruct();
 	}
 
-	/** 탄약 ID (카트리지) */
+	// 탄약 ID (카트리지)
 	UPROPERTY()
 	int32 CartridgeID;
 };

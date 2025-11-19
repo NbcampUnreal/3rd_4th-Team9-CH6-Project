@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -9,6 +7,10 @@
 
 class UNiagaraSystem;
 
+//
+// 설치형 지뢰폭탄(BombMine) 어빌리티
+// - 플레이어 앞에 BombMine 디바이스를 하나 설치한다.
+//
 UCLASS()
 class CHRONOVEIL_API UCVGA_Install_BombMine : public UCVGA_Install_Base
 {

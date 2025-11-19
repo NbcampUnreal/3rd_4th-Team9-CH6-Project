@@ -99,7 +99,10 @@ void UCVCameraMode::UpdateBlending(float DeltaTime)
 	{
 		BlendAlpha += (DeltaTime / BlendTime);
 	}
-	else { BlendAlpha = 1.0f; }
+	else
+	{
+		BlendAlpha = 1.0f;
+	}
 
 	BlendAlpha = FMath::Clamp(BlendAlpha, 0.0f, 1.0f);
 
@@ -123,8 +126,8 @@ UCVCameraComponent* UCVCameraMode::GetCVCameraComponent() const
 
 AActor* UCVCameraMode::GetTargetActor() const
 {
-	const UCVCameraComponent* ITCameraComponent = GetCVCameraComponent();
-	return ITCameraComponent->GetTargetActor();
+	const UCVCameraComponent* CVCameraComponent = GetCVCameraComponent();
+	return CVCameraComponent->GetTargetActor();
 }
 
 UCVCameraModeStack::UCVCameraModeStack(const FObjectInitializer& ObjectInitializer)

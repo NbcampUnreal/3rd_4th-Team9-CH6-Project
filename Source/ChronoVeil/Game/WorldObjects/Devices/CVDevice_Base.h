@@ -16,11 +16,15 @@ public:
 	ACVDevice_Base();
 
 protected:
+
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USphereComponent* Collision;
 
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UStaticMeshComponent* Mesh;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CV|Device")
-	float LifeTime = 0.f; // 0 이면 무한
+	float LifeTime = 0.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CV|Device")
 	bool bDestroyOnOwnerDeath = false;
@@ -33,7 +37,7 @@ protected:
 	virtual void HandleLifeTimeExpired();
 
 	UFUNCTION()
-	virtual void OnItemOverlap(
+	virtual void OnDeviceOverlap(
 		UPrimitiveComponent* OverlappedComp,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,

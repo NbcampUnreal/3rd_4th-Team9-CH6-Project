@@ -31,7 +31,7 @@ public:
 };
 
 
-// Pawn 또는 Character에게 기본으로 부여할 Effect (ex. passive effects)
+// Pawn 또는 Character에게 기본으로 부여할 Effect (ex. passive effects : 롤로 따지면 패시브 스킬)
 USTRUCT(BlueprintType)
 struct FCVAbilitySet_GameplayEffect
 {

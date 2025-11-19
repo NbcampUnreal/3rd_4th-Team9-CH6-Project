@@ -1,34 +1,37 @@
 #include "Game/WorldObjects/Projectiles/CVProjectile_ClusterGrenade.h"
+
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 #include "TimerManager.h"
 #include "GameFramework/Character.h"
-#include "PhysicalMaterials/PhysicalMaterial.h"
-
-
+#include "GameFramework/ProjectileMovementComponent.h"
 
 ACVProjectile_ClusterGrenade::ACVProjectile_ClusterGrenade()
 {
-    // MeshComp : 물리 적용
-    MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
-    SetRootComponent(MeshComp);
+    // Base에서 만든 Collision을 물리 그레네이드로 사용햠./
+    if (Collision)
+    {
+        Collision->SetSimulatePhysics(true);
+        Collision->SetEnableGravity(true);
+        Collision->SetNotifyRigidBodyCollision(true);
+        Collision->SetCollisionProfileName(TEXT("PhysicsActor"));
 
-    MeshComp->SetSimulatePhysics(true);
-    MeshComp->SetEnableGravity(true);
-    MeshComp->SetNotifyRigidBodyCollision(true);
-    MeshComp->SetCollisionProfileName(TEXT("PhysicsActor"));
-    MeshComp->OnComponentHit.AddDynamic(this, &ACVProjectile_ClusterGrenade::OnGrenadeHit);
+        Collision->SetLinearDamping(0.1f);   // 공기 저항
+        Collision->SetAngularDamping(0.1f);  // 회전 감쇠
+        Collision->SetMassOverrideInKg(NAME_None, 2.5f, true);
+    }
 
-    // 감쇠(공기 저항 및 회전 저항)
-    MeshComp->SetLinearDamping(0.1f);   // 공기 저항: 조금 높여서 자연 감속
-    MeshComp->SetAngularDamping(0.1f);   // 회전 감쇠: 바닥에서 안정적 굴림
-    MeshComp->SetMassOverrideInKg(NAME_None, 2.5f, true); // 무게감 추가
+    // ProjectileMovement는 이 투사체에선 사용하지 않음
+    if (Movement)
+    {
+        Movement->bAutoActivate = false;
+        Movement->Deactivate();
+    }
 
-    // 폭발 감지 영역
     ExplosionRadiusComp = CreateDefaultSubobject<USphereComponent>(TEXT("ExplosionRadius"));
-    ExplosionRadiusComp->SetupAttachment(MeshComp);
+    ExplosionRadiusComp->SetupAttachment(Collision);
     ExplosionRadiusComp->InitSphereRadius(ExplosionRadius);
     ExplosionRadiusComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     ExplosionRadiusComp->SetCollisionResponseToAllChannels(ECR_Ignore);
@@ -39,13 +42,17 @@ void ACVProjectile_ClusterGrenade::BeginPlay()
 {
     Super::BeginPlay();
 
-    // 물리 머티리얼 생성 (BeginPlay 시점에서 안전)
-    UPhysicalMaterial* PhysMat = NewObject<UPhysicalMaterial>(this);
-    PhysMat->Friction = 0.4f;       // 마찰력: 약간 낮춰서 잘 굴러가게
-    PhysMat->Restitution = 0.8f;    // 반발력: 튕김 정도를 조금 높임
-    MeshComp->SetPhysMaterialOverride(PhysMat);
+    // 물리 머티리얼 생성 (BeginPlay 시점)
+    if (Collision)
+    {
+        UPhysicalMaterial* PhysMat = NewObject<UPhysicalMaterial>(this);
+        PhysMat->Friction = 0.4f;
+        PhysMat->Restitution = 0.8f;  // 튕김 정도
 
-    // 서버만 폭발 타이머 시작
+        Collision->SetPhysMaterialOverride(PhysMat);
+    }
+
+    // 서버만 폭발 타이머
     if (HasAuthority())
     {
         GetWorldTimerManager().SetTimer(
@@ -58,24 +65,25 @@ void ACVProjectile_ClusterGrenade::BeginPlay()
     }
 }
 
-void ACVProjectile_ClusterGrenade::OnGrenadeHit(
+void ACVProjectile_ClusterGrenade::OnProjectileHit(
     UPrimitiveComponent* HitComp,
     AActor* OtherActor,
     UPrimitiveComponent* OtherComp,
     FVector NormalImpulse,
     const FHitResult& Hit)
 {
+    // 여기서는 "튕기는" 동작만 처리하고, Base처럼 Destroy()는 하지 않음.
     if (UPrimitiveComponent* RootPrim = Cast<UPrimitiveComponent>(GetRootComponent()))
     {
         FVector Velocity = RootPrim->GetPhysicsLinearVelocity();
 
-        //  속도 감쇠 (무한 튕김 방지)
-        Velocity *= 0.8f; // 너무 세면 빠르게 멈춤
+        // 속도 감쇠 (무한 튕김 방지)
+        Velocity *= 0.8f;
 
-        //  바닥에 부딪히면 약간의 수평 튕김 유지
-        if (FMath::Abs(Hit.Normal.Z) > 0.6f) // 바닥면일 때
+        // 바닥과 부딪힐 때 Z 방향 반사
+        if (FMath::Abs(Hit.Normal.Z) > 0.6f) // 거의 바닥면
         {
-            Velocity.Z *= -0.6f; // 반사 효과
+            Velocity.Z *= -0.6f;
         }
 
         RootPrim->SetPhysicsLinearVelocity(Velocity);
@@ -85,6 +93,8 @@ void ACVProjectile_ClusterGrenade::OnGrenadeHit(
             UGameplayStatics::PlaySoundAtLocation(GetWorld(), BounceSound, GetActorLocation());
         }
     }
+
+    // 폭발은 FuseTime 타이머에서 처리할것임.
 }
 
 void ACVProjectile_ClusterGrenade::Explode()
@@ -101,7 +111,7 @@ void ACVProjectile_ClusterGrenade::Explode()
 
     Multicast_PlayExplosionFX();
 
-    // 폭발 반경 내 액터 검색 후 피해 적용
+    // 폭발 반경 내 캐릭터에게 피해 적용
     TArray<AActor*> OverlappingActors;
     ExplosionRadiusComp->GetOverlappingActors(OverlappingActors, ACharacter::StaticClass());
 

@@ -1,5 +1,3 @@
-// Source/ChronoVeil/Game/Inventory/CVInventoryItemInstance.h
-
 #pragma once
 
 #include "CoreMinimal.h"

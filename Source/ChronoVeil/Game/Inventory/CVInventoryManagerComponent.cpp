@@ -1,5 +1,3 @@
-// Source/ChronoVeil/Game/Inventory/CVInventoryManagerComponent.cpp
-
 #include "Game/Inventory/CVInventoryManagerComponent.h"
 #include "Game/Inventory/CVInventoryItemDefinition.h"
 #include "Game/Inventory/CVInventoryItemInstance.h"

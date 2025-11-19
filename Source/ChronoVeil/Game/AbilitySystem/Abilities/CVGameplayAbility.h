@@ -39,9 +39,5 @@ protected:
 
 	bool HasAuthority(const FGameplayAbilityActivationInfo& ActivationInfo) const;
 
-
-
-
-
 };
 

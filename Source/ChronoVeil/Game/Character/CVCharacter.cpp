@@ -6,6 +6,7 @@
 #include "Game/Camera/CVCameraComponent.h"
 #include "Game/Cosmetics/CVPawnComponent_CharacterParts.h"
 #include "Game/AbilitySystem/CVAbilitySystemComponent.h"
+#include "Game/Input/CVEnhancedInputComponent.h"
 #include "Net/UnrealNetwork.h"
 
 ACVCharacter::ACVCharacter()
@@ -28,6 +29,15 @@ ACVPlayerController* ACVCharacter::GetCVPlayerController() const
 ACVPlayerState* ACVCharacter::GetCVPlayerState() const
 {
 	return GetPlayerState<ACVPlayerState>();
+}
+
+void ACVCharacter::OnRep_PawnData()
+{
+	if (IsValid(HeroComponent))
+	{
+		//HeroComponent->TryBindCameraMode(); // 이미 HeroComponent에서 적용함.
+		// 필요하면 Input 재바인딩 트리거도 여기서 호출 가능함!
+	}
 }
 
 UCVAbilitySystemComponent* ACVCharacter::GetCVAbilitySystemComponent() const

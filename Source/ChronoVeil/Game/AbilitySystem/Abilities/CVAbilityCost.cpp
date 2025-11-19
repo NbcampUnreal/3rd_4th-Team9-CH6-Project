@@ -1,4 +1,4 @@
-#include "Game/AbilitySystem/Abilities/CVAbilityCost.h" // 경로가 실제 파일 위치와 일치하는지 확인
+#include "Game/AbilitySystem/Abilities/CVAbilityCost.h"
 
 #include "Abilities/GameplayAbilityTypes.h"
 #include "GameplayAbilitySpec.h"
@@ -16,5 +16,5 @@ void UCVAbilityCost::ApplyCost_Implementation(const UCVGameplayAbility*,
     const FGameplayAbilityActorInfo&,
     const FGameplayAbilityActivationInfo&) const
 {
-    // 기본은 NOP
+    
 }

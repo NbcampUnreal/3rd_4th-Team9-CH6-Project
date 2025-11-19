@@ -16,10 +16,9 @@ public:
 
 protected:
     // 떨어진 위치에 깔릴 장판(Zone) 클래스
-    UPROPERTY(EditDefaultsOnly, Category = "Zone|Meteor")
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Zone|Meteor")
     TSubclassOf<ACVZone_MeteorImpact> MeteorImpactZoneClass;
 
-    // 나중에 실 구현 넣을 ActivateAbility
     virtual void ActivateAbility(
         const FGameplayAbilitySpecHandle Handle,
         const FGameplayAbilityActorInfo* ActorInfo,

@@ -1,13 +1,13 @@
-#include "Game/GameModes/CVExperienceDefinition.h"   // 실제 경로와 일치
+#include "Game/GameModes/CVExperienceDefinition.h"
 #include "Engine/AssetManager.h"
 #include "UObject/SoftObjectPtr.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Game/Character/CVPawnData.h"                               // UCVPawnData 정의 포함(경로는 실제 위치로)
+#include "Game/Character/CVPawnData.h"
 
 UCVExperienceDefinition::UCVExperienceDefinition(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer)
 {
-    // 필요 시 기본값 세팅
+    
 }
 
 FPrimaryAssetId UCVExperienceDefinition::GetPrimaryAssetId() const
@@ -21,7 +21,7 @@ const UCVPawnData* UCVExperienceDefinition::GetDefaultPawnData() const
 {
     if (!DefaultPawnData.IsNull())
     {
-        const_cast<TSoftObjectPtr<UCVPawnData>&>(DefaultPawnData).LoadSynchronous(); // 에디터/요청시 로드
+        const_cast<TSoftObjectPtr<UCVPawnData>&>(DefaultPawnData).LoadSynchronous();
         return DefaultPawnData.Get();
     }
     return nullptr;

@@ -19,7 +19,7 @@ void ACVZone_Base::BeginPlay()
 
 	if (HasAuthority())
 	{
-		// 존 주기 처리
+		// 존 생성 주기 처리
 		if (TickInterval > 0.f)
 		{
 			GetWorld()->GetTimerManager().SetTimer(
@@ -65,12 +65,11 @@ void ACVZone_Base::ZoneTick()
 		return;
 	}
 
-	// 기본 구현: 없음
-	// 파생 클래스(연막/버프/디버프/메테오장판/블랙홀)가 오버라이드해서:
+	// 파생 클래스(연막/버프/디버프/메테오장판/블랙홀)가 오버라이드해서구현해야함.:
 	// - ZoneShape->GetOverlappingActors
 	// - ASC에 GameplayEffect 부여/제거
 	// - DOT/HoT 처리
-	// 등을 구현
+	// 등을 구현해야할듯.
 }
 
 void ACVZone_Base::HandleLifeTimeExpired()

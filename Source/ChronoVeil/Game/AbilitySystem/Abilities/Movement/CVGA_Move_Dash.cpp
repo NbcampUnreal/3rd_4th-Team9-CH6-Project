@@ -1,35 +1,54 @@
 #include "Game/AbilitySystem/Abilities/Movement/CVGA_Move_Dash.h"
 #include "Game/Character/CVCharacter.h"
+#include "Game/Player/CVPlayerController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
-void UCVGA_Move_Dash::ActivateAbility(
-	const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo,
-	const FGameplayEventData* TriggerEventData)
+UCVGA_Move_Dash::UCVGA_Move_Dash()
 {
-	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		return;
-	}
+    // 필요하면 여기서 NetExecutionPolicy/InstancingPolicy 조정 가능
+}
 
-	ACVCharacter* Character = nullptr;
-	if (ActorInfo && ActorInfo->AvatarActor.IsValid())
-	{
-		Character = Cast<ACVCharacter>(ActorInfo->AvatarActor.Get());
-	}
+void UCVGA_Move_Dash::PerformMove(
+    const FGameplayAbilitySpecHandle Handle,
+    const FGameplayAbilityActorInfo* ActorInfo,
+    const FGameplayAbilityActivationInfo ActivationInfo,
+    const FGameplayEventData* TriggerEventData)
+{
+    ACVCharacter* Character = GetCVCharacter(ActorInfo);
+    if (!Character)
+    {
+        return;
+    }
 
-	if (Character)
-	{
-		// 컨트롤러 Yaw 기준으로 평면 방향 계산
-		const FRotator ControlRot(0.f, Character->GetControlRotation().Yaw, 0.f);
-		FVector DashDir = ControlRot.Vector();
-		DashDir.Z = 0.f;
-		DashDir.Normalize();
+    FVector DashDir = Character->GetActorForwardVector();
 
-		// Launch로 순간 가속(지금은 아주 단순)
-		Character->LaunchCharacter(DashDir * DashStrength, true, true);
-	}
+    // 입력 방향 사용 옵션
+    if (bUseInputDirection)
+    {
+        if (ACVPlayerController* PC = Cast<ACVPlayerController>(ActorInfo->PlayerController.Get()))
+        {
+            // 여기서 실제 입력 벡터를 가져오는 방식은 프로젝트에 따라 다를 수 있음 (확실하지 않음)
+            // 예시로 CharacterMovement의 LastInputVector를 사용
+            const FVector InputDir = Character->GetLastMovementInputVector();
+            if (!InputDir.IsNearlyZero())
+            {
+                DashDir = InputDir.GetSafeNormal2D();
+            }
+        }
+    }
 
-	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+    DashDir = DashDir.GetSafeNormal2D();
+    if (DashDir.IsNearlyZero())
+    {
+        return;
+    }
+
+    const FVector LaunchVelocity = DashDir * DashStrength;
+
+    // Z는 유지하고 XY만 Launch - 지면 대시 느낌
+    Character->LaunchCharacter(
+        FVector(LaunchVelocity.X, LaunchVelocity.Y, 0.0f),
+        true,   // XY Override
+        false   // Z Override
+    );
 }

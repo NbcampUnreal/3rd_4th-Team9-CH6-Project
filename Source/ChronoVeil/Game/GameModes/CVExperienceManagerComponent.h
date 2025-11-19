@@ -1,4 +1,3 @@
-// CVExperienceManagerComponent.h
 #pragma once
 #include "CoreMinimal.h"
 #include "Components/GameStateComponent.h"
@@ -28,7 +27,7 @@ public:
     const UCVExperienceDefinition* GetCurrentExperienceChecked() const;
 
 private:
-    void StartExperienceLoad();        // 경량: 바로 완료 처리
+    void StartExperienceLoad();        // 경량 : 바로 완료 처리
     void OnExperienceLoadComplete();   // 브로드캐스트
 
 public:
