@@ -6,7 +6,7 @@
 //#include "GameFeatureAction_AddGameplayCuePath.generated.h"
 //
 ///**
-// * GameFeature ÇÃ·¯±×ÀÎ¿¡¼­ GameplayCue Notify ¿¡¼Â °æ·Î¸¦ Ãß°¡ÇÏ´Â ¾×¼Ç
+// * GameFeature í”ŒëŸ¬ê·¸ì¸ì—ì„œ GameplayCue Notify ì—ì…‹ ê²½ë¡œë¥¼ ì¶”ê°€í•˜ëŠ” ì•¡ì…˜
 // */
 //UCLASS()
 //class CHRONOVEIL_API UGameFeatureAction_AddGameplayCuePath : public UGameFeatureAction
@@ -16,7 +16,7 @@
 //public:
 //	UGameFeatureAction_AddGameplayCuePath();
 //
-//	/** GameplayCueNotify ¿¡¼Â °æ·Î Ãß°¡ */
+//	/** GameplayCueNotify ì—ì…‹ ê²½ë¡œ ì¶”ê°€ */
 //	UPROPERTY(EditAnywhere, Category = "GameFeature|GameplayCues")
 //	TArray<FDirectoryPath> DirectoryPathsToAdd;
 //};

@@ -54,7 +54,7 @@ void UCVGA_Proj_ClusterGrenade::ActivateAbility(
 
     if (Grenade)
     {
-        // ´øÁú ¹æÇâ °è»ê : Forward + À§ÂÊÀ¸·Î ¾à°£ °¢µµ
+        // ë˜ì§ˆ ë°©í–¥ ê³„ì‚° : Forward + ìœ„ìª½ìœ¼ë¡œ ì•½ê°„ ê°ë„
         const FVector Forward = Avatar->GetActorForwardVector();
         const FVector Up = Avatar->GetActorUpVector();
 
@@ -63,11 +63,11 @@ void UCVGA_Proj_ClusterGrenade::ActivateAbility(
 
         if (UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(Grenade->GetRootComponent()))
         {
-            // Áß·Â¿¡ ¿µÇâ¹ŞÀ¸¸é ´øÁ®Áü.
+            // ì¤‘ë ¥ì— ì˜í–¥ë°›ìœ¼ë©´ ë˜ì ¸ì§.
             RootComp->AddImpulse(ThrowDir * ThrowStrength, NAME_None, true);
         }
     }
 
-    // ÇÑ ¹ø ´øÁö¸é ³¡³ª´Â ´Ü¹ßÇü ½ºÅ³ÀÓ.
+    // í•œ ë²ˆ ë˜ì§€ë©´ ëë‚˜ëŠ” ë‹¨ë°œí˜• ìŠ¤í‚¬ì„.
     EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }

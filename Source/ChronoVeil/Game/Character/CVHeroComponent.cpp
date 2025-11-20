@@ -36,7 +36,7 @@ TSubclassOf<UCVCameraMode> UCVHeroComponent::DetermineCameraMode() const
 		return nullptr;
 	}
 
-	// AimÁßÀÌ¸é ADS¸ðµå·Î °áÁ¤.
+	// Aimì¤‘ì´ë©´ ADSëª¨ë“œë¡œ ê²°ì •.
 	if (bIsAiming && AimCameraModeClass)
 	{
 		return AimCameraModeClass;
@@ -59,11 +59,11 @@ void UCVHeroComponent::TryBindCameraMode()
 
 	if (!Pawn->IsLocallyControlled())
 	{
-		// ·ÎÄÃ¸¸ Ä«¸Þ¶ó Á¦¾î
+		// ë¡œì»¬ë§Œ ì¹´ë©”ë¼ ì œì–´
 		return;
 	}
 
-	// PawnData°¡ ¾ÆÁ÷ º¹Á¦ ÀüÀÌ¸é ¿©±â¼­ ½ÇÆÐÇÒ ¼ö ÀÖÀ½
+	// PawnDataê°€ ì•„ì§ ë³µì œ ì „ì´ë©´ ì—¬ê¸°ì„œ ì‹¤íŒ¨í•  ìˆ˜ ìžˆìŒ
 	const ACVCharacter* CVChar = GetOwnerCharacter();
 	if (!CVChar || !CVChar->GetPawnData())
 	{

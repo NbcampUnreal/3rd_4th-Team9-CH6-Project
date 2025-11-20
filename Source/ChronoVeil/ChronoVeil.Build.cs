@@ -24,7 +24,7 @@ public class ChronoVeil : ModuleRules
 			// ModularGameplay / GameFeatures
 			"ModularGameplay",
 			"GameFeatures",
-			//"ModularGameplayActors", // 5,7¿¡¼­´Â ModularGameplay¿¡ ÅëÇÕµÈµí.. ÁÖ¼®¾ø¾Ö¸é ¿À·ù»ı±è
+			//"ModularGameplayActors", // 5,7ì—ì„œëŠ” ModularGameplayì— í†µí•©ëœë“¯.. ì£¼ì„ì—†ì• ë©´ ì˜¤ë¥˜ìƒê¹€
 			// CommonUI
             "CommonUI",
             // UMG

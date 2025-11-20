@@ -8,7 +8,7 @@
 //{
 //    if (InputMapping.IsValid())
 //    {
-//        // SoftObject∏¶ Ω«¡¶ ∞¥√º∑Œ ∑ŒµÂ
+//        // SoftObjectÎ•º Ïã§Ï†ú Í∞ùÏ≤¥Î°ú Î°úÎìú
 //        if (UInputMappingContext* IMC = InputMapping.LoadSynchronous())
 //        {
 //            OutIMCs.Add(IMC);

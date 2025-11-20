@@ -13,15 +13,15 @@ public:
     UCVGA_Move_Flash();
 
 protected:
-    // ÃÖ´ë ÇÃ·¡½Ã °Å¸®
+    // ìµœëŒ€ í”Œë˜ì‹œ ê±°ë¦¬
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Flash")
     float MaxFlashDistance = 800.f;
 
-    // Ãæµ¹ °¨Áö¿ë Ä¸½¶ ¹İÁö¸§ º¸Á¤
+    // ì¶©ëŒ ê°ì§€ìš© ìº¡ìŠ ë°˜ì§€ë¦„ ë³´ì •
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Flash")
     float FlashTraceRadius = 10.f;
 
-    // º® ¹Ù·Î ¾Õ¿¡ ¼­±â À§ÇÑ ¿©À¯ °Å¸®
+    // ë²½ ë°”ë¡œ ì•ì— ì„œê¸° ìœ„í•œ ì—¬ìœ  ê±°ë¦¬
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Flash")
     float WallSafeDistance = 10.f;
 

@@ -9,9 +9,9 @@
 class USphereComponent;
 
 /**
- * ¾ÖÁ¤ÀÎÇü µğ¹ÙÀÌ½º
- * - ½ºÆù ½Ã ¹Ù´Ú¿¡¼­ Ä¿ÁöµíÀÌ ½ºÄÉÀÏ ¾÷
- * - ÂªÀº ½Ã°£ µ¿¾È ÁÖº¯ Àû Ä³¸¯ÅÍ¸¦ ÀÎÇü Áß½ÉÀ¸·Î ²ø¾î´ç±è
+ * ì• ì •ì¸í˜• ë””ë°”ì´ìŠ¤
+ * - ìŠ¤í° ì‹œ ë°”ë‹¥ì—ì„œ ì»¤ì§€ë“¯ì´ ìŠ¤ì¼€ì¼ ì—…
+ * - ì§§ì€ ì‹œê°„ ë™ì•ˆ ì£¼ë³€ ì  ìºë¦­í„°ë¥¼ ì¸í˜• ì¤‘ì‹¬ìœ¼ë¡œ ëŒì–´ë‹¹ê¹€
  */
 UCLASS()
 class CHRONOVEIL_API ACVDevice_AffectionDoll : public ACVDevice_Base
@@ -22,7 +22,7 @@ public:
 	ACVDevice_AffectionDoll();
 
 protected:
-	// ÀÎÇüÀÌ ¹Ù´Ú¿¡¼­ Ä¿Áö´Â µ¥ °É¸®´Â ½Ã°£
+	// ì¸í˜•ì´ ë°”ë‹¥ì—ì„œ ì»¤ì§€ëŠ” ë° ê±¸ë¦¬ëŠ” ì‹œê°„
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AffectionDoll|Grow")
 	float GrowDuration = 0.5f;
 
@@ -35,11 +35,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AffectionDoll|Pull")
 	float PullStrength = 2000.f;
 
-	// Ä¿Áö±âÀü¿¡ ½ÃÀÛ Å©±â
+	// ì»¤ì§€ê¸°ì „ì— ì‹œì‘ í¬ê¸°
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AffectionDoll|Grow")
 	FVector StartScale = FVector(0.2f, 0.2f, 0.2f);
 
-	// ´Ù Ä¿Áø Å©±â
+	// ë‹¤ ì»¤ì§„ í¬ê¸°
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AffectionDoll|Grow")
 	FVector TargetScale = FVector(1.0f, 1.0f, 1.0f);
 
@@ -50,6 +50,6 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
-	// ÁÖº¯ Ä³¸¯ÅÍ¸¦ ÀÎÇü Áß½ÉÀ¸·Î ²ø¾î´ç±è
+	// ì£¼ë³€ ìºë¦­í„°ë¥¼ ì¸í˜• ì¤‘ì‹¬ìœ¼ë¡œ ëŒì–´ë‹¹ê¹€
 	void ApplyPull(float DeltaTime);
 };

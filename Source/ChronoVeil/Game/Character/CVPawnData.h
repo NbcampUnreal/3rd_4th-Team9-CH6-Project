@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/DataAsset.h"
-//#include "Cosmetics/CVCharacterPartType.h" // Cosmetic ³­ÀÌµµ°¡ ³ô¾Æ¼­ ³ªÁß¿¡ Àû¿ëÇÒÁö ¸»Áö °áÁ¤ÇÒ ¿¹Á¤.
+//#include "Cosmetics/CVCharacterPartType.h" // Cosmetic ë‚œì´ë„ê°€ ë†’ì•„ì„œ ë‚˜ì¤‘ì— ì ìš©í• ì§€ ë§ì§€ ê²°ì •í•  ì˜ˆì •.
 #include "CVPawnData.generated.h"
 
 class UCVAbilitySet;
@@ -9,8 +9,8 @@ class UCVInputConfig;
 class UCVCameraMode;
 
 /**
- * PawnÀ» Á¤ÀÇÇÏ±â À§ÇÑ ¼Ó¼º(properties)¸¦ °¡Áö°í ÀÖ´Â Data Asset
- * ULyraPawnDataÀÇ ±¸¼ºÀ» Âü°íÇÔ
+ * Pawnì„ ì •ì˜í•˜ê¸° ìœ„í•œ ì†ì„±(properties)ë¥¼ ê°€ì§€ê³  ìˆëŠ” Data Asset
+ * ULyraPawnDataì˜ êµ¬ì„±ì„ ì°¸ê³ í•¨
  */
 UCLASS(BlueprintType, Const)
 class CHRONOVEIL_API UCVPawnData : public UDataAsset
@@ -20,22 +20,22 @@ class CHRONOVEIL_API UCVPawnData : public UDataAsset
 public:
 	UCVPawnData(const FObjectInitializer& ObjectInitializer);
 
-	// Pawn ¶Ç´Â Character¿¡ ºÎ¿©ÇÒ(grant) Ability Á¤º¸
+	// Pawn ë˜ëŠ” Characterì— ë¶€ì—¬í• (grant) Ability ì •ë³´
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PawnData|Abilities")
 	TArray<TObjectPtr<UCVAbilitySet>> AbilitySets;
 
-	// Pawn ¶Ç´Â CharacterÀÇ ÀÔ·Â ¼³Á¤
+	// Pawn ë˜ëŠ” Characterì˜ ì…ë ¥ ì„¤ì •
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PawnData|Input")
 	TObjectPtr<UCVInputConfig> InputConfig;
 
-	//// Pawn ¶Ç´Â Character¿¡ Àû¿ëÇÒ Cosmetic(¿ÜÇü) Á¤º¸
+	//// Pawn ë˜ëŠ” Characterì— ì ìš©í•  Cosmetic(ì™¸í˜•) ì •ë³´
 	//UPROPERTY(EditAnywhere, Category = "PawnData|Cosmetics")
 	//TArray<FCVCharacterPart> InitCharacterParts;
 
 	//UPROPERTY(EditAnywhere, Category = "PawnData|Cosmetics")
 	//FCVAnimBodyStyleSelectionSet InitBodyMeshes;
 
-	// Pawn ¶Ç´Â Character¿¡ Àû¿ëÇÒ ±âº» Ä«¸Ş¶ó ¸ğµå
+	// Pawn ë˜ëŠ” Characterì— ì ìš©í•  ê¸°ë³¸ ì¹´ë©”ë¼ ëª¨ë“œ
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PawnData|Camera")
 	TSubclassOf<UCVCameraMode> DefaultCameraMode;
 };

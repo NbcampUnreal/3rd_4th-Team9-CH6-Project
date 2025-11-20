@@ -21,7 +21,7 @@
 //	PrimaryComponentTick.bCanEverTick = false;
 //}
 //
-///** ¼­¹ö ±ÇÇÑ¿¡¼­¸¸ 1È¸ ¼¼ÆÃ */
+///** ì„œë²„ ê¶Œí•œì—ì„œë§Œ 1íšŒ ì„¸íŒ… */
 //void UCVPawnExtensionComponent::SetPawnData(const UCVPawnData* InPawnData)
 //{
 //	APawn* Pawn = GetPawn<APawn>();
@@ -33,13 +33,13 @@
 //
 //	PawnData = InPawnData;
 //
-//	// PawnData°¡ µé¾î¿À¸é InitState ÁøÇà °¡´É¼ºÀÌ »ı±è
+//	// PawnDataê°€ ë“¤ì–´ì˜¤ë©´ InitState ì§„í–‰ ê°€ëŠ¥ì„±ì´ ìƒê¹€
 //	CheckDefaultInitialization();
 //}
 //
 //void UCVPawnExtensionComponent::SetupPlayerInputComponent()
 //{
-//	// ÀÔ·Â(¸ÅÇÎ/IMC) ±¸Á¶°¡ ¹Ù²î¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î InitState ÀçÆò°¡ Æ®¸®°Å
+//	// ì…ë ¥(ë§¤í•‘/IMC) êµ¬ì¡°ê°€ ë°”ë€Œì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ InitState ì¬í‰ê°€ íŠ¸ë¦¬ê±°
 //	CheckDefaultInitialization();
 //}
 //
@@ -64,14 +64,14 @@
 //	{
 //		if (ExistingAvatar != GetOwner())
 //		{
-//			InASC->ClearActorInfo(); // or ¾ÈÀüÇÑ Uninit °æ·Î
+//			InASC->ClearActorInfo(); // or ì•ˆì „í•œ Uninit ê²½ë¡œ
 //		}
 //	}
 //
 //	AbilitySystemComponent = InASC;
 //	AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, Pawn);
 //
-//	// ASC Init ¾Ë¸²
+//	// ASC Init ì•Œë¦¼
 //	OnAbilitySystemInitialized.Broadcast();
 //}
 //
@@ -84,7 +84,7 @@
 //
 //	if (AbilitySystemComponent->GetAvatarActor() == GetOwner())
 //	{
-//		// ASC Uninit ¾Ë¸²
+//		// ASC Uninit ì•Œë¦¼
 //		OnAbilitySystemUninitialized.Broadcast();
 //	}
 //
@@ -95,18 +95,18 @@
 //{
 //	Super::OnRegister();
 //
-//	// ¿Ã¹Ù¸¥ ¼ÒÀ¯ÀÚ È®ÀÎ
+//	// ì˜¬ë°”ë¥¸ ì†Œìœ ì í™•ì¸
 //	if (!GetPawn<APawn>())
 //	{
 //		UE_LOG(LogCV, Error, TEXT("CVPawnExtensionComponent must be attached to a Pawn!"));
 //		return;
 //	}
 //
-//	// GameFrameworkComponentManager¿¡ Feature µî·Ï (InitState °ü¸®¿ë)
+//	// GameFrameworkComponentManagerì— Feature ë“±ë¡ (InitState ê´€ë¦¬ìš©)
 //	RegisterInitStateFeature();
 //
 //#if !UE_BUILD_SHIPPING
-//	// µğ¹ö±ë¿ëÀ¸·Î ¸Å´ÏÀú ÇÚµé Æ÷Âø(¹Ì»ç¿ë)
+//	// ë””ë²„ê¹…ìš©ìœ¼ë¡œ ë§¤ë‹ˆì € í•¸ë“¤ í¬ì°©(ë¯¸ì‚¬ìš©)
 //	UGameFrameworkComponentManager::GetForActor(GetOwningActor());
 //#endif
 //}
@@ -115,20 +115,20 @@
 //{
 //	Super::BeginPlay();
 //
-//	// ActorÀÇ Feature »óÅÂ º¯È­¸¦ °üÂû (NAME_None = ¸ğµç Feature)
+//	// Actorì˜ Feature ìƒíƒœ ë³€í™”ë¥¼ ê´€ì°° (NAME_None = ëª¨ë“  Feature)
 //	BindOnActorInitStateChanged(NAME_None, FGameplayTag(), /*bRunImmediately*/false);
 //
-//	// InitState: Spawned (0´Ü°è)
+//	// InitState: Spawned (0ë‹¨ê³„)
 //	const auto& Tags = FCVGameplayTags::Get();
-//	ensure(TryToChangeInitState(FCVGameplayTags::Get().InitState_Spawned)); // ¾Æ·¡¿¡¼­ InitState ÅÂ±× Á¤ÀÇ
+//	ensure(TryToChangeInitState(FCVGameplayTags::Get().InitState_Spawned)); // ì•„ë˜ì—ì„œ InitState íƒœê·¸ ì •ì˜
 //
-//	// °­Á¦ ¾÷µ¥ÀÌÆ®(¼±Çü Ã¼ÀÎ)
+//	// ê°•ì œ ì—…ë°ì´íŠ¸(ì„ í˜• ì²´ì¸)
 //	CheckDefaultInitialization();
 //}
 //
 //void UCVPawnExtensionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 //{
-//	// OnRegister ½Ã µî·ÏÇÑ Feature¸¦ ÇØÁ¦
+//	// OnRegister ì‹œ ë“±ë¡í•œ Featureë¥¼ í•´ì œ
 //	UnregisterInitStateFeature();
 //
 //	Super::EndPlay(EndPlayReason);
@@ -136,7 +136,7 @@
 //
 //void UCVPawnExtensionComponent::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
 //{
-//	// º» ÄÄÆ÷³ÍÆ® ¿Ü FeatureµéÀÌ DataAvailable¿¡ µµ´ŞÇÏ´Â ¼ø°£À» Ä³Ä¡ ¡æ ¿ì¸® Ã¼ÀÎ ÀçÆò°¡
+//	// ë³¸ ì»´í¬ë„ŒíŠ¸ ì™¸ Featureë“¤ì´ DataAvailableì— ë„ë‹¬í•˜ëŠ” ìˆœê°„ì„ ìºì¹˜ â†’ ìš°ë¦¬ ì²´ì¸ ì¬í‰ê°€
 //	if (Params.FeatureName != NAME_ActorFeatureName)
 //	{
 //		const auto& Init = FCVGameplayTags::Get();
@@ -160,7 +160,7 @@
 //		return (Pawn != nullptr);
 //	}
 //
-//	// (2) Spawned -> DataAvailable : PawnData°¡ ÀÖ¾î¾ß ÇÔ (+·ÎÄÃÀÌ¸é Controller ÇÊ¿ä)
+//	// (2) Spawned -> DataAvailable : PawnDataê°€ ìˆì–´ì•¼ í•¨ (+ë¡œì»¬ì´ë©´ Controller í•„ìš”)
 //	if (CurrentState == Init.InitState_Spawned && DesiredState == Init.InitState_DataAvailable)
 //	{
 //		if (!PawnData)
@@ -177,30 +177,30 @@
 //		return true;
 //	}
 //
-//	// (3) DataAvailable -> DataInitialized : ¸ğµç Feature°¡ DataAvailable¿¡ µµ´ŞÇØ¾ß ÇÔ
+//	// (3) DataAvailable -> DataInitialized : ëª¨ë“  Featureê°€ DataAvailableì— ë„ë‹¬í•´ì•¼ í•¨
 //	if (CurrentState == Init.InitState_DataAvailable && DesiredState == Init.InitState_DataInitialized)
 //	{
 //		return Manager->HaveAllFeaturesReachedInitState(Pawn, Init.InitState_DataAvailable);
 //	}
 //
-//	// (4) DataInitialized -> GameplayReady : Áï½Ã °¡´É(¼¼ºÎ Á¶°ÇÀº °¢ ÄÄÆ÷³ÍÆ®°¡ ´ã´ç)
+//	// (4) DataInitialized -> GameplayReady : ì¦‰ì‹œ ê°€ëŠ¥(ì„¸ë¶€ ì¡°ê±´ì€ ê° ì»´í¬ë„ŒíŠ¸ê°€ ë‹´ë‹¹)
 //	if (CurrentState == Init.InitState_DataInitialized && DesiredState == Init.InitState_GameplayReady)
 //	{
 //		return true;
 //	}
 //
-//	// ±× ¿Ü ºñ¼±Çü ÀüÀÌ´Â ºÒ°¡
+//	// ê·¸ ì™¸ ë¹„ì„ í˜• ì „ì´ëŠ” ë¶ˆê°€
 //	return false;
 //}
 //
 //void UCVPawnExtensionComponent::CheckDefaultInitialization()
 //{
-//	// º»ÀÎ Æ÷ÇÔ Feature ±¸ÇöÃ¼µé¿¡ InitState ÀçÆò°¡ ±âÈ¸ Á¦°ø
+//	// ë³¸ì¸ í¬í•¨ Feature êµ¬í˜„ì²´ë“¤ì— InitState ì¬í‰ê°€ ê¸°íšŒ ì œê³µ
 //	CheckDefaultInitializationForImplementers();
 //
 //	const auto& Init = FCVGameplayTags::Get();
 //
-//	// ¼±Çü Ã¼ÀÎ Á¤ÀÇ
+//	// ì„ í˜• ì²´ì¸ ì •ì˜
 //	static const TArray<FGameplayTag> StateChain = {
 //		Init.InitState_Spawned,
 //		Init.InitState_DataAvailable,
@@ -208,7 +208,7 @@
 //		Init.InitState_GameplayReady
 //	};
 //
-//	// °¡´ÉÇÑ ¸¸Å­ ¾ÕÀ¸·Î ÁøÇà(¸ØÃß¸é ¿ÜºÎ Æ®¸®°Å ÇÊ¿ä)
+//	// ê°€ëŠ¥í•œ ë§Œí¼ ì•ìœ¼ë¡œ ì§„í–‰(ë©ˆì¶”ë©´ ì™¸ë¶€ íŠ¸ë¦¬ê±° í•„ìš”)
 //	ContinueInitStateChain(StateChain);
 //}
 //
@@ -233,7 +233,7 @@
 //	}
 //}
 //
-//// ¼­¹ö: Æ÷Á¦¼Ç Á÷ÈÄ È£ÃâÇØ¼­ ASC ÃÊ±âÈ­ ¹× AbilitySet ºÎ¿©
+//// ì„œë²„: í¬ì œì…˜ ì§í›„ í˜¸ì¶œí•´ì„œ ASC ì´ˆê¸°í™” ë° AbilitySet ë¶€ì—¬
 //void UCVPawnExtensionComponent::HandlePossessed(ACVCharacter* Char)
 //{
 //	if (!Char || !Char->HasAuthority())
@@ -241,8 +241,8 @@
 //		return;
 //	}
 //
-//	// 1) PlayerState¿¡¼­ ASC ±¸ÇÏ±â (ÇÁ·ÎÁ§Æ® ½ºÅ¸ÀÏ¿¡ ¸ÂÃç ¼±ÅÃ)
-//	// (A) PlayerState°¡ Àü¿ë getter¸¦ Á¦°øÇÏ´Â °æ¿ì:
+//	// 1) PlayerStateì—ì„œ ASC êµ¬í•˜ê¸° (í”„ë¡œì íŠ¸ ìŠ¤íƒ€ì¼ì— ë§ì¶° ì„ íƒ)
+//	// (A) PlayerStateê°€ ì „ìš© getterë¥¼ ì œê³µí•˜ëŠ” ê²½ìš°:
 //	APlayerState* PS = Char->GetPlayerState();
 //	if (!PS) return;
 //
@@ -250,26 +250,26 @@
 //
 //	if (ACVPlayerState* CVPS = Cast<ACVPlayerState>(PS))
 //	{
-//		// 1) Àü¿ë getter°¡ ÀÖ´Ù¸é ÀÌ°É·Î ³¡
+//		// 1) ì „ìš© getterê°€ ìˆë‹¤ë©´ ì´ê±¸ë¡œ ë
 //		ASC = CVPS->GetCVAbilitySystemComponent();
 //
-//		// 2) Àü¿ë getter°¡ ¾ø´Ù¸é ÀÌ·¸°Ô Ä³½ºÆÃ
+//		// 2) ì „ìš© getterê°€ ì—†ë‹¤ë©´ ì´ë ‡ê²Œ ìºìŠ¤íŒ…
 //		if (!ASC)
 //		{
 //			ASC = Cast<UCVAbilitySystemComponent>(CVPS->GetAbilitySystemComponent());
 //		}
 //	}
-//	// (B) ¶Ç´Â FindComponentByClass·Î ¾ò´Â ¹æ½Ä:
+//	// (B) ë˜ëŠ” FindComponentByClassë¡œ ì–»ëŠ” ë°©ì‹:
 //	if (!ASC)
 //	{
 //		ASC = PS->FindComponentByClass<UCVAbilitySystemComponent>();
 //	}
 //	if (!ASC) return;
 //
-//	// 2) ASC ÃÊ±âÈ­ (Owner=PS, Avatar=Char)
+//	// 2) ASC ì´ˆê¸°í™” (Owner=PS, Avatar=Char)
 //	InitializeAbilitySystem(ASC, PS);
 //
-//	// 3) AbilitySet ºÎ¿© (PawnData°¡ ¼¼ÆÃµÇ¾î ÀÖ´Ù´Â °¡Á¤)
+//	// 3) AbilitySet ë¶€ì—¬ (PawnDataê°€ ì„¸íŒ…ë˜ì–´ ìˆë‹¤ëŠ” ê°€ì •)
 //	if (const UCVPawnData* Data = PawnData)
 //	{
 //		for (const UCVAbilitySet* Set : Data->AbilitySets)
@@ -281,6 +281,6 @@
 //		}
 //	}
 //
-//	// ÇÊ¿ä ½Ã ¿©±â¼­ InitState Ã¼ÀÎ ÇÑ ¹ø ´õ ¹Ğ¾îÁÖ±â
+//	// í•„ìš” ì‹œ ì—¬ê¸°ì„œ InitState ì²´ì¸ í•œ ë²ˆ ë” ë°€ì–´ì£¼ê¸°
 //	CheckDefaultInitialization();
 //}

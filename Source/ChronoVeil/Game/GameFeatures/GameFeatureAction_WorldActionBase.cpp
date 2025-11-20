@@ -5,13 +5,13 @@
 //
 //void UGameFeatureAction_WorldActionBase::OnGameFeatureActivating(FGameFeatureActivatingContext& Context)
 //{
-//	// ¸ğµç WorldContext¸¦ ¼øÈ¸
+//	// ëª¨ë“  WorldContextë¥¼ ìˆœíšŒ
 //	for (const FWorldContext& WorldContext : GEngine->GetWorldContexts())
 //	{
-//		// ÇØ´ç GameFeature°¡ ÀÌ ¿ùµå¿¡ Àû¿ëµÇ¾î¾ß ÇÏ´ÂÁö È®ÀÎ
+//		// í•´ë‹¹ GameFeatureê°€ ì´ ì›”ë“œì— ì ìš©ë˜ì–´ì•¼ í•˜ëŠ”ì§€ í™•ì¸
 //		if (Context.ShouldApplyToWorldContext(WorldContext))
 //		{
-//			// ÆÄ»ı Å¬·¡½º¿¡¼­ ±¸ÇöÇÏ´Â AddToWorld È£Ãâ
+//			// íŒŒìƒ í´ë˜ìŠ¤ì—ì„œ êµ¬í˜„í•˜ëŠ” AddToWorld í˜¸ì¶œ
 //			AddToWorld(WorldContext, Context);
 //		}
 //	}

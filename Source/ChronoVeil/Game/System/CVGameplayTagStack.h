@@ -5,8 +5,8 @@
 #include "CVGameplayTagStack.generated.h"
 
 /**
- * ÇÏ³ªÀÇ GameplayTag + StackCount ¸¦ ³ªÅ¸³»´Â ±¸Á¶Ã¼
- * ¿¹: Åº¾à °³¼öÃ³·³ "ÅÂ±× + °³¼ö" ÇüÅÂ·Î °ü¸®ÇÒ ¶§ »ç¿ë
+ * í•˜ë‚˜ì˜ GameplayTag + StackCount ë¥¼ ë‚˜íƒ€ë‚´ëŠ” êµ¬ì¡°ì²´
+ * ì˜ˆ: íƒ„ì•½ ê°œìˆ˜ì²˜ëŸ¼ "íƒœê·¸ + ê°œìˆ˜" í˜•íƒœë¡œ ê´€ë¦¬í•  ë•Œ ì‚¬ìš©
  */
 USTRUCT(BlueprintType)
 struct FCVGameplayTagStack
@@ -28,9 +28,9 @@ struct FCVGameplayTagStack
 };
 
 /**
- * CVGameplayTagStack ÄÁÅ×ÀÌ³Ê
- * - ¿©·¯ GameplayTagStackÀ» °ü¸®
- * - LUT(TagToCountMap)¸¦ »ç¿ëÇØ Á¶È¸ ÃÖÀûÈ­
+ * CVGameplayTagStack ì»¨í…Œì´ë„ˆ
+ * - ì—¬ëŸ¬ GameplayTagStackì„ ê´€ë¦¬
+ * - LUT(TagToCountMap)ë¥¼ ì‚¬ìš©í•´ ì¡°íšŒ ìµœì í™”
  */
 USTRUCT(BlueprintType)
 struct FCVGameplayTagStackContainer

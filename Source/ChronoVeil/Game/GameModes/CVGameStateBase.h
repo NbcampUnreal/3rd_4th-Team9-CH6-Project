@@ -5,8 +5,8 @@
 #include "CVGameStateBase.generated.h"	
 
 /**
- * °æ·® GameState
- * - ÇÊ¿ä ½Ã ³ªÁß¿¡ Experience/Match Èå¸§ ÄÄÆ÷³ÍÆ®¸¦ ºÎÂø
+ * ê²½ëŸ‰ GameState
+ * - í•„ìš” ì‹œ ë‚˜ì¤‘ì— Experience/Match íë¦„ ì»´í¬ë„ŒíŠ¸ë¥¼ ë¶€ì°©
  */
 class UCVExperienceManagerComponent;
 

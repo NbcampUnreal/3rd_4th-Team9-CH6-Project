@@ -10,7 +10,7 @@ void UCVUserFacingExperienceDefinition::OpenInEditor() const
         return;
     }
 
-    // MapID ¡æ ÆĞÅ°Áö °æ·Î ¡æ ¸Ê ÀÌ¸§ ÃßÃâ
+    // MapID â†’ íŒ¨í‚¤ì§€ ê²½ë¡œ â†’ ë§µ ì´ë¦„ ì¶”ì¶œ
     const FSoftObjectPath MapPath = UAssetManager::Get().GetPrimaryAssetPath(MapID);
     const FString PackageName = MapPath.GetLongPackageName();
     const FString MapName = FPackageName::GetShortName(PackageName);
@@ -18,6 +18,6 @@ void UCVUserFacingExperienceDefinition::OpenInEditor() const
     const FString ExperienceName = ExperienceID.PrimaryAssetName.ToString();
     const FString Options = FString::Printf(TEXT("Experience=%s"), *ExperienceName);
 
-    // ¿¡µğÅÍ/½Ì±Û: ÇöÀç ¿ùµå ÄÁÅØ½ºÆ®¿¡¼­ ¿­±â
+    // ì—ë””í„°/ì‹±ê¸€: í˜„ì¬ ì›”ë“œ ì»¨í…ìŠ¤íŠ¸ì—ì„œ ì—´ê¸°
     UGameplayStatics::OpenLevel(GetWorld(), FName(*MapName), true, Options);
 }

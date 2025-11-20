@@ -20,7 +20,7 @@ void UCVExperienceManagerComponent::CallOrRegister_OnExperienceLoaded(FOnCVExper
 //    check(GetOwner() && GetOwner()->HasAuthority());
 //    check(LoadState == ECVExperienceLoadState::Unloaded);
 //
-//    // CDO ·Îµå (°æ·®)
+//    // CDO ë¡œë“œ (ê²½ëŸ‰)
 //    TSubclassOf<UCVExperienceDefinition> AssetClass;
 //    {
 //        FSoftObjectPath Path = UAssetManager::Get().GetPrimaryAssetPath(ExperienceId);
@@ -47,7 +47,7 @@ void UCVExperienceManagerComponent::ServerSetCurrentExperience(const FPrimaryAss
         return;
     }
 
-    // ÀÎ½ºÅÏ½º·Î ·Îµå
+    // ì¸ìŠ¤í„´ìŠ¤ë¡œ ë¡œë“œ
     UCVExperienceDefinition* ExperienceAsset = Cast<UCVExperienceDefinition>(Path.TryLoad());
     if (!ExperienceAsset)
     {
@@ -56,8 +56,8 @@ void UCVExperienceManagerComponent::ServerSetCurrentExperience(const FPrimaryAss
         return;
     }
 
-    CurrentExperience = ExperienceAsset;      // ±×´ë·Î º¸°ü(ÀÎ½ºÅÏ½º)
-    StartExperienceLoad();                    // °æ·®ÀÌ¸é Áï½Ã ¿Ï·á
+    CurrentExperience = ExperienceAsset;      // ê·¸ëŒ€ë¡œ ë³´ê´€(ì¸ìŠ¤í„´ìŠ¤)
+    StartExperienceLoad();                    // ê²½ëŸ‰ì´ë©´ ì¦‰ì‹œ ì™„ë£Œ
 }
 PRAGMA_ENABLE_OPTIMIZATION
 
@@ -67,7 +67,7 @@ void UCVExperienceManagerComponent::StartExperienceLoad()
 {
     LoadState = ECVExperienceLoadState::Loading;
 
-    // °æ·® ¸ğµå: º°µµ ¹øµé/ÇÃ·¯±×ÀÎ ¾øÀ½ -> Áï½Ã Ã³¸®ÇÔ.
+    // ê²½ëŸ‰ ëª¨ë“œ: ë³„ë„ ë²ˆë“¤/í”ŒëŸ¬ê·¸ì¸ ì—†ìŒ -> ì¦‰ì‹œ ì²˜ë¦¬í•¨.
     OnExperienceLoadComplete();
 }
 PRAGMA_ENABLE_OPTIMIZATION

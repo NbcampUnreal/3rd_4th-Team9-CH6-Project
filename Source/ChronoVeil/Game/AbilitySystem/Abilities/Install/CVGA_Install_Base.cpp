@@ -23,7 +23,7 @@ ACVDevice_Base* UCVGA_Install_Base::SpawnDevice(
         return nullptr;
     }
 
-    // NetExecutionPolicy = ServerOnly ÀÌ°í, ActivateAbility ÂÊ¿¡¼­ HasAuthority Ã¼Å©Çß´Ù°í °¡Á¤.
+    // NetExecutionPolicy = ServerOnly ì´ê³ , ActivateAbility ìª½ì—ì„œ HasAuthority ì²´í¬í–ˆë‹¤ê³  ê°€ì •.
     UWorld* World = GetWorld();
     if (!World)
     {
@@ -43,10 +43,10 @@ ACVDevice_Base* UCVGA_Install_Base::SpawnDevice(
 
     if (Device)
     {
-        // ASC ¼ÒÀ¯ÀÚ ¡æ WorldObject·Î ¿¬°á
+        // ASC ì†Œìœ ìž â†’ WorldObjectë¡œ ì—°ê²°
         Device->SetOwnerFromASC(Avatar);
 
-        // Ability ´Ü¿¡¼­ Actor LifeSpan ¿À¹ö¶óÀÌµå
+        // Ability ë‹¨ì—ì„œ Actor LifeSpan ì˜¤ë²„ë¼ì´ë“œ
         if (LifeSpan > 0.f)
         {
             Device->SetLifeSpan(LifeSpan);

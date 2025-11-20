@@ -84,7 +84,7 @@ void ACVZone_MeteorImpact::OnImpact()
         return;
     }
 
-    // Collider ¹üÀ§ ³» ´ë»ó¿¡°Ô ÇÇÇØ
+    // Collider ë²”ìœ„ ë‚´ ëŒ€ìƒì—ê²Œ í”¼í•´
     TArray<AActor*> Overlaps;
     Collision->GetOverlappingActors(Overlaps, ACharacter::StaticClass());
 

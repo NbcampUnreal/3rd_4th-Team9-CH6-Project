@@ -5,14 +5,14 @@
 //#include "Components/GameFrameworkComponent.h"
 //#include "CVHealthComponent.generated.h"
 //
-//// Àü¹æ¼±¾ğ
+//// ì „ë°©ì„ ì–¸
 //class UCVAbilitySystemComponent;
-//class UCVHealthSet; // TODO: ³× AttributeSet
+//class UCVHealthSet; // TODO: ë„¤ AttributeSet
 //class AActor;
 //
 //struct FOnAttributeChangeData;
 //
-///** Ã¼·Â º¯È­ ºê·ÎµåÄ³½ºÆ® */
+///** ì²´ë ¥ ë³€í™” ë¸Œë¡œë“œìºìŠ¤íŠ¸ */
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FCVHealthAttributeChanged, UCVHealthComponent*, HealthComp, float, OldValue, float, NewValue, AActor*, Instigator);
 //
 //UCLASS(Blueprintable, Meta = (BlueprintSpawnableComponent))
@@ -23,14 +23,14 @@
 //public:
 //	UCVHealthComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 //
-//	// ASC¿Í HealthSet ¿¬°á/ÇØÁ¦
+//	// ASCì™€ HealthSet ì—°ê²°/í•´ì œ
 //	void InitializeWithAbilitySystem(UCVAbilitySystemComponent* InASC);
 //	void UninitializeWithAbilitySystem();
 //
-//	// Attribute º¯°æ Äİ¹é
+//	// Attribute ë³€ê²½ ì½œë°±
 //	void HandleHealthChanged(const FOnAttributeChangeData& ChangeData);
 //
-//	// BP Á¢±ÙÀÚ
+//	// BP ì ‘ê·¼ì
 //	UFUNCTION(BlueprintPure, Category = "CV|Health")
 //	static UCVHealthComponent* FindHealthComponent(const AActor* Actor);
 //
@@ -52,5 +52,5 @@
 //	TObjectPtr<UCVAbilitySystemComponent> AbilitySystemComponent = nullptr;
 //
 //	UPROPERTY()
-//	TObjectPtr<const UCVHealthSet> HealthSet = nullptr; // TODO: ³× HealthSet
+//	TObjectPtr<const UCVHealthSet> HealthSet = nullptr; // TODO: ë„¤ HealthSet
 //};

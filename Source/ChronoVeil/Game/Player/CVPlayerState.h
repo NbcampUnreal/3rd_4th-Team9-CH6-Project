@@ -6,16 +6,16 @@
 //#include "AbilitySystemInterface.h"
 //#include "CVPlayerState.generated.h"
 //
-//// ¦¡¦¡ Forward Declarations (Æ÷ÀÎÅÍ/·¹ÆÛ·±½º¸¸ ¾²¹Ç·Î Àü¹æ¼±¾ğ OK)
+//// â”€â”€ Forward Declarations (í¬ì¸í„°/ë ˆí¼ëŸ°ìŠ¤ë§Œ ì“°ë¯€ë¡œ ì „ë°©ì„ ì–¸ OK)
 //class UAbilitySystemComponent;
 //class UCVAbilitySystemComponent;
 //class UCVPawnData;
 //class UCVExperienceDefinition;
 //
 ///**
-// * ChronoVeil Àü¿ë PlayerState
-// * - ASC º¸°ü(¼­¹ö ¼ÒÀ¯), PawnData º¸°ü(Replicate)
-// * - °æÇè ·Îµù ¿Ï·á ½Ã PawnData È®Á¤ ¹× Ability ºÎ¿©
+// * ChronoVeil ì „ìš© PlayerState
+// * - ASC ë³´ê´€(ì„œë²„ ì†Œìœ ), PawnData ë³´ê´€(Replicate)
+// * - ê²½í—˜ ë¡œë”© ì™„ë£Œ ì‹œ PawnData í™•ì • ë° Ability ë¶€ì—¬
 // */
 //UCLASS()
 //class CHRONOVEIL_API ACVPlayerState : public APlayerState, public IAbilitySystemInterface
@@ -25,26 +25,26 @@
 //public:
 //	ACVPlayerState();
 //
-//	// ¦¡¦¡¦¡¦¡¦¡ PawnData Access ¦¡¦¡¦¡¦¡¦¡
+//	// â”€â”€â”€â”€â”€ PawnData Access â”€â”€â”€â”€â”€
 //	template <class T> const T* GetPawnData() const { return Cast<T>(PawnData); }
 //
-//	/** Raw PawnData ÀĞ±â (ºí·çÇÁ¸°Æ® ³ëÃâ ¿øÇÏ¸é BlueprintCallable ÁöÁ¤) */
+//	/** Raw PawnData ì½ê¸° (ë¸”ë£¨í”„ë¦°íŠ¸ ë…¸ì¶œ ì›í•˜ë©´ BlueprintCallable ì§€ì •) */
 //	UFUNCTION(BlueprintCallable, Category = "CV|PlayerState")
 //	const UCVPawnData* GetPawnDataRaw() const { return PawnData; }
 //
-//	/** °æÇè ·Îµù ¿Ï·á Äİ¹é(¼­¹ö¿¡¼­ PawnData È®Á¤) */
+//	/** ê²½í—˜ ë¡œë”© ì™„ë£Œ ì½œë°±(ì„œë²„ì—ì„œ PawnData í™•ì •) */
 //	UFUNCTION()
 //	void OnExperienceLoaded(const UCVExperienceDefinition* CurrentExperience);
 //
-//	/** ¼­¹ö Àü¿ë: PawnData ¼³Á¤(Replicate) */
+//	/** ì„œë²„ ì „ìš©: PawnData ì„¤ì •(Replicate) */
 //	UFUNCTION(BlueprintCallable, Category = "CV|PlayerState")
 //	void SetPawnData_ServerOnly(const UCVPawnData* InPawnData);
 //
-//	// ¦¡¦¡¦¡¦¡¦¡ ASC Access ¦¡¦¡¦¡¦¡¦¡
+//	// â”€â”€â”€â”€â”€ ASC Access â”€â”€â”€â”€â”€
 //	UFUNCTION(BlueprintCallable, Category = "CV|ASC")
 //	UCVAbilitySystemComponent* GetCVAbilitySystemComponent() const;
 //
-//	/** GAS Ç¥ÁØ ÀÎÅÍÆäÀÌ½º ±¸Çö */
+//	/** GAS í‘œì¤€ ì¸í„°í˜ì´ìŠ¤ êµ¬í˜„ */
 //	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override
 //	{
 //		return AbilitySystemComponent;
@@ -61,11 +61,11 @@
 //	void OnRep_PawnData();
 //
 //protected:
-//	/** °ÔÀÓ ÁøÇà Áß »ç¿ëÇÒ PawnData. ½ºÆù/·Î±×ÀÎ ½Ã ¼­¹ö°¡ ÁöÁ¤ ¡æ Å¬¶ó¿¡ º¹Á¦ */
+//	/** ê²Œì„ ì§„í–‰ ì¤‘ ì‚¬ìš©í•  PawnData. ìŠ¤í°/ë¡œê·¸ì¸ ì‹œ ì„œë²„ê°€ ì§€ì • â†’ í´ë¼ì— ë³µì œ */
 //	UPROPERTY(ReplicatedUsing = OnRep_PawnData, EditDefaultsOnly, Category = "CV|PlayerState")
 //	TObjectPtr<const UCVPawnData> PawnData = nullptr;
 //
-//	/** ¼­¹ö ¼ÒÀ¯ ASC (ÀÎÅÍÆäÀÌ½º ¿ä±¸»çÇ×À¸·Î base Å¸ÀÔ À¯Áö) */
+//	/** ì„œë²„ ì†Œìœ  ASC (ì¸í„°í˜ì´ìŠ¤ ìš”êµ¬ì‚¬í•­ìœ¼ë¡œ base íƒ€ì… ìœ ì§€) */
 //	UPROPERTY(VisibleAnywhere, Category = "CV|PlayerState")
 //	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent = nullptr;
 //};

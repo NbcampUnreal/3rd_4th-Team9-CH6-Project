@@ -7,7 +7,7 @@
 //ACVPlayerController::ACVPlayerController(const FObjectInitializer& ObjectInitializer)
 //	: Super(ObjectInitializer)
 //{
-//	// CameraManager¸¦ Ä¿½ºÅÒÇÒ °èÈ¹ÀÌ¸é ¿©±â¼­ ±³Ã¼:
+//	// CameraManagerë¥¼ ì»¤ìŠ¤í…€í•  ê³„íšì´ë©´ ì—¬ê¸°ì„œ êµì²´:
 //	// PlayerCameraManagerClass = ACVPlayerCameraManager::StaticClass();
 //}
 //
@@ -88,7 +88,7 @@ void ACVPlayerController::PostProcessInput(const float DeltaTime, const bool bGa
 //{
 //	Super::SetupInputComponent();
 //
-//	// ¹æ¾î + µð¹ö±ë¿ë ·Î±×
+//	// ë°©ì–´ + ë””ë²„ê¹…ìš© ë¡œê·¸
 //	if (!InputComponent->IsA<UCVEnhancedInputComponent>())
 //	{
 //		UE_LOG(LogTemp, Warning,

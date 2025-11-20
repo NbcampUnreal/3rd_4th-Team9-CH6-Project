@@ -13,7 +13,7 @@ class UAttributeSet;
 class UCVAbilitySystemComponent;
 
 
-// Input Tag¿Í Ability¸¦ MappingÇÏ´Â ±¸Á¶Ã¼
+// Input Tagì™€ Abilityë¥¼ Mappingí•˜ëŠ” êµ¬ì¡°ì²´
 USTRUCT(BlueprintType)
 struct FCVAbilitySet_GameplayAbility
 {
@@ -31,7 +31,7 @@ public:
 };
 
 
-// Pawn ¶Ç´Â Character¿¡°Ô ±âº»À¸·Î ºÎ¿©ÇÒ Effect (ex. passive effects : ·Ñ·Î µûÁö¸é ÆĞ½Ãºê ½ºÅ³)
+// Pawn ë˜ëŠ” Characterì—ê²Œ ê¸°ë³¸ìœ¼ë¡œ ë¶€ì—¬í•  Effect (ex. passive effects : ë¡¤ë¡œ ë”°ì§€ë©´ íŒ¨ì‹œë¸Œ ìŠ¤í‚¬)
 USTRUCT(BlueprintType)
 struct FCVAbilitySet_GameplayEffect
 {
@@ -46,7 +46,7 @@ public:
 };
 
 
-// Pawn ¶Ç´Â Character¿¡°Ô Ãß°¡·Î ºÎ¿©ÇÒ Attribute Set
+// Pawn ë˜ëŠ” Characterì—ê²Œ ì¶”ê°€ë¡œ ë¶€ì—¬í•  Attribute Set
 USTRUCT(BlueprintType)
 struct FCVAbilitySet_AttributeSet
 {
@@ -59,7 +59,7 @@ public:
 
 
 /**
- * Pawn ¶Ç´Â Character¿¡°Ô ºÎ¿©ÇÑ(grant) Ability, Effects, Attributes¸¦ °ü¸®ÇÏ±â À§ÇÑ ±¸Á¶Ã¼
+ * Pawn ë˜ëŠ” Characterì—ê²Œ ë¶€ì—¬í•œ(grant) Ability, Effects, Attributesë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ êµ¬ì¡°ì²´
  * FLyraAbilitySet_GrantedHandles
  */
 USTRUCT(BlueprintType)
@@ -87,8 +87,8 @@ protected:
 
 
 /**
- * Gamplay Ability, Effect, Attribute Á¤º¸ÀÇ ¸ğÀ½
- * ULyraAbilitySetÀÇ ±¸¼ºÀ» Âü°íÇÔ
+ * Gamplay Ability, Effect, Attribute ì •ë³´ì˜ ëª¨ìŒ
+ * ULyraAbilitySetì˜ êµ¬ì„±ì„ ì°¸ê³ í•¨
  */
 UCLASS(BlueprintType, Const)
 class CHRONOVEIL_API UCVAbilitySet : public UDataAsset
@@ -98,7 +98,7 @@ class CHRONOVEIL_API UCVAbilitySet : public UDataAsset
 public:
 	UCVAbilitySet(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	// DataAsset¿¡ ¼³Á¤ÇØ³õÀº Ability, Effect, Attribute¸¦ ASC¿¡ Àû¿ëÇÑ´Ù.
+	// DataAssetì— ì„¤ì •í•´ë†“ì€ Ability, Effect, Attributeë¥¼ ASCì— ì ìš©í•œë‹¤.
 	void GiveToAbilitySystem(UCVAbilitySystemComponent* ITASC, FCVAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject = nullptr) const;
 
 protected:

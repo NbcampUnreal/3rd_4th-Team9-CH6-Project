@@ -14,7 +14,7 @@
 //
 //void UCVGameplayFeaturePolicy::InitGameFeatureManager()
 //{
-//	// GameplayCuePaths Observer µÓ∑œ
+//	// GameplayCuePaths Observer Îì±Î°ù
 //	Observers.Add(NewObject<UCVGameFeature_AddGameplayCuePaths>());
 //
 //	UGameFeaturesSubsystem& Subsystem = UGameFeaturesSubsystem::Get();

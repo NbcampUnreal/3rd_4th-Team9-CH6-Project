@@ -11,9 +11,9 @@
 //class UCVInputConfig;
 //
 ///**
-// * °æ·® Lyra ½ºÅ¸ÀÏ ÀÔ·Â ÄÄÆ÷³ÍÆ®
-// * - Native: ÄÁÆ®·Ñ·¯/Ä³¸¯ÅÍ¿¡¼­ Á÷Á¢ Ã³¸® (Move/Look µî)
-// * - Ability: ÅÂ±× ±â¹İÀ¸·Î ASC¿¡ Àü´Ş(Pressed/Released)
+// * ê²½ëŸ‰ Lyra ìŠ¤íƒ€ì¼ ì…ë ¥ ì»´í¬ë„ŒíŠ¸
+// * - Native: ì»¨íŠ¸ë¡¤ëŸ¬/ìºë¦­í„°ì—ì„œ ì§ì ‘ ì²˜ë¦¬ (Move/Look ë“±)
+// * - Ability: íƒœê·¸ ê¸°ë°˜ìœ¼ë¡œ ASCì— ì „ë‹¬(Pressed/Released)
 // */
 //UCLASS()
 //class CHRONOVEIL_API UCVEnhancedInputComponent : public UEnhancedInputComponent
@@ -23,7 +23,7 @@
 //public:
 //	UCVEnhancedInputComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 //
-//	/** Æ¯Á¤ ÅÂ±×ÀÇ Native ¾×¼ÇÀ» ¹ÙÀÎµù */
+//	/** íŠ¹ì • íƒœê·¸ì˜ Native ì•¡ì…˜ì„ ë°”ì¸ë”© */
 //	template <class UserClass, typename FuncType>
 //	void BindNativeAction(const UCVInputConfig* InputConfig,
 //		const FGameplayTag& InputTag,
@@ -33,9 +33,9 @@
 //		bool bLogIfNotFound = true);
 //
 //	/**
-//	 * Ability ÀÔ·Â ÀüºÎ ¹ÙÀÎµù(Pressed/Released)
-//	 * - OutBindHandles¿¡ ¹ÙÀÎµù ÇÚµéÀ» ´ã¾Æ, UnbindAbilityActions·Î ÇØÁ¦ °¡´É
-//	 * - ÇÚµé·¯ ½Ã±×´ÏÃ³ ¿¹: void OnPressed(FGameplayTag Tag), void OnReleased(FGameplayTag Tag)
+//	 * Ability ì…ë ¥ ì „ë¶€ ë°”ì¸ë”©(Pressed/Released)
+//	 * - OutBindHandlesì— ë°”ì¸ë”© í•¸ë“¤ì„ ë‹´ì•„, UnbindAbilityActionsë¡œ í•´ì œ ê°€ëŠ¥
+//	 * - í•¸ë“¤ëŸ¬ ì‹œê·¸ë‹ˆì²˜ ì˜ˆ: void OnPressed(FGameplayTag Tag), void OnReleased(FGameplayTag Tag)
 //	 */
 //	template <class UserClass, typename PressedFuncType, typename ReleasedFuncType>
 //	void BindAbilityActions(const UCVInputConfig* InputConfig,
@@ -44,10 +44,10 @@
 //		ReleasedFuncType ReleasedFunc,
 //		TArray<uint32>& OutBindHandles);
 //
-//	/** BindAbilityActions·Î ¹­Àº ¹ÙÀÎµù ÀÏ°ı ÇØÁ¦ */
+//	/** BindAbilityActionsë¡œ ë¬¶ì€ ë°”ì¸ë”© ì¼ê´„ í•´ì œ */
 //	void UnbindAbilityActions(TArray<uint32>& InOutBindHandles);
 //
-//	/** ´ÜÀÏ ÅÂ±×¿¡ ´ëÇØ Ability ¹ÙÀÎµù(¼±ÅÃ ±â´É) */
+//	/** ë‹¨ì¼ íƒœê·¸ì— ëŒ€í•´ Ability ë°”ì¸ë”©(ì„ íƒ ê¸°ëŠ¥) */
 //	template <class UserClass, typename PressedFuncType, typename ReleasedFuncType>
 //	void BindAbilityActionByTag(const UCVInputConfig* InputConfig,
 //		const FGameplayTag& InputTag,
@@ -70,12 +70,12 @@
 //{
 //	check(InputConfig);
 //
-//	// Native´Â ´ë°³ ¼Òºñ
+//	// NativeëŠ” ëŒ€ê°œ ì†Œë¹„
 //	bool bConsume = true;
 //	if (const UInputAction* IA = InputConfig->FindNativeActionByTag(InputTag, bConsume))
 //	{
-//		// UE5.7 ÅÛÇÃ¸´ ¿À¹ö·Îµå: (const UInputAction*, ETriggerEvent, UserClass*, TMethodPtr, VarTypes...)
-//		// Native ÇÚµé·¯ ¿¹: void Input_Move(const FInputActionValue& Value)
+//		// UE5.7 í…œí”Œë¦¿ ì˜¤ë²„ë¡œë“œ: (const UInputAction*, ETriggerEvent, UserClass*, TMethodPtr, VarTypes...)
+//		// Native í•¸ë“¤ëŸ¬ ì˜ˆ: void Input_Move(const FInputActionValue& Value)
 //		BindAction(IA, TriggerEvent, Object, Func);
 //	}
 //	else if (bLogIfNotFound)
@@ -99,11 +99,11 @@
 //
 //	for (const auto& Action : InputConfig->AbilityInputActions)
 //	{
-//		// Action ±¸Á¶°¡ TObjectPtr<UInputAction>ÀÎ °æ¿ì¸¦ °¡Á¤
+//		// Action êµ¬ì¡°ê°€ TObjectPtr<UInputAction>ì¸ ê²½ìš°ë¥¼ ê°€ì •
 //		const UInputAction* IA = Action.InputAction.Get();
 //		if (!IA) { continue; }
 //
-//		// ±ÔÄ¢: Pressed/Held ¡æ Triggered, Released ¡æ Completed
+//		// ê·œì¹™: Pressed/Held â†’ Triggered, Released â†’ Completed
 //		if (PressedFunc)
 //		{
 //			FEnhancedInputActionEventBinding& Binding =
@@ -130,7 +130,7 @@
 //{
 //	check(InputConfig);
 //
-//	// Ability ÀÔ·ÂÀº »óÀ§¿¡¼­ ¼ÒºñÇÏÁö ¾ÊÀ½
+//	// Ability ì…ë ¥ì€ ìƒìœ„ì—ì„œ ì†Œë¹„í•˜ì§€ ì•ŠìŒ
 //	const bool bConsume = false;
 //	if (const UInputAction* IA = InputConfig->FindAbilityActionByTag(InputTag, bConsume))
 //	{

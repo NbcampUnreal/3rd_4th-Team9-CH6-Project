@@ -31,7 +31,7 @@ void FCVAbilitySet_GrantedHandles::TakeFromAbilitySystem(UCVAbilitySystemCompone
 
 	if (!CVASC->IsOwnerActorAuthoritative())
 	{
-		// ±ÇÇÑÀÌ ÀÖ¾î¾ß¸¸(Authoritative) Ability¸¦ ÁÖ°Å³ª È¸¼öÇÒ ¼ö ÀÖ´Ù.
+		// ê¶Œí•œì´ ìˆì–´ì•¼ë§Œ(Authoritative) Abilityë¥¼ ì£¼ê±°ë‚˜ íšŒìˆ˜í•  ìˆ˜ ìˆë‹¤.
 		return;
 	}
 
@@ -75,7 +75,7 @@ void UCVAbilitySet::GiveToAbilitySystem(UCVAbilitySystemComponent* CVASC, FCVAbi
 
 	if (!CVASC->IsOwnerActorAuthoritative())
 	{
-		// ±ÇÇÑÀÌ ÀÖ¾î¾ß¸¸(Authoritative) Ability¸¦ ÁÖ°Å³ª È¸¼öÇÒ ¼ö ÀÖ´Ù.
+		// ê¶Œí•œì´ ìˆì–´ì•¼ë§Œ(Authoritative) Abilityë¥¼ ì£¼ê±°ë‚˜ íšŒìˆ˜í•  ìˆ˜ ìˆë‹¤.
 		return;
 	}
 

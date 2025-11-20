@@ -32,7 +32,7 @@ void ACVDevice_Base::BeginPlay()
 
 	if (HasAuthority())
 	{
-		// ¼ö¸í Å¸ÀÌ¸Ó
+		// ìˆ˜ëª… íƒ€ì´ë¨¸
 		if (LifeTime > 0.f)
 		{
 			GetWorld()->GetTimerManager().SetTimer(
@@ -44,7 +44,7 @@ void ACVDevice_Base::BeginPlay()
 			);
 		}
 
-		// ÇÊ¿äÇÏ¸é Owner Á×À» ¶§ Destroy ¿¬µ¿Àº ³ªÁß¿¡ ASC / Health ÂÊ¿¡¼­ ÀÌº¥Æ® ¹Ş¾Æ¼­ Ã³¸®
+		// í•„ìš”í•˜ë©´ Owner ì£½ì„ ë•Œ Destroy ì—°ë™ì€ ë‚˜ì¤‘ì— ASC / Health ìª½ì—ì„œ ì´ë²¤íŠ¸ ë°›ì•„ì„œ ì²˜ë¦¬
 	}
 }
 

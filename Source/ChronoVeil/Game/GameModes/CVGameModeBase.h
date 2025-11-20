@@ -9,9 +9,9 @@
 //class UCVExperienceManagerComponent;
 //
 ///**
-// * °æ·® Lyra ½ºÅ¸ÀÏ GameMode
-// * - PawnData¸¦ ÅëÇØ PawnClass¸¦ ¼±ÅÃ
-// * - Spawn ½Ã PawnExtension¿¡ PawnData ÁÖÀÔ
+// * ê²½ëŸ‰ Lyra ìŠ¤íƒ€ì¼ GameMode
+// * - PawnDataë¥¼ í†µí•´ PawnClassë¥¼ ì„ íƒ
+// * - Spawn ì‹œ PawnExtensionì— PawnData ì£¼ì…
 // */
 //UCLASS()
 //class CHRONOVEIL_API ACVGameModeBase : public AGameModeBase
@@ -34,11 +34,11 @@
 //	void OnExperienceLoaded(const UCVExperienceDefinition* CurrentExperience);
 //	bool IsExperienceLoaded() const;
 //
-//	/** ÄÁÆ®·Ñ·¯¿¡ ÇÒ´çÇÒ PawnData¸¦ °áÁ¤ (¿ì¼±¼øÀ§: PlayerState ¡æ GameMode.DefaultPawnData) */
+//	/** ì»¨íŠ¸ë¡¤ëŸ¬ì— í• ë‹¹í•  PawnDataë¥¼ ê²°ì • (ìš°ì„ ìˆœìœ„: PlayerState â†’ GameMode.DefaultPawnData) */
 //	const UCVPawnData* GetPawnDataForController(const AController* InController) const;
 //
 //protected:
-//	/** °æÇè/¸ÅÄ¡ ½Ã½ºÅÛÀÌ ¾øÀ» ¶§ »ç¿ëÇÒ ±âº» PawnData (¿¡µğÅÍ¿¡¼­ ÁöÁ¤) */
+//	/** ê²½í—˜/ë§¤ì¹˜ ì‹œìŠ¤í…œì´ ì—†ì„ ë•Œ ì‚¬ìš©í•  ê¸°ë³¸ PawnData (ì—ë””í„°ì—ì„œ ì§€ì •) */
 //	UPROPERTY(EditDefaultsOnly, Category = "CV|GameMode")
 //	TObjectPtr<const UCVPawnData> DefaultPawnData;
 //};

@@ -27,8 +27,8 @@ public:
     const UCVExperienceDefinition* GetCurrentExperienceChecked() const;
 
 private:
-    void StartExperienceLoad();        // °æ·® : ¹Ù·Î ¿Ï·á Ã³¸®
-    void OnExperienceLoadComplete();   // ºê·ÎµåÄ³½ºÆ®
+    void StartExperienceLoad();        // ê²½ëŸ‰ : ë°”ë¡œ ì™„ë£Œ ì²˜ë¦¬
+    void OnExperienceLoadComplete();   // ë¸Œë¡œë“œìºìŠ¤íŠ¸
 
 public:
     UPROPERTY()

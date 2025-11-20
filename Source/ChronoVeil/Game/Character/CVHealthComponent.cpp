@@ -1,7 +1,7 @@
 // 1.
 //#include "Game/Character/CVHealthComponent.h"
 //
-//// TODO: ÁØºñµÇ¸é ÁÖ¼® ÇØÁ¦
+//// TODO: ì¤€ë¹„ë˜ë©´ ì£¼ì„ í•´ì œ
 //// #include "AbilitySystem/CVAbilitySystemComponent.h"
 //// #include "AbilitySystem/Attributes/CVHealthSet.h"
 //// #include "GameplayEffectExtension.h"
@@ -21,7 +21,7 @@
 //
 //	if (AbilitySystemComponent)
 //	{
-//		// ÀÌ¹Ì ÃÊ±âÈ­µÊ
+//		// ì´ë¯¸ ì´ˆê¸°í™”ë¨
 //		return;
 //	}
 //
@@ -37,7 +37,7 @@
 //	// AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UCVHealthSet::GetHealthAttribute())
 //	//	.AddUObject(this, &ThisClass::HandleHealthChanged);
 //
-//	// ÃÊ±â ºê·ÎµåÄ³½ºÆ®
+//	// ì´ˆê¸° ë¸Œë¡œë“œìºìŠ¤íŠ¸
 //	// OnHealthChanged.Broadcast(this, 0.f, HealthSet->GetHealth(), nullptr);
 //}
 //

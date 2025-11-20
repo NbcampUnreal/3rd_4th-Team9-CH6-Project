@@ -44,7 +44,7 @@ void UCVGA_Install_AffectionDoll::ActivateAbility(
 		return;
 	}
 
-	// Ä³¸¯ÅÍ ¾ÕÂÊ À§Ä¡ °è»ê
+	// ìºë¦­í„° ì•ìª½ ìœ„ì¹˜ ê³„ì‚°
 	const FVector SpawnLoc =
 		Avatar->GetActorLocation() +
 		Avatar->GetActorRotation().RotateVector(SpawnOffset);
@@ -58,7 +58,7 @@ void UCVGA_Install_AffectionDoll::ActivateAbility(
 		ActorInfo
 	);
 
-	// ÇÊ¿äÇÏ¸é Ä³½ºÆÃÇØ¼­ Ãß°¡ ÃÊ±âÈ­ °¡´É
+	// í•„ìš”í•˜ë©´ ìºìŠ¤íŒ…í•´ì„œ ì¶”ê°€ ì´ˆê¸°í™” ê°€ëŠ¥
 	// if (ACVDevice_AffectionDoll* Doll = Cast<ACVDevice_AffectionDoll>(SpawnedDevice))
 	// {
 	//     ...

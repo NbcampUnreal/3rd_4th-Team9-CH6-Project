@@ -34,7 +34,7 @@ void UCVInventoryItemInstance::RemoveStatTagStack(FGameplayTag Tag, int32 StackC
 
 bool UCVInventoryItemInstance::HasStatTag(FGameplayTag Tag) const
 {
-	return StatTags.ContainsTag(Tag); // ¶Ç´Â StatTags.HasTag(Tag);
+	return StatTags.ContainsTag(Tag); // ë˜ëŠ” StatTags.HasTag(Tag);
 }
 
 int32 UCVInventoryItemInstance::GetStatTagStackCount(FGameplayTag Tag) const

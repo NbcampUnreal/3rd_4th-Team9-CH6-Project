@@ -35,8 +35,8 @@ void ACVCharacter::OnRep_PawnData()
 {
 	if (IsValid(HeroComponent))
 	{
-		//HeroComponent->TryBindCameraMode(); // ÀÌ¹Ì HeroComponent¿¡¼­ Àû¿ëÇÔ.
-		// ÇÊ¿äÇÏ¸é Input Àç¹ÙÀÎµù Æ®¸®°Åµµ ¿©±â¼­ È£Ãâ °¡´ÉÇÔ!
+		//HeroComponent->TryBindCameraMode(); // ì´ë¯¸ HeroComponentì—ì„œ ì ìš©í•¨.
+		// í•„ìš”í•˜ë©´ Input ìž¬ë°”ì¸ë”© íŠ¸ë¦¬ê±°ë„ ì—¬ê¸°ì„œ í˜¸ì¶œ ê°€ëŠ¥í•¨!
 	}
 }
 

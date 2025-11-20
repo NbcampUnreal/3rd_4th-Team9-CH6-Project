@@ -22,30 +22,30 @@ protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Zone")
     TArray<TSubclassOf<ACVZone_Base>> ZoneClasses;
 
-    // Ä³¸¯ÅÍ ±âÁØ ½ºÆù ¿ÀÇÁ¼Â (Forward / Right / Up) : Ãà(±âÁî¸ğÀÓ.)ÀÌ¶ó°í »ı°¢ÇÏ¸é µÊ.
+    // ìºë¦­í„° ê¸°ì¤€ ìŠ¤í° ì˜¤í”„ì…‹ (Forward / Right / Up) : ì¶•(ê¸°ì¦ˆëª¨ì„.)ì´ë¼ê³  ìƒê°í•˜ë©´ ë¨.
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn")
     FVector SpawnOffset = FVector(200.f, 0.f, 0.f);
 
-    // 0º¸´Ù Å©¸é Á¸¿¡ SetLifeSpan Àû¿ë (Á¸ ³»ºÎ LifeTime°ú´Â º°°³·Î, actor ÀÚÃ¼ ¼ö¸í)
+    // 0ë³´ë‹¤ í¬ë©´ ì¡´ì— SetLifeSpan ì ìš© (ì¡´ ë‚´ë¶€ LifeTimeê³¼ëŠ” ë³„ê°œë¡œ, actor ìì²´ ìˆ˜ëª…)
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn")
     float LifeSpan = 0.f;
 
 protected:
-    // °øÅë Á¸ ½ºÆù ÇïÆÛ
-    // - InClass: ½ÇÁ¦·Î »ı¼ºÇÒ Á¸ Å¬·¡½º
-    // - SpawnTM: ¿ùµå¿¡ ³õÀ» Æ®·£½ºÆû
-    // - ActorInfo: ½ÃÀüÀÚ Á¤º¸ (Avatar/Controller µî)
+    // ê³µí†µ ì¡´ ìŠ¤í° í—¬í¼
+    // - InClass: ì‹¤ì œë¡œ ìƒì„±í•  ì¡´ í´ë˜ìŠ¤
+    // - SpawnTM: ì›”ë“œì— ë†“ì„ íŠ¸ëœìŠ¤í¼
+    // - ActorInfo: ì‹œì „ì ì •ë³´ (Avatar/Controller ë“±)
     ACVZone_Base* SpawnZone(
         TSubclassOf<ACVZone_Base> InClass,
         const FTransform& SpawnTM,
         const FGameplayAbilityActorInfo* ActorInfo
     );
 
-    // ´ÜÀÏ Á¸ ½ºÆù (ex. ·Ñ ¹Ì½ºÆ÷Ãó e½ºÅ³ : ÃÑ¾ËÀº ºñ¸¦ Å¸°í(½ºÅ³ÀÌ¸§)»ı°¢ÇÏ¸é ‰Î.)
+    // ë‹¨ì¼ ì¡´ ìŠ¤í° (ex. ë¡¤ ë¯¸ìŠ¤í¬ì¸ˆ eìŠ¤í‚¬ : ì´ì•Œì€ ë¹„ë¥¼ íƒ€ê³ (ìŠ¤í‚¬ì´ë¦„)ìƒê°í•˜ë©´ ë¨.)
     ACVZone_Base* SpawnSingleZone(
         const FGameplayAbilityActorInfo* ActorInfo);
 
-    // ¿©·¯ Á¸ ½ºÆù (ex. ·ÑÃÊÅäÈ­º¿ ¸ğµå ÃÊ°¡½º ±Ã±Ø±â : ÀåÆÇ ¿©·¯°³ »ı¼º)
+    // ì—¬ëŸ¬ ì¡´ ìŠ¤í° (ex. ë¡¤ì´ˆí† í™”ë´‡ ëª¨ë“œ ì´ˆê°€ìŠ¤ ê¶ê·¹ê¸° : ì¥íŒ ì—¬ëŸ¬ê°œ ìƒì„±)
     TArray<ACVZone_Base*> SpawnMultipleZones(
         const FGameplayAbilityActorInfo* ActorInfo);
 };

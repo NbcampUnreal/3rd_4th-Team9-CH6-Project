@@ -7,7 +7,7 @@
 class UCVInventoryItemInstance;
 
 /**
- * ÀÎº¥Åä¸® ¾ÆÀÌÅÛÀÇ Fragment º£ÀÌ½º Å¬·¡½º
+ * ì¸ë²¤í† ë¦¬ ì•„ì´í…œì˜ Fragment ë² ì´ìŠ¤ í´ë˜ìŠ¤
  */
 UCLASS(Abstract, DefaultToInstanced, EditInlineNew)
 class CHRONOVEIL_API UCVInventoryItemFragment : public UObject
@@ -15,30 +15,30 @@ class CHRONOVEIL_API UCVInventoryItemFragment : public UObject
 	GENERATED_BODY()
 
 public:
-	/** InventoryItemInstance°¡ »ı¼ºµÉ ¶§ È£ÃâµÇ´Â Äİ¹é */
+	/** InventoryItemInstanceê°€ ìƒì„±ë  ë•Œ í˜¸ì¶œë˜ëŠ” ì½œë°± */
 	virtual void OnInstanceCreated(UCVInventoryItemInstance* Instance) const {}
 };
 
 /**
- * ÀÎº¥Åä¸® ¾ÆÀÌÅÛ Á¤ÀÇ(µ¥ÀÌÅÍ ¿¡¼Â¿ë Å¬·¡½º)
+ * ì¸ë²¤í† ë¦¬ ì•„ì´í…œ ì •ì˜(ë°ì´í„° ì—ì…‹ìš© í´ë˜ìŠ¤)
  */
 UCLASS()
 class CHRONOVEIL_API UCVInventoryItemDefinition : public UObject
 {
 	GENERATED_BODY()
 
-public: // ¿©±â Æ÷ÀÎÆ®
+public: // ì—¬ê¸° í¬ì¸íŠ¸
 
 	UCVInventoryItemDefinition(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	/** Fragment Å¸ÀÔÀ¸·Î Ã£±â */
+	/** Fragment íƒ€ì…ìœ¼ë¡œ ì°¾ê¸° */
 	const UCVInventoryItemFragment* FindFragmentByClass(TSubclassOf<UCVInventoryItemFragment> FragmentClass) const;
 
-	/** Inventory Item Á¤ÀÇ(¸ŞÅ¸) ÀÌ¸§ **/
+	/** Inventory Item ì •ì˜(ë©”íƒ€) ì´ë¦„ **/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Display")
 	FText DisplayName;
 
-	/** Inventory ItemÀÇ Component¸¦ Fragment·Î ÀÎ½ÄÇÏ¸é µÈ´Ù */
+	/** Inventory Itemì˜ Componentë¥¼ Fragmentë¡œ ì¸ì‹í•˜ë©´ ëœë‹¤ */
 	UPROPERTY(EditDefaultsOnly, Instanced, BlueprintReadOnly, Category = "Display")
 	TArray<TObjectPtr<UCVInventoryItemFragment>> Fragments;
 };

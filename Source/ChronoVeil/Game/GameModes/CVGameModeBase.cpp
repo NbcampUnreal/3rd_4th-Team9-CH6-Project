@@ -25,7 +25,7 @@
 //{
 //	Super::InitGame(MapName, Options, ErrorMessage);
 //
-//	// °æÇè Ã³¸®´Â ´ÙÀ½ ÇÁ·¹ÀÓÀ¸·Î ¹Ì·ç±â(OptionsString »ç¿ë °¡´É)
+//	// ê²½í—˜ ì²˜ë¦¬ëŠ” ë‹¤ìŒ í”„ë ˆìž„ìœ¼ë¡œ ë¯¸ë£¨ê¸°(OptionsString ì‚¬ìš© ê°€ëŠ¥)
 //	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ThisClass::HandleMatchAssignmentIfNotExpectingOne);
 //}
 //
@@ -36,8 +36,8 @@
 //	auto* XMan = GameState->FindComponentByClass<UCVExperienceManagerComponent>();
 //	check(XMan);
 //
-//	// UCVExperienceManagerComponent::FOnCVExperienceLoaded::FDelegate::CreateUObject(...)  (Æ²¸²)
-//	// Àü¿ª µ¨¸®°ÔÀÌÆ® Å¸ÀÔÀ» ¹Ù·Î »ç¿ë
+//	// UCVExperienceManagerComponent::FOnCVExperienceLoaded::FDelegate::CreateUObject(...)  (í‹€ë¦¼)
+//	// ì „ì—­ ë¸ë¦¬ê²Œì´íŠ¸ íƒ€ìž…ì„ ë°”ë¡œ ì‚¬ìš©
 //	XMan->CallOrRegister_OnExperienceLoaded(
 //		FOnCVExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::OnExperienceLoaded)
 //	);
@@ -54,14 +54,14 @@
 //
 //void ACVGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 //{
-//	// °æÇè ·Îµù ÀüÀÌ¸é º¸·ù
+//	// ê²½í—˜ ë¡œë”© ì „ì´ë©´ ë³´ë¥˜
 //	if (!IsExperienceLoaded())
 //	{
 //		return;
 //	}
 //	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
 //
-//	// ¾ÈÀü¸Á: PawnÀÌ ÀÌ¹Ì ÀÖ°í PawnData ¹Ì¼¼ÆÃÀÌ¸é ÁÖÀÔ
+//	// ì•ˆì „ë§: Pawnì´ ì´ë¯¸ ìžˆê³  PawnData ë¯¸ì„¸íŒ…ì´ë©´ ì£¼ìž…
 //	if (APawn* P = NewPlayer ? NewPlayer->GetPawn() : nullptr)
 //	{
 //		if (auto* Ext = P->FindComponentByClass<UCVPawnExtensionComponent>())
@@ -103,25 +103,25 @@
 //	return nullptr;
 //}
 //
-//// ---------- °æÇè ¼±ÅÃ/Àû¿ë ----------
+//// ---------- ê²½í—˜ ì„ íƒ/ì ìš© ----------
 //
 //// 1. 
 //void ACVGameModeBase::HandleMatchAssignmentIfNotExpectingOne()
 //{
 //	FPrimaryAssetId ExperienceId;
 //
-//	// 1) URL ¿É¼Ç ¿ì¼±: ?Experience=BPName
+//	// 1) URL ì˜µì…˜ ìš°ì„ : ?Experience=BPName
 //	if (!ExperienceId.IsValid() && UGameplayStatics::HasOption(OptionsString, TEXT("Experience")))
 //	{
 //		const FString Name = UGameplayStatics::ParseOption(OptionsString, TEXT("Experience"));
 //		ExperienceId = FPrimaryAssetId(FPrimaryAssetType(TEXT("CVExperienceDefinition")), FName(*Name));
 //	}
 //
-//	// 2) ±×·¡µµ ¾øÀ¸¸é(Å×½ºÆ®¿ë) ÇÁ·ÎÁ§Æ® ±âº»°ª(ÀÖ´Ù¸é)·Î¡¦ ¾øÀ¸¸é ±×´ë·Î Á¾·á
+//	// 2) ê·¸ëž˜ë„ ì—†ìœ¼ë©´(í…ŒìŠ¤íŠ¸ìš©) í”„ë¡œì íŠ¸ ê¸°ë³¸ê°’(ìžˆë‹¤ë©´)ë¡œâ€¦ ì—†ìœ¼ë©´ ê·¸ëŒ€ë¡œ ì¢…ë£Œ
 //	if (!ExperienceId.IsValid())
 //	{
 //		//UE_LOG(LogTemp, Warning, TEXT("[CV] No Experience in OptionsString; using GameMode fallback if any"));
-//		//// ÇÊ¿ä ½Ã GameMode¿¡ UPROPERTY·Î DefaultExperienceId µÎ°í Ã¤¿öµµ µÊ
+//		//// í•„ìš” ì‹œ GameModeì— UPROPERTYë¡œ DefaultExperienceId ë‘ê³  ì±„ì›Œë„ ë¨
 //		//return;
 //
 //		ExperienceId = FPrimaryAssetId(FPrimaryAssetType("CVExperienceDefinition"), FName("B_CVDefaultExperience"));
@@ -149,7 +149,7 @@
 //
 //void ACVGameModeBase::OnExperienceLoaded(const UCVExperienceDefinition* CurrentExperience)
 //{
-//	// °æÇè ·Îµù ¿Ï·á: Pawn ¾ø´Â ÄÁÆ®·Ñ·¯ Àç½ÃÀÛ
+//	// ê²½í—˜ ë¡œë”© ì™„ë£Œ: Pawn ì—†ëŠ” ì»¨íŠ¸ë¡¤ëŸ¬ ìž¬ì‹œìž‘
 //	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 //	{
 //		APlayerController* PC = Cast<APlayerController>(*It);
@@ -162,7 +162,7 @@
 //
 //const UCVPawnData* ACVGameModeBase::GetPawnDataForController(const AController* InController) const
 //{
-//	// 1) PlayerState ¿ì¼±
+//	// 1) PlayerState ìš°ì„ 
 //	if (InController)
 //	{
 //		if (const ACVPlayerState* PS = InController->GetPlayerState<ACVPlayerState>())
@@ -174,7 +174,7 @@
 //		}
 //	}
 //
-//	// 2) ÇöÀç ExperienceÀÇ DefaultPawnData
+//	// 2) í˜„ìž¬ Experienceì˜ DefaultPawnData
 //	if (const AGameStateBase* GS = GetWorld()->GetGameState())
 //	{
 //		if (const UCVExperienceManagerComponent* XMan = GS->FindComponentByClass<UCVExperienceManagerComponent>())
@@ -190,7 +190,7 @@
 //		}
 //	}
 //
-//	// 3) ¸¶Áö¸· º¸·ç: GameMode ±âº»°ª
+//	// 3) ë§ˆì§€ë§‰ ë³´ë£¨: GameMode ê¸°ë³¸ê°’
 //	return DefaultPawnData;
 //}
 

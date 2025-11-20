@@ -4,5 +4,5 @@
 
 void UCVInventoryFragment_EquippableItem::OnInstanceCreated(UCVInventoryItemInstance* Instance) const
 {
-	// ³ªÁß¿¡ Instance »ı¼º ½Ã ÀÚµ¿ Àåºñ ÀåÂø/½½·Ô ¿¬°á °°Àº ·ÎÁ÷À» ¿©±â¼­ Ã³¸®ÇÏ¸é µÈ´Ù.
+	// ë‚˜ì¤‘ì— Instance ìƒì„± ì‹œ ìë™ ì¥ë¹„ ì¥ì°©/ìŠ¬ë¡¯ ì—°ê²° ê°™ì€ ë¡œì§ì„ ì—¬ê¸°ì„œ ì²˜ë¦¬í•˜ë©´ ëœë‹¤.
 }

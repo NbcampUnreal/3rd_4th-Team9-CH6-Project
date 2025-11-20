@@ -23,12 +23,12 @@ public:
 	FGameplayTag InitState_DataInitialized;
 	FGameplayTag InitState_GameplayReady;
 
-	// Enhanced Input ±âº» ÅÂ±×
+	// Enhanced Input ê¸°ë³¸ íƒœê·¸
 	FGameplayTag InputTag_Native_Move;
 	FGameplayTag InputTag_Native_Look_Mouse;
 	FGameplayTag InputTag_Native_Look_Aim;
 	FGameplayTag InputTag_Native_Crouch;
-	// TODO: ÇÊ¿ä ½Ã Ãß°¡ÇØ¾ßÇÔ. : InputTag_Weapon_Fire / Reload / ADS, Input.Layer. µîµî..
+	// TODO: í•„ìš” ì‹œ ì¶”ê°€í•´ì•¼í•¨. : InputTag_Weapon_Fire / Reload / ADS, Input.Layer. ë“±ë“±..
 
 	FGameplayTag Ability_InputBlocked;
 

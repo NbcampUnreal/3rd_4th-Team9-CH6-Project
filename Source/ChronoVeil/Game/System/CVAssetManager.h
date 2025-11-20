@@ -17,21 +17,21 @@ public:
 	// UAssetManager
 	virtual void StartInitialLoading() override;
 
-	/** Ä¿¸Çµå¶óÀÎ -LogAssetLoads ¿©ºÎ */
+	/** ì»¤ë§¨ë“œë¼ì¸ -LogAssetLoads ì—¬ë¶€ */
 	static bool ShouldLogAssetLoads();
 
-	/** µ¿±â ·Îµù ·¡ÆÛ */
+	/** ë™ê¸° ë¡œë”© ë˜í¼ */
 	static UObject* SynchronousLoadAsset(const FSoftObjectPath& AssetPath);
 
-	/** ¿ÀºêÁ§Æ® ·Îµù + (¼±ÅÃ) ¸Ş¸ğ¸®¿¡ À¯Áö */
+	/** ì˜¤ë¸Œì íŠ¸ ë¡œë”© + (ì„ íƒ) ë©”ëª¨ë¦¬ì— ìœ ì§€ */
 	template<typename AssetType>
 	static AssetType* GetAsset(const TSoftObjectPtr<AssetType>& AssetPtr, bool bKeepInMemory = true);
 
-	/** Å¬·¡½º ·Îµù + (¼±ÅÃ) ¸Ş¸ğ¸®¿¡ À¯Áö */
+	/** í´ë˜ìŠ¤ ë¡œë”© + (ì„ íƒ) ë©”ëª¨ë¦¬ì— ìœ ì§€ */
 	template<typename AssetType>
 	static TSubclassOf<AssetType> GetSubclass(const TSoftClassPtr<AssetType>& ClassPtr, bool bKeepInMemory = true);
 
-	/** GC º¸È£¿ë Ä³½Ã */
+	/** GC ë³´í˜¸ìš© ìºì‹œ */
 	void AddLoadedAsset(const UObject* Asset);
 
 	UPROPERTY()

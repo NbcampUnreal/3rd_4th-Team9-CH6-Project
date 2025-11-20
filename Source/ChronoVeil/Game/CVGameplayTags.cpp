@@ -16,7 +16,7 @@ void FCVGameplayTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, cons
 
 void FCVGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 {
-	// InitState.* (GameFrameworkComponentManager ´Ü°è ±¸ºĞ) : ÁÖÀÇ! ÇöÀç ¿ì¸®°¡ ¸¸µå´Â ÇÁ·ÎÁ§Æ®¿¡¼­´Â »ç¿ë¾ÈÇÏ°í ÀÖÀ½. ÆÀÀåÀÎ ³»°¡ ExperienceÀû¿ëÇÏ·Á´Ù°¡ ÇÁ·¹ÀÓ¿öÅ©°¡ ³Ê¹« Ä¿Áú °Í °°¾Æ¼­ ÇØ´ç ³»¿ëÀº Å×½ºÆ® »ï¾Æ Á¤ÀÇ¸¸ÇßÀ½.
+	// InitState.* (GameFrameworkComponentManager ë‹¨ê³„ êµ¬ë¶„) : ì£¼ì˜! í˜„ì¬ ìš°ë¦¬ê°€ ë§Œë“œëŠ” í”„ë¡œì íŠ¸ì—ì„œëŠ” ì‚¬ìš©ì•ˆí•˜ê³  ìˆìŒ. íŒ€ì¥ì¸ ë‚´ê°€ Experienceì ìš©í•˜ë ¤ë‹¤ê°€ í”„ë ˆì„ì›Œí¬ê°€ ë„ˆë¬´ ì»¤ì§ˆ ê²ƒ ê°™ì•„ì„œ í•´ë‹¹ ë‚´ìš©ì€ í…ŒìŠ¤íŠ¸ ì‚¼ì•„ ì •ì˜ë§Œí–ˆìŒ.
 	AddTag(GameplayTags.InitState_Spawned, "InitState.Spawned", "1: Spawned and can be extended");
 	AddTag(GameplayTags.InitState_DataAvailable, "InitState.DataAvailable", "2: Required data loaded/replicated");
 	AddTag(GameplayTags.InitState_DataInitialized, "InitState.DataInitialized", "3: Data initialized but not gameplay-ready");

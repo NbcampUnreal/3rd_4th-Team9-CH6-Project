@@ -2,7 +2,7 @@
 //#pragma once
 //
 //#include "CoreMinimal.h"
-//#include "GameplayTagContainer.h"                // ECVInputLayer Àç»ç¿ë
+//#include "GameplayTagContainer.h"                // ECVInputLayer ì¬ì‚¬ìš©
 //#include "PlayerMappableInputConfig.h"
 //#include "CVMappableConfigPair.generated.h"
 //
@@ -10,35 +10,35 @@
 //class UPlayerMappableInputConfig;
 //
 //
-///** IMC ¶Ç´Â PMIC ³»ºÎ IMC ¼¼Æ®¸¦ È°¼ºÈ­ÇÏ±â À§ÇÑ Æä¾î(·¹ÀÌ¾î´Â GameplayTag) */
+///** IMC ë˜ëŠ” PMIC ë‚´ë¶€ IMC ì„¸íŠ¸ë¥¼ í™œì„±í™”í•˜ê¸° ìœ„í•œ í˜ì–´(ë ˆì´ì–´ëŠ” GameplayTag) */
 //USTRUCT(BlueprintType)
 //struct FCVMappableConfigPair
 //{
 //    GENERATED_BODY()
 //
-//    /** ´ÜÀÏ ¸ÅÇÎ ÄÁÅØ½ºÆ® (Á÷Á¢ AddMappingContext) */
+//    /** ë‹¨ì¼ ë§¤í•‘ ì»¨í…ìŠ¤íŠ¸ (ì§ì ‘ AddMappingContext) */
 //    UPROPERTY(EditDefaultsOnly, Category = "CV|Input")
 //    TSoftObjectPtr<UInputMappingContext> InputMapping;
 //
-//    /** PlayerMappableInputConfig (¼±ÅÃ) */
+//    /** PlayerMappableInputConfig (ì„ íƒ) */
 //    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 //    TSoftObjectPtr<UPlayerMappableInputConfig> PlayerMappableConfig;
 //
-//    /** AddMappingContext ¿ì¼±¼øÀ§ (°ªÀÌ Å¬¼ö·Ï ¿ì¼±) */
+//    /** AddMappingContext ìš°ì„ ìˆœìœ„ (ê°’ì´ í´ìˆ˜ë¡ ìš°ì„ ) */
 //    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 //    int32 Priority = 0;
 //
-//    /** ·ÎÄÃ Á¢¼Ó ½Ã ÀÚµ¿ È°¼ºÈ­ ¿©ºÎ */
+//    /** ë¡œì»¬ ì ‘ì† ì‹œ ìë™ í™œì„±í™” ì—¬ë¶€ */
 //    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 //    bool bActivateByDefault = true;
 //
-//    /** ÀÔ·Â ·¹ÀÌ¾î ÅÂ±× (¿¹: Input.Layer.Drone) */
+//    /** ì…ë ¥ ë ˆì´ì–´ íƒœê·¸ (ì˜ˆ: Input.Layer.Drone) */
 //    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input", meta = (Categories = "Input.Layer"))
 //    FGameplayTag LayerTag;
 //
 //    bool IsValid() const { return (InputMapping != nullptr) || PlayerMappableConfig.IsValid(); }
 //
-//    /** (IMC, Priority) ¸ñ·ÏÀ¸·Î ÇØ¼® */
+//    /** (IMC, Priority) ëª©ë¡ìœ¼ë¡œ í•´ì„ */
 //    void ResolveMappingContexts(TArray<UInputMappingContext*>& OutIMCs,
 //        TArray<int32>& OutPriorities) const;
 //};

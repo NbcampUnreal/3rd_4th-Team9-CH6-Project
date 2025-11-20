@@ -13,11 +13,11 @@ public:
     UCVGA_Move_Dash();
 
 protected:
-    // Áö¸é ±âÁØ ´ë½Ã ¼Óµµ (LaunchCharacter¿¡ µé¾î°¥ °ª)
+    // ì§€ë©´ ê¸°ì¤€ ëŒ€ì‹œ ì†ë„ (LaunchCharacterì— ë“¤ì–´ê°ˆ ê°’)
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash")
     float DashStrength = 2000.f;
 
-    // ´ë½Ã ¹æÇâÀ» ¼ø¼ö Forward¸¸ ¾µÁö, ÀÔ·Â º¤ÅÍ¸¦ ¼¯À»Áö ¿©ºÎ
+    // ëŒ€ì‹œ ë°©í–¥ì„ ìˆœìˆ˜ Forwardë§Œ ì“¸ì§€, ì…ë ¥ ë²¡í„°ë¥¼ ì„ì„ì§€ ì—¬ë¶€
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash")
     bool bUseInputDirection = true;
 

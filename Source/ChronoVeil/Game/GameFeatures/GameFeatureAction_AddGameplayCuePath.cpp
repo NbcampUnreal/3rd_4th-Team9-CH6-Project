@@ -5,6 +5,6 @@
 //UGameFeatureAction_AddGameplayCuePath::UGameFeatureAction_AddGameplayCuePath()
 //	: Super()
 //{
-//	// ±âº»À¸·Î /GameplayCues Æú´õ¸¦ Ãß°¡
+//	// ê¸°ë³¸ìœ¼ë¡œ /GameplayCues í´ë”ë¥¼ ì¶”ê°€
 //	DirectoryPathsToAdd.Add(FDirectoryPath{ TEXT("/GameplayCues") });
 //}

@@ -43,7 +43,7 @@ class CHRONOVEIL_API UCVInventoryManagerComponent : public UActorComponent
 public:
 	UCVInventoryManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	/** InventoryItemDefinitionÀ» ÅëÇØ ÀÎ½ºÅÏ½º¸¦ »ı¼ºÇÏ°í ¸®½ºÆ®¿¡ Ãß°¡ */
+	/** InventoryItemDefinitionì„ í†µí•´ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ìƒì„±í•˜ê³  ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€ */
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	UCVInventoryItemInstance* AddItemDefinition(TSubclassOf<UCVInventoryItemDefinition> ItemDef);
 

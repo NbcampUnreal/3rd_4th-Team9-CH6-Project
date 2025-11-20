@@ -12,17 +12,17 @@
 ///** forward declarations */
 //struct FComponentRequestHandle;
 //
-///** HUDÀÇ Layout ¿äÃ» (CV ¹öÀü) */
+///** HUDì˜ Layout ìš”ì²­ (CV ë²„ì „) */
 //USTRUCT()
 //struct FCVHUDLayoutRequest
 //{
 //	GENERATED_BODY()
 //
-//	/** UI ·¹ÀÌ¾Æ¿ôÀ¸·Î »ç¿ëÇÒ CommonActivatableWidget */
+//	/** UI ë ˆì´ì•„ì›ƒìœ¼ë¡œ ì‚¬ìš©í•  CommonActivatableWidget */
 //	UPROPERTY(EditAnywhere, Category = UI, meta = (AssetBundles = "Client"))
 //	TSoftClassPtr<UCommonActivatableWidget> LayoutClass;
 //
-//	/** PrimaryGameLayout ÀÇ LayerID */
+//	/** PrimaryGameLayout ì˜ LayerID */
 //	UPROPERTY(EditAnywhere, Category = UI)
 //	FGameplayTag LayerID;
 //};
@@ -32,11 +32,11 @@
 //{
 //	GENERATED_BODY()
 //
-//	/** CVHUDLayout À§¿¡ ¿Ã¸± ´ë»óÀÌ µÇ´Â Widget Class */
+//	/** CVHUDLayout ìœ„ì— ì˜¬ë¦´ ëŒ€ìƒì´ ë˜ëŠ” Widget Class */
 //	UPROPERTY(EditAnywhere, Category = UI, meta = (AssetBundles = "Client"))
 //	TSoftClassPtr<UUserWidget> WidgetClass;
 //
-//	/** SlotID´Â CVHUDLayoutRequest ¿¡¼­ Á¤ÀÇµÈ Slot(GameplayTag) */
+//	/** SlotIDëŠ” CVHUDLayoutRequest ì—ì„œ ì •ì˜ëœ Slot(GameplayTag) */
 //	UPROPERTY(EditAnywhere, Category = UI)
 //	FGameplayTag SlotID;
 //};
@@ -52,7 +52,7 @@
 //		TArray<TSharedPtr<FComponentRequestHandle>> ComponentRequests;
 //		TArray<TWeakObjectPtr<UCommonActivatableWidget>> LayoutsAdded;
 //
-//		/** Lyra¿Í µ¿ÀÏÇÏ°Ô, HUDElement´Â UIExtensionÀ¸·Î °ü¸® */
+//		/** Lyraì™€ ë™ì¼í•˜ê²Œ, HUDElementëŠ” UIExtensionìœ¼ë¡œ ê´€ë¦¬ */
 //		TArray<FUIExtensionHandle> ExtensionHandles;
 //	};
 //
@@ -65,17 +65,17 @@
 //	/** UGameFeatureAction_WorldActionBase interface */
 //	virtual void AddToWorld(const FWorldContext& WorldContext, const FGameFeatureStateChangeContext& ChangeContext) override;
 //
-//	/** GameFrameworkComponentManagerÀÇ Extension ÀÌº¥Æ® Ã³¸® */
+//	/** GameFrameworkComponentManagerì˜ Extension ì´ë²¤íŠ¸ ì²˜ë¦¬ */
 //	void HandleActorExtension(AActor* Actor, FName EventName, FGameFeatureStateChangeContext ChangeContext);
 //
-//	/** GFA Add/Remove »óÅÂ °ü¸® */
+//	/** GFA Add/Remove ìƒíƒœ ê´€ë¦¬ */
 //	TMap<FGameFeatureStateChangeContext, FPerContextData> ContextData;
 //
-//	/** ·¹ÀÌ¾Æ¿ô Á¤ÀÇ ¸ñ·Ï */
+//	/** ë ˆì´ì•„ì›ƒ ì •ì˜ ëª©ë¡ */
 //	UPROPERTY(EditAnywhere, Category = UI)
 //	TArray<FCVHUDLayoutRequest> Layout;
 //
-//	/** Layout À§¿¡ ¿Ã¸± Widget ¸ñ·Ï */
+//	/** Layout ìœ„ì— ì˜¬ë¦´ Widget ëª©ë¡ */
 //	UPROPERTY(EditAnywhere, Category = UI)
 //	TArray<FCVHUDElementEntry> Widgets;
 //};

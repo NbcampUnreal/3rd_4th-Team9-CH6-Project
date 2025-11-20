@@ -11,7 +11,7 @@
 //class APawn;
 //
 ///**
-// * GameFeature È°¼ºÈ­ ½Ã ÇÃ·¹ÀÌ¾îÀÇ EnhancedInput¿¡ InputConfig¸¦ Ãß°¡ÇÏ´Â ¾×¼Ç
+// * GameFeature í™œì„±í™” ì‹œ í”Œë ˆì´ì–´ì˜ EnhancedInputì— InputConfigë¥¼ ì¶”ê°€í•˜ëŠ” ì•¡ì…˜
 // */
 //UCLASS()
 //class CHRONOVEIL_API UGameFeatureAction_AddInputConfig : public UGameFeatureAction_WorldActionBase
@@ -33,20 +33,20 @@
 //		TArray<TWeakObjectPtr<APawn>> PawnsAddedTo;
 //	};
 //
-//	/** GameFrameworkComponentManager¿¡¼­ Extension ÀÌº¥Æ®°¡ ¿ÔÀ» ¶§ Ã³¸® */
+//	/** GameFrameworkComponentManagerì—ì„œ Extension ì´ë²¤íŠ¸ê°€ ì™”ì„ ë•Œ ì²˜ë¦¬ */
 //	void HandlePawnExtension(AActor* Actor, FName EventName, FGameFeatureStateChangeContext ChangeContext);
 //
-//	/** InputConfig¸¦ EnhancedInputLocalPlayerSubsystem¿¡ Ãß°¡/Á¦°Å */
+//	/** InputConfigë¥¼ EnhancedInputLocalPlayerSubsystemì— ì¶”ê°€/ì œê±° */
 //	void AddInputConfig(APawn* Pawn, FPerContextData& ActiveData);
 //	void RemoveInputConfig(APawn* Pawn, FPerContextData& ActiveData);
 //
-//	/** Per-context µ¥ÀÌÅÍ ÃÊ±âÈ­ */
+//	/** Per-context ë°ì´í„° ì´ˆê¸°í™” */
 //	void Reset(FPerContextData& ActiveData);
 //
 //	/** world -> (extension request, pawn) */
 //	TMap<FGameFeatureStateChangeContext, FPerContextData> ContextData;
 //
-//	/** PlayerMappableInputConfig¸¦ µé°í ÀÖ´Â ¸â¹ö º¯¼ö (CV ¹öÀü) */
+//	/** PlayerMappableInputConfigë¥¼ ë“¤ê³  ìˆëŠ” ë©¤ë²„ ë³€ìˆ˜ (CV ë²„ì „) */
 //	UPROPERTY(EditAnywhere, Category = "Input")
 //	TArray<FCVMappableConfigPair> InputConfigs;
 //};

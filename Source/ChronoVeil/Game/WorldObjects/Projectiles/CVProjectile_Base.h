@@ -28,7 +28,7 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CV|Projectile")
     TObjectPtr<UProjectileMovementComponent> Movement;
 
-    // ±âº» ¼ö¸í (ÃÊ). 0ÀÌ¸é ¹«ÇÑ.
+    // ê¸°ë³¸ ìˆ˜ëª… (ì´ˆ). 0ì´ë©´ ë¬´í•œ.
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CV|Projectile")
     float LifeTime = 5.f;
 
@@ -44,7 +44,7 @@ protected:
         FVector NormalImpulse,
         const FHitResult& Hit);
 
-    // ÆÄ»ı Å¬·¡½º¿¡¼­ Ãæµ¹ Ã³¸®¿ë
+    // íŒŒìƒ í´ë˜ìŠ¤ì—ì„œ ì¶©ëŒ ì²˜ë¦¬ìš©
     virtual void HandleImpact(const FHitResult& Hit);
     virtual void HandleLifeTimeExpired();
 };

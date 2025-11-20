@@ -17,8 +17,8 @@ void ACVDevice_HpPotion::OnDeviceOverlap(UPrimitiveComponent* OverlappedComp, AA
 
 	if (OtherActor && OtherActor != this)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), nullptr, GetActorLocation()); // »˙ VFX
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), nullptr, GetActorLocation());   // »˙ Sound
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), nullptr, GetActorLocation()); // Ìûê VFX
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), nullptr, GetActorLocation());   // Ìûê Sound
 		Destroy();
 	}
 }

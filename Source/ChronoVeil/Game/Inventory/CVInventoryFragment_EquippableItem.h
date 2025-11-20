@@ -8,7 +8,7 @@ class UCVEquipmentDefinition;
 class UCVInventoryItemInstance;
 
 /**
- * ¾ÆÀÌÅÛÀÌ ÀåÂø °¡´ÉÇÑ(Equippable) ¾ÆÀÌÅÛÀÓÀ» ³ªÅ¸³»´Â Fragment
+ * ì•„ì´í…œì´ ì¥ì°© ê°€ëŠ¥í•œ(Equippable) ì•„ì´í…œì„ì„ ë‚˜íƒ€ë‚´ëŠ” Fragment
  */
 UCLASS()
 class CHRONOVEIL_API UCVInventoryFragment_EquippableItem : public UCVInventoryItemFragment
@@ -16,7 +16,7 @@ class CHRONOVEIL_API UCVInventoryFragment_EquippableItem : public UCVInventoryIt
 	GENERATED_BODY()
 
 public:
-	/** ÀÌ ¾ÆÀÌÅÛÀ» Àåºñ·Î »ç¿ëÇÒ ¶§ ½ºÆùÇÒ Equipment Á¤ÀÇ */
+	/** ì´ ì•„ì´í…œì„ ì¥ë¹„ë¡œ ì‚¬ìš©í•  ë•Œ ìŠ¤í°í•  Equipment ì •ì˜ */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Equipment")
 	TSubclassOf<UCVEquipmentDefinition> EquipmentDefinition;
 
