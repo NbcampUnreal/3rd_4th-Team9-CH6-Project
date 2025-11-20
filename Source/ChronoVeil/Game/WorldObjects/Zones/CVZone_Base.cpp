@@ -8,9 +8,9 @@ ACVZone_Base::ACVZone_Base()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	// ZoneShape´Â ÆÄ»ı Å¬·¡½º¿¡¼­ ±¸/¹Ú½º/Ä¸½¶ Áß ÇÏ³ª¸¦ »ı¼ºÇØ¼­
-	// RootComponent·Î ÁöÁ¤ÇÏ´Â ÆĞÅÏÀ» ±ÇÀå.
-	// ¿©±â¼­´Â nullptr À¯Áö.
+	// ZoneShapeëŠ” íŒŒìƒ í´ë˜ìŠ¤ì—ì„œ êµ¬/ë°•ìŠ¤/ìº¡ìŠ ì¤‘ í•˜ë‚˜ë¥¼ ìƒì„±í•´ì„œ
+	// RootComponentë¡œ ì§€ì •í•˜ëŠ” íŒ¨í„´ì„ ê¶Œì¥.
+	// ì—¬ê¸°ì„œëŠ” nullptr ìœ ì§€.
 }
 
 void ACVZone_Base::BeginPlay()
@@ -19,7 +19,7 @@ void ACVZone_Base::BeginPlay()
 
 	if (HasAuthority())
 	{
-		// Á¸ »ı¼º ÁÖ±â Ã³¸®
+		// ì¡´ ìƒì„± ì£¼ê¸° ì²˜ë¦¬
 		if (TickInterval > 0.f)
 		{
 			GetWorld()->GetTimerManager().SetTimer(
@@ -31,7 +31,7 @@ void ACVZone_Base::BeginPlay()
 			);
 		}
 
-		// ¼ö¸í Å¸ÀÌ¸Ó
+		// ìˆ˜ëª… íƒ€ì´ë¨¸
 		if (LifeTime > 0.f)
 		{
 			GetWorld()->GetTimerManager().SetTimer(
@@ -59,17 +59,17 @@ void ACVZone_Base::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ACVZone_Base::ZoneTick()
 {
-	// ¼­¹ö¿¡¼­¸¸ ½ÇÁú ·ÎÁ÷ ¼öÇà
+	// ì„œë²„ì—ì„œë§Œ ì‹¤ì§ˆ ë¡œì§ ìˆ˜í–‰
 	if (!HasAuthority())
 	{
 		return;
 	}
 
-	// ÆÄ»ı Å¬·¡½º(¿¬¸·/¹öÇÁ/µğ¹öÇÁ/¸ŞÅ×¿ÀÀåÆÇ/ºí·¢È¦)°¡ ¿À¹ö¶óÀÌµåÇØ¼­±¸ÇöÇØ¾ßÇÔ.:
+	// íŒŒìƒ í´ë˜ìŠ¤(ì—°ë§‰/ë²„í”„/ë””ë²„í”„/ë©”í…Œì˜¤ì¥íŒ/ë¸”ë™í™€)ê°€ ì˜¤ë²„ë¼ì´ë“œí•´ì„œêµ¬í˜„í•´ì•¼í•¨.:
 	// - ZoneShape->GetOverlappingActors
-	// - ASC¿¡ GameplayEffect ºÎ¿©/Á¦°Å
-	// - DOT/HoT Ã³¸®
-	// µîÀ» ±¸ÇöÇØ¾ßÇÒµí.
+	// - ASCì— GameplayEffect ë¶€ì—¬/ì œê±°
+	// - DOT/HoT ì²˜ë¦¬
+	// ë“±ì„ êµ¬í˜„í•´ì•¼í• ë“¯.
 }
 
 void ACVZone_Base::HandleLifeTimeExpired()

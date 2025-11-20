@@ -23,15 +23,15 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     UNiagaraComponent* MeteorVFX;
 
-    // ÇÏ´Ã¿¡¼­ ¶³¾îÁö´Â Meteor VFX
+    // í•˜ëŠ˜ì—ì„œ ë–¨ì–´ì§€ëŠ” Meteor VFX
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "VFX")
     UNiagaraSystem* FallingVFX;
 
-    // ¶¥¿¡ ºÎµúÇûÀ» ¶§ Æø¹ß ¹× ¸¶±×¸¶ VFX
+    // ë•…ì— ë¶€ë”ªí˜”ì„ ë•Œ í­ë°œ ë° ë§ˆê·¸ë§ˆ VFX
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "VFX")
     UNiagaraSystem* ImpactVFX;
 
-    // ¸ŞÅ×¿À ³«ÇÏ ÈÄ Ãæµ¹±îÁö Áö¿¬ ½Ã°£ : ¿¬Ãâ¿ë ¸¶±×¸¶(³»°¡¸¸µç ¸É¹ö : ImpactVFX)°¡ 5ÃÊµÚ¿¡ ¹ß»ıÇÏ°Ô ÇÏ·Á°í ÇÔ
+    // ë©”í…Œì˜¤ ë‚™í•˜ í›„ ì¶©ëŒê¹Œì§€ ì§€ì—° ì‹œê°„ : ì—°ì¶œìš© ë§ˆê·¸ë§ˆ(ë‚´ê°€ë§Œë“  ë§´ë²„ : ImpactVFX)ê°€ 5ì´ˆë’¤ì— ë°œìƒí•˜ê²Œ í•˜ë ¤ê³  í•¨
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meteor")
     float ImpactDelay = 5.0f;
 

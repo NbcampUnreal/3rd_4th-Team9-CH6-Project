@@ -9,8 +9,8 @@
 //class UAbilitySystemComponent;
 //
 ///**
-// * ChronoVeil Àü¿ë PlayerController
-// * - PostProcessInput¿¡¼­ ASC ÀÔ·Â Ã³¸® Àü´Ş(ÅÂ±× ±â¹İ Ability ÀÔ·Â)
+// * ChronoVeil ì „ìš© PlayerController
+// * - PostProcessInputì—ì„œ ASC ì…ë ¥ ì²˜ë¦¬ ì „ë‹¬(íƒœê·¸ ê¸°ë°˜ Ability ì…ë ¥)
 // */
 //UCLASS()
 //class CHRONOVEIL_API ACVPlayerController : public APlayerController
@@ -61,6 +61,6 @@ public:
 
 
 protected:
-	// µğ¹ö±ë¿ë: Á¤¸»·Î EnhancedInputComponent°¡ »ı¼ºµÆ´ÂÁö È®ÀÎ : ¾ğ¸®¾ó¿¡µğÅÍ»ó¿¡¼­ Hero_DefaultPawnÀ» Hero_Hannabi·Î ¹Ù²Ù¸é Crash³ª´Â ¹®Á¦ ÇØ°á¿ë
+	// ë””ë²„ê¹…ìš©: ì •ë§ë¡œ EnhancedInputComponentê°€ ìƒì„±ëëŠ”ì§€ í™•ì¸ : ì–¸ë¦¬ì–¼ì—ë””í„°ìƒì—ì„œ Hero_DefaultPawnì„ Hero_Hannabië¡œ ë°”ê¾¸ë©´ Crashë‚˜ëŠ” ë¬¸ì œ í•´ê²°ìš©
 	//virtual void SetupInputComponent() override;
 };

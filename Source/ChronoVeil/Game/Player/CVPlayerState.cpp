@@ -25,7 +25,7 @@
 //	check(AbilitySystemComponent);
 //	AbilitySystemComponent->InitAbilityActorInfo(this, GetPawn());
 //
-//	// °æÇè ·Îµù ¿Ï·á ½ÅÈ£ ±¸µ¶
+//	// ê²½í—˜ ë¡œë”© ì™„ë£Œ ì‹ í˜¸ êµ¬ë…
 //	if (const AGameStateBase* GS = GetWorld()->GetGameState())
 //	{
 //		if (auto* XMan = GS->FindComponentByClass<UCVExperienceManagerComponent>())
@@ -39,20 +39,20 @@
 //
 //void ACVPlayerState::OnExperienceLoaded(const UCVExperienceDefinition* /*CurrentExperience*/)
 //{
-//	// ¼­¹ö¿¡¼­¸¸ PawnData È®Á¤ ¹× Ability ºÎ¿©
+//	// ì„œë²„ì—ì„œë§Œ PawnData í™•ì • ë° Ability ë¶€ì—¬
 //	if (!HasAuthority())
 //	{
 //		return;
 //	}
 //
-//	// 1) GameMode·ÎºÎÅÍ ÃÖÁ¾ PawnData Á¶È¸
+//	// 1) GameModeë¡œë¶€í„° ìµœì¢… PawnData ì¡°íšŒ
 //	const UCVPawnData* NewPawnData = nullptr;
 //	if (ACVGameModeBase* GM = GetWorld()->GetAuthGameMode<ACVGameModeBase>())
 //	{
 //		NewPawnData = GM->GetPawnDataForController(GetOwningController());
 //	}
 //
-//	// 2) ½ÇÆĞ ½Ã Experience ±âº»°ªÀ¸·Î º¸Á¶ ·çÆ®
+//	// 2) ì‹¤íŒ¨ ì‹œ Experience ê¸°ë³¸ê°’ìœ¼ë¡œ ë³´ì¡° ë£¨íŠ¸
 //	if (!NewPawnData)
 //	{
 //		if (const AGameStateBase* GS = GetWorld()->GetGameState())
@@ -70,14 +70,14 @@
 //		}
 //	}
 //
-//	// 3) ½ÇÁ¦ Àû¿ë
+//	// 3) ì‹¤ì œ ì ìš©
 //	if (NewPawnData && NewPawnData != PawnData)
 //	{
 //		SetPawnData_ServerOnly(NewPawnData);
 //
 //		if (AbilitySystemComponent && PawnData)
 //		{
-//			// AbilitySet ÀÏ°ı ºÎ¿©(Áßº¹ ¹æÁö ·ÎÁ÷Àº Set ³»ºÎ/ASC Ãø¿¡¼­ Ã³¸® °¡´É)
+//			// AbilitySet ì¼ê´„ ë¶€ì—¬(ì¤‘ë³µ ë°©ì§€ ë¡œì§ì€ Set ë‚´ë¶€/ASC ì¸¡ì—ì„œ ì²˜ë¦¬ ê°€ëŠ¥)
 //			if (UCVAbilitySystemComponent* CVASC = GetCVAbilitySystemComponent())
 //			{
 //				for (UCVAbilitySet* Set : PawnData->AbilitySets)
@@ -86,7 +86,7 @@
 //				}
 //			}
 //
-//			// PawnÀÌ ÀÖÀ¸¸é AvatarInfo È®Á¤, ¾øÀ¸¸é ´ÙÀ½ Æ½¿¡ Àç½Ãµµ
+//			// Pawnì´ ìˆìœ¼ë©´ AvatarInfo í™•ì •, ì—†ìœ¼ë©´ ë‹¤ìŒ í‹±ì— ì¬ì‹œë„
 //			if (APawn* P = GetPawn())
 //			{
 //				AbilitySystemComponent->InitAbilityActorInfo(this, P);
@@ -122,7 +122,7 @@
 //
 //void ACVPlayerState::OnRep_PawnData()
 //{
-//	// Å¬¶ó HUD/UI ¹İ¿µÀÌ ÇÊ¿äÇÏ¸é ¿©±â¼­
+//	// í´ë¼ HUD/UI ë°˜ì˜ì´ í•„ìš”í•˜ë©´ ì—¬ê¸°ì„œ
 //}
 //
 //void ACVPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -151,10 +151,10 @@ ACVPlayerState::ACVPlayerState(const FObjectInitializer& ObjectInitializer)
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
-	// AbilitySystem ³×Æ®¿öÅ© °ü·Ã: needs to be updated at a high frequency.
+	// AbilitySystem ë„¤íŠ¸ì›Œí¬ ê´€ë ¨: needs to be updated at a high frequency.
 	SetNetUpdateFrequency(100.0f);
 
-	// PlayerState¿Í Pawn(Chracter)°¡ ¸ğµÎ ÁØºñµÇ¾úÀ» ¶§ È£ÃâµÇ´Â Delegate
+	// PlayerStateì™€ Pawn(Chracter)ê°€ ëª¨ë‘ ì¤€ë¹„ë˜ì—ˆì„ ë•Œ í˜¸ì¶œë˜ëŠ” Delegate
 	OnPawnSet.AddDynamic(this, &ThisClass::OnReadyPawnData);
 }
 

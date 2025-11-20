@@ -12,7 +12,7 @@ UCVAssetManager& UCVAssetManager::Get()
 		return *Singleton;
 	}
 
-	// ¼³Á¤ ´©¶ô ½Ã Áï½Ã ¾Ë¸²
+	// ì„¤ì • ëˆ„ë½ ì‹œ ì¦‰ì‹œ ì•Œë¦¼
 	UE_LOG(LogTemp, Fatal, TEXT("Invalid AssetManagerClassName. Set [/Script/ChronoVeil.CVAssetManager] in DefaultEngine.ini"));
 	// Unreachable, but keep compiler happy
 	return *NewObject<UCVAssetManager>();
@@ -23,7 +23,7 @@ void UCVAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
 
-	// ³×ÀÌÆ¼ºê ÅÂ±× µî·Ï
+	// ë„¤ì´í‹°ë¸Œ íƒœê·¸ ë“±ë¡
 	FCVGameplayTags::InitializeNativeTags();
 }
 PRAGMA_ENABLE_OPTIMIZATION

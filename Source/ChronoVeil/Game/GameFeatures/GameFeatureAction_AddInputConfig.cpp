@@ -56,7 +56,7 @@
 //{
 //	ActiveData.ExtensionRequestHandles.Empty();
 //
-//	// StackÃ³·³ À§¿¡¼­ºÎÅÍ Á¦°Å
+//	// Stackì²˜ëŸ¼ ìœ„ì—ì„œë¶€í„° ì œê±°
 //	while (!ActiveData.PawnsAddedTo.IsEmpty())
 //	{
 //		TWeakObjectPtr<APawn> PawnPtr = ActiveData.PawnsAddedTo.Top();

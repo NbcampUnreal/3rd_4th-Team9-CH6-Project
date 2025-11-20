@@ -11,7 +11,7 @@ ACVDevice_JumpPad::ACVDevice_JumpPad()
     BoxCollision->InitBoxExtent(FVector(100.f, 100.f, 50.f));
     BoxCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 
-    // CVDevice_Base¿¡¼­ CollisionÀ» Root·Î ¾²°í ÀÖÀ¸¹Ç·Î, ±× ¹Ø¿¡ ºÙÀÎ´Ù.
+    // CVDevice_Baseì—ì„œ Collisionì„ Rootë¡œ ì“°ê³  ìˆìœ¼ë¯€ë¡œ, ê·¸ ë°‘ì— ë¶™ì¸ë‹¤.
     BoxCollision->SetupAttachment(GetRootComponent());
 
     BoxCollision->OnComponentBeginOverlap.AddDynamic(
@@ -27,7 +27,7 @@ void ACVDevice_JumpPad::OnOverlap(
     bool bFromSweep,
     const FHitResult& SweepResult)
 {
-    // Á¡ÇÁ/ÀÌµ¿ °°Àº °Ç ¼­¹ö°¡ ±ÇÀ§ °®´Â ÂÊÀ¸·Î °¥ °Å¶ó¸é : Á¡ÇÁ/ÀÌµ¿ ÆÇÁ¤Àº ¼­¹ö¿¡¼­ ÇÏ´Â°Ô ¸ÂÀ»µí? ¿Ö³ÄÇÏ¸é Á¡ÇÁ¶û ÀÌµ¿Àº µ¿±â°¡ Á¤È®È÷ °ÔÀÓ¹ë·±½º¶§¹®¿¡ ÀÌ·ç¾îÁ®¾ßÇÔ. 
+    // ì í”„/ì´ë™ ê°™ì€ ê±´ ì„œë²„ê°€ ê¶Œìœ„ ê°–ëŠ” ìª½ìœ¼ë¡œ ê°ˆ ê±°ë¼ë©´ : ì í”„/ì´ë™ íŒì •ì€ ì„œë²„ì—ì„œ í•˜ëŠ”ê²Œ ë§ì„ë“¯? ì™œëƒí•˜ë©´ ì í”„ë‘ ì´ë™ì€ ë™ê¸°ê°€ ì •í™•íˆ ê²Œì„ë°¸ëŸ°ìŠ¤ë•Œë¬¸ì— ì´ë£¨ì–´ì ¸ì•¼í•¨. 
     if (!HasAuthority())
     {
         return;
@@ -44,15 +44,15 @@ void ACVDevice_JumpPad::OnOverlap(
         return;
     }
 
-    // ±âÁ¸ ¼Óµµ´Â À¯ÁöÇÏ°í, Z°ª¸¸ °»½ÅÇÔ.,
+    // ê¸°ì¡´ ì†ë„ëŠ” ìœ ì§€í•˜ê³ , Zê°’ë§Œ ê°±ì‹ í•¨.,
     const FVector LaunchVector(0.f, 0.f, LaunchVelocity);
 
     Character->LaunchCharacter(
         LaunchVector,
-        false,  // XY Override ¾È ÇÔ
-        true    // Z°ª¸¸ Àû¿ëÇÔ.
+        false,  // XY Override ì•ˆ í•¨
+        true    // Zê°’ë§Œ ì ìš©í•¨.
     );
 
-    // ³ªÁß¿¡ ÆÀ/½ÃÀüÀÚ ±âÁØ Ãß°¡ ·ÎÁ÷ÀÌ ÇÊ¿äÇÏ¸é
-    // GetOwningController() / GetOwningPawn() »ç¿ë °¡´ÉÇÏ´Ï±î ÃßÈÄ¿¡ Ãß°¡ÇÒ±î °í¹ÎÁß.
+    // ë‚˜ì¤‘ì— íŒ€/ì‹œì „ì ê¸°ì¤€ ì¶”ê°€ ë¡œì§ì´ í•„ìš”í•˜ë©´
+    // GetOwningController() / GetOwningPawn() ì‚¬ìš© ê°€ëŠ¥í•˜ë‹ˆê¹Œ ì¶”í›„ì— ì¶”ê°€í• ê¹Œ ê³ ë¯¼ì¤‘.
 }

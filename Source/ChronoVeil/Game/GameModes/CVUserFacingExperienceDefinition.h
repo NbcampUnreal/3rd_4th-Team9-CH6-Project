@@ -9,15 +9,15 @@ class CHRONOVEIL_API UCVUserFacingExperienceDefinition : public UPrimaryDataAsse
     GENERATED_BODY()
 public:
 
-    /** ¿¡µğÅÍ/½Ì±Û¿¡¼­ ¹Ù·Î ·¹º§ ¿©´Â ·±Ã³ */ // HakClass¿Í Â÷ÀÌÁ¡
+    /** ì—ë””í„°/ì‹±ê¸€ì—ì„œ ë°”ë¡œ ë ˆë²¨ ì—¬ëŠ” ëŸ°ì²˜ */ // HakClassì™€ ì°¨ì´ì 
     UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Experience")
     void OpenInEditor() const;
 
-    /** ·ÎµåÇÒ ¸Ê */
+    /** ë¡œë“œí•  ë§µ */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Experience", meta = (AllowedTypes = "Map"))
     FPrimaryAssetId MapID;
 
-    /** »ç¿ëÇÒ °ÔÀÓÇÃ·¹ÀÌ °æÇè(¾Æ·¡ CVExperienceDefinition) */
+    /** ì‚¬ìš©í•  ê²Œì„í”Œë ˆì´ ê²½í—˜(ì•„ë˜ CVExperienceDefinition) */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Experience", meta = (AllowedTypes = "CVExperienceDefinition"))
     FPrimaryAssetId ExperienceID;
 };

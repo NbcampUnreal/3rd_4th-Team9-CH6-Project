@@ -4,7 +4,7 @@
 #include "Game/WorldObjects/CVWorldObject_Base.h"
 #include "CVDevice_Base.generated.h"
 
-//class UHealthComponent; // ÇÊ¿äÇÏ¸é Ã¼·Â ÄÄÆ÷³ÍÆ® Æ÷ÇÔ
+//class UHealthComponent; // í•„ìš”í•˜ë©´ ì²´ë ¥ ì»´í¬ë„ŒíŠ¸ í¬í•¨
 class USphereComponent;
 
 UCLASS()
@@ -46,7 +46,7 @@ protected:
 		const FHitResult& SweepResult);
 
 public:
-	// ÇÊ¿äÇÏ¸é Ã¼·Â ÄÄÆ÷³ÍÆ®/ÀÎÅÍÆäÀÌ½º ¿¬°á
+	// í•„ìš”í•˜ë©´ ì²´ë ¥ ì»´í¬ë„ŒíŠ¸/ì¸í„°í˜ì´ìŠ¤ ì—°ê²°
 	virtual void OnDamaged(float Damage, AActor* DamageCauser);
 
 };

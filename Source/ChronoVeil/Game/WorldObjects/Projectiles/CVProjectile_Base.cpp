@@ -10,11 +10,11 @@ ACVProjectile_Base::ACVProjectile_Base()
 {
     PrimaryActorTick.bCanEverTick = false;
 
-    // WorldObject_Base¿¡¼­ SceneRoot¸¦ ¸¸µé°í Root·Î ¼¼ÆÃÇÏÁö¸¸,
-    // Åõ»çÃ¼´Â CollisionÀ» Root·Î ¾²´Â ÂÊÀÌ ÀÚ¿¬½º·¯¿ö¼­ ¿©±â¼­ µ¤¾î¾´´Ù.
+    // WorldObject_Baseì—ì„œ SceneRootë¥¼ ë§Œë“¤ê³  Rootë¡œ ì„¸íŒ…í•˜ì§€ë§Œ,
+    // íˆ¬ì‚¬ì²´ëŠ” Collisionì„ Rootë¡œ ì“°ëŠ” ìª½ì´ ìì—°ìŠ¤ëŸ¬ì›Œì„œ ì—¬ê¸°ì„œ ë®ì–´ì“´ë‹¤.
     Collision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
     Collision->InitSphereRadius(50.f);
-    Collision->SetCollisionProfileName(TEXT("BlockAllDynamic")); // Hit ÀÌº¥Æ®¿ë Blocking ÇÁ·ÎÆÄÀÏ
+    Collision->SetCollisionProfileName(TEXT("BlockAllDynamic")); // Hit ì´ë²¤íŠ¸ìš© Blocking í”„ë¡œíŒŒì¼
     SetRootComponent(Collision);
 
     Collision->OnComponentHit.AddDynamic(this, &ACVProjectile_Base::OnProjectileHit);
@@ -56,7 +56,7 @@ void ACVProjectile_Base::OnProjectileHit(
     FVector NormalImpulse,
     const FHitResult& Hit)
 {
-    // ¼­¹ö¸¸ Ãæµ¹ Ã³¸®
+    // ì„œë²„ë§Œ ì¶©ëŒ ì²˜ë¦¬
     if (!HasAuthority())
     {
         return;
@@ -73,8 +73,8 @@ void ACVProjectile_Base::OnProjectileHit(
 
 void ACVProjectile_Base::HandleImpact(const FHitResult& Hit)
 {
-    // ±âº» ±¸Çö: ¾Æ¹«°Íµµ ¾È ÇÔ
-    // ÆÄ»ı¿¡¼­ ¿À¹ö¶óÀÌµåÇØ¼­ µ¥¹ÌÁö/Zone ½ºÆù/FX µîÀ» ±¸Çö
+    // ê¸°ë³¸ êµ¬í˜„: ì•„ë¬´ê²ƒë„ ì•ˆ í•¨
+    // íŒŒìƒì—ì„œ ì˜¤ë²„ë¼ì´ë“œí•´ì„œ ë°ë¯¸ì§€/Zone ìŠ¤í°/FX ë“±ì„ êµ¬í˜„
 }
 
 void ACVProjectile_Base::HandleLifeTimeExpired()

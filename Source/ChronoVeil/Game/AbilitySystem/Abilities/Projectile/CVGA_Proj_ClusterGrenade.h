@@ -17,11 +17,11 @@ public:
     UCVGA_Proj_ClusterGrenade();
 
 protected:
-    // ´øÁö´Â Èû (°Å¸® °áÁ¤)
+    // ë˜ì§€ëŠ” í˜ (ê±°ë¦¬ ê²°ì •)
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Grenade|Throw")
     float ThrowStrength = 1500.f;
 
-    // ´øÁú ¶§ À§·Î ¿Ã¸®´Â °¢µµ (µµ ´ÜÀ§)
+    // ë˜ì§ˆ ë•Œ ìœ„ë¡œ ì˜¬ë¦¬ëŠ” ê°ë„ (ë„ ë‹¨ìœ„)
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Grenade|Throw")
     float ThrowPitchAngle = 15.f;
 

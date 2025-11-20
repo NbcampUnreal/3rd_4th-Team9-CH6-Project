@@ -16,7 +16,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CV|WorldObject")
 	TObjectPtr<USceneComponent> SceneRoot;
 
-	// ¼ÒÀ¯ÀÚ Á¤º¸ (¼³Ä¡ÇÑ ÇÃ·¹ÀÌ¾î / ¹ß»çÇÑ ÇÃ·¹ÀÌ¾î)
+	// ì†Œìœ ì ì •ë³´ (ì„¤ì¹˜í•œ í”Œë ˆì´ì–´ / ë°œì‚¬í•œ í”Œë ˆì´ì–´)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CV|WorldObject")
 	TWeakObjectPtr<AController> OwningController;
 

@@ -47,7 +47,7 @@ protected:
 protected:
     virtual void BeginPlay() override;
 
-    // BaseÀÇ OnProjectileHit¸¦ override ÇØ¼­ Æ¨±è/°¨¼Ó Ã³¸®
+    // Baseì˜ OnProjectileHitë¥¼ override í•´ì„œ íŠ•ê¹€/ê°ì† ì²˜ë¦¬
     virtual void OnProjectileHit(
         UPrimitiveComponent* HitComp,
         AActor* OtherActor,
@@ -55,10 +55,10 @@ protected:
         FVector NormalImpulse,
         const FHitResult& Hit) override;
 
-    // Æø¹ß Ã³¸® : ¼­¹ö¿¡¼­ Ã³¸®
+    // í­ë°œ ì²˜ë¦¬ : ì„œë²„ì—ì„œ ì²˜ë¦¬
     void Explode();
 
-    // Å¬¶ó ÀüÃ¼¿¡ Æø¹ß FX ¹İ¿µ
+    // í´ë¼ ì „ì²´ì— í­ë°œ FX ë°˜ì˜
     UFUNCTION(NetMulticast, Reliable)
     void Multicast_PlayExplosionFX();
 };

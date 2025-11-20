@@ -12,8 +12,8 @@ UCVExperienceDefinition::UCVExperienceDefinition(const FObjectInitializer& Objec
 
 FPrimaryAssetId UCVExperienceDefinition::GetPrimaryAssetId() const
 {
-    // PrimaryAssetTypeÀ» ¸í½ÃÀûÀ¸·Î °íÁ¤ÇØ¼­ »ç¿ëÇÏ°í ½ÍÀ» ¶§
-    // Content BrowserÀÇ Primary Asset Rules¸¦ ¼³Á¤Çß´Ù¸é ÀÌ ÀÌ¸§°ú ÀÏÄ¡½ÃÄÑ¾ß ÇÔ
+    // PrimaryAssetTypeì„ ëª…ì‹œì ìœ¼ë¡œ ê³ ì •í•´ì„œ ì‚¬ìš©í•˜ê³  ì‹¶ì„ ë•Œ
+    // Content Browserì˜ Primary Asset Rulesë¥¼ ì„¤ì •í–ˆë‹¤ë©´ ì´ ì´ë¦„ê³¼ ì¼ì¹˜ì‹œì¼œì•¼ í•¨
     return FPrimaryAssetId(TEXT("CVExperienceDefinition"), GetFName());
 }
 

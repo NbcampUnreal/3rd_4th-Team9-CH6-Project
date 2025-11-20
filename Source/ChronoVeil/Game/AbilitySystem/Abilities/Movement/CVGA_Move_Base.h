@@ -19,7 +19,7 @@ public:
         const FGameplayEventData* TriggerEventData) override;
 
 protected:
-    // ½ÇÁ¦ ÀÌµ¿ ·ÎÁ÷Àº ¿©±â¼­ ±¸ÇöÇÏ°Ô À¯µµ
+    // ì‹¤ì œ ì´ë™ ë¡œì§ì€ ì—¬ê¸°ì„œ êµ¬í˜„í•˜ê²Œ ìœ ë„
     virtual void PerformMove(
         const FGameplayAbilitySpecHandle Handle,
         const FGameplayAbilityActorInfo* ActorInfo,

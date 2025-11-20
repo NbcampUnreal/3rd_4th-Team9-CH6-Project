@@ -16,19 +16,19 @@ public:
 	ACVDevice_BombMine();
 
 protected:
-	// VFX Ãæµ¹ ÈÄ Á¡È­ ½Ã°£¿¡ ÆÄÁöÁ÷ °Å¸®´Â È¿°ú¸¦ ³ÖÀ½¤±.
+	// VFX ì¶©ëŒ í›„ ì í™” ì‹œê°„ì— íŒŒì§€ì§ ê±°ë¦¬ëŠ” íš¨ê³¼ë¥¼ ë„£ìŒã….
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "VFX")
 	UNiagaraSystem* FuseVFX = nullptr;
 
-	// Æø¹ß VFX
+	// í­ë°œ VFX
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "VFX")
 	UNiagaraSystem* ExplosionVFX = nullptr;
 
-	// Æø¹ß »ç¿îµå
+	// í­ë°œ ì‚¬ìš´ë“œ
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
 	USoundBase* ExplosionSound = nullptr;
 
-	// Ãæµ¹ ¹İ°æ
+	// ì¶©ëŒ ë°˜ê²½
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mine")
 	float TriggerRadius = 120.f;
 
@@ -41,7 +41,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mine")
 	float ExplosionRadius = 300.f;
 
-	// Áßº¹ Å¸ÀÌ¸Ó ¹æÁö
+	// ì¤‘ë³µ íƒ€ì´ë¨¸ ë°©ì§€
 	bool bArmed = false;
 
 	FTimerHandle ExplosionTimer;

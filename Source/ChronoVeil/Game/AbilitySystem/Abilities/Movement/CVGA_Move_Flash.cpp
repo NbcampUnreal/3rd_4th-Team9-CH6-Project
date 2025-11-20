@@ -6,7 +6,7 @@
 
 UCVGA_Move_Flash::UCVGA_Move_Flash()
 {
-    // Flashµµ LocalPredicted °¡´ÉÇÏÁö¸¸, ÅÚ·¹Æ÷Æ® Æ¯¼º»ó ¼­¹ö ¿ì¼±À¸·Î º¸´Â °æ¿ìµµ ÀÖÀ½.
+    // Flashë„ LocalPredicted ê°€ëŠ¥í•˜ì§€ë§Œ, í…”ë ˆí¬íŠ¸ íŠ¹ì„±ìƒ ì„œë²„ ìš°ì„ ìœ¼ë¡œ ë³´ëŠ” ê²½ìš°ë„ ìžˆìŒ.
 }
 
 void UCVGA_Move_Flash::PerformMove(
@@ -64,10 +64,10 @@ void UCVGA_Move_Flash::PerformMove(
 
     if (bHit)
     {
-        // º® ¾ÕÂÊÀ¸·Î ÇÑ Ä­ ¹°·Á¼­ ÅÚ·¹Æ÷Æ®
+        // ë²½ ì•žìª½ìœ¼ë¡œ í•œ ì¹¸ ë¬¼ë ¤ì„œ í…”ë ˆí¬íŠ¸
         TargetLocation = Hit.Location - Forward * WallSafeDistance;
     }
 
-    // ¹Ù´Ú º¸Á¤ÀÌ ÇÊ¿äÇÏ¸é ¿©±â¼­ TraceDown ÇØ¼­ ³ôÀÌ ¸ÂÃß´Â °Íµµ °¡´É
+    // ë°”ë‹¥ ë³´ì •ì´ í•„ìš”í•˜ë©´ ì—¬ê¸°ì„œ TraceDown í•´ì„œ ë†’ì´ ë§žì¶”ëŠ” ê²ƒë„ ê°€ëŠ¥
     Character->TeleportTo(TargetLocation, Character->GetActorRotation(), false, true);
 }

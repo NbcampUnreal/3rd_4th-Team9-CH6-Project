@@ -5,8 +5,8 @@
 #include "CVGA_Install_HpPotion.generated.h"
 
 //
-// ��ġ�� HP ȸ�� ���� �����Ƽ
-// - �÷��̾� �տ� HpPotion ����̽��� �ϳ� ��ġ�Ѵ�.
+// 설치형 HP 회복 포션 어빌리티
+// - 플레이어 앞에 HpPotion 디바이스를 하나 설치한다.
 //
 UCLASS()
 class CHRONOVEIL_API UCVGA_Install_HpPotion : public UCVGA_Install_Base

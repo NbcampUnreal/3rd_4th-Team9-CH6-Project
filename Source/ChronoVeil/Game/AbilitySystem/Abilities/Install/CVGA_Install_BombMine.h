@@ -8,8 +8,8 @@
 class UNiagaraSystem;
 
 //
-// ¼³Ä¡Çü Áö·ÚÆøÅº(BombMine) ¾îºô¸®Æ¼
-// - ÇÃ·¹ÀÌ¾î ¾Õ¿¡ BombMine µğ¹ÙÀÌ½º¸¦ ÇÏ³ª ¼³Ä¡ÇÑ´Ù.
+// ì„¤ì¹˜í˜• ì§€ë¢°í­íƒ„(BombMine) ì–´ë¹Œë¦¬í‹°
+// - í”Œë ˆì´ì–´ ì•ì— BombMine ë””ë°”ì´ìŠ¤ë¥¼ í•˜ë‚˜ ì„¤ì¹˜í•œë‹¤.
 //
 UCLASS()
 class CHRONOVEIL_API UCVGA_Install_BombMine : public UCVGA_Install_Base

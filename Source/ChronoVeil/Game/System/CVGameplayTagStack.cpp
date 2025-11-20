@@ -35,13 +35,13 @@ void FCVGameplayTagStackContainer::RemoveStack(FGameplayTag Tag, int32 StackCoun
 
 	if (StackCount > 0)
 	{
-		// Iterator »ç¿ë : ¼øÈ¸ Áß ¿ø¼Ò »èÁ¦¿¡ À¯¸®
+		// Iterator ì‚¬ìš© : ìˆœíšŒ ì¤‘ ì›ì†Œ ì‚­ì œì— ìœ ë¦¬
 		for (auto It = Stacks.CreateIterator(); It; ++It)
 		{
 			FCVGameplayTagStack& Stack = *It;
 			if (Stack.Tag == Tag)
 			{
-				// 0 ÀÌÇÏ·Î ¶³¾îÁö¸é ¾Æ¿¹ Á¦°Å
+				// 0 ì´í•˜ë¡œ ë–¨ì–´ì§€ë©´ ì•„ì˜ˆ ì œê±°
 				if (Stack.StackCount <= StackCount)
 				{
 					It.RemoveCurrent();

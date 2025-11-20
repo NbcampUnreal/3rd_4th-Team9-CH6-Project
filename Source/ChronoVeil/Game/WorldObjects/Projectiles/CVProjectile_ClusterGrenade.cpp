@@ -10,7 +10,7 @@
 
 ACVProjectile_ClusterGrenade::ACVProjectile_ClusterGrenade()
 {
-    // Base¿¡¼­ ¸¸µç CollisionÀ» ¹°¸® ±×·¹³×ÀÌµå·Î »ç¿ëÁt./
+    // Baseì—ì„œ ë§Œë“  Collisionì„ ë¬¼ë¦¬ ê·¸ë ˆë„¤ì´ë“œë¡œ ì‚¬ìš©ë¨./
     if (Collision)
     {
         Collision->SetSimulatePhysics(true);
@@ -18,12 +18,12 @@ ACVProjectile_ClusterGrenade::ACVProjectile_ClusterGrenade()
         Collision->SetNotifyRigidBodyCollision(true);
         Collision->SetCollisionProfileName(TEXT("PhysicsActor"));
 
-        Collision->SetLinearDamping(0.1f);   // °ø±â ÀúÇ×
-        Collision->SetAngularDamping(0.1f);  // È¸Àü °¨¼è
+        Collision->SetLinearDamping(0.1f);   // ê³µê¸° ì €í•­
+        Collision->SetAngularDamping(0.1f);  // íšŒì „ ê°ì‡ 
         Collision->SetMassOverrideInKg(NAME_None, 2.5f, true);
     }
 
-    // ProjectileMovement´Â ÀÌ Åõ»çÃ¼¿¡¼± »ç¿ëÇÏÁö ¾ÊÀ½
+    // ProjectileMovementëŠ” ì´ íˆ¬ì‚¬ì²´ì—ì„  ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
     if (Movement)
     {
         Movement->bAutoActivate = false;
@@ -42,17 +42,17 @@ void ACVProjectile_ClusterGrenade::BeginPlay()
 {
     Super::BeginPlay();
 
-    // ¹°¸® ¸ÓÆ¼¸®¾ó »ı¼º (BeginPlay ½ÃÁ¡)
+    // ë¬¼ë¦¬ ë¨¸í‹°ë¦¬ì–¼ ìƒì„± (BeginPlay ì‹œì )
     if (Collision)
     {
         UPhysicalMaterial* PhysMat = NewObject<UPhysicalMaterial>(this);
         PhysMat->Friction = 0.4f;
-        PhysMat->Restitution = 0.8f;  // Æ¨±è Á¤µµ
+        PhysMat->Restitution = 0.8f;  // íŠ•ê¹€ ì •ë„
 
         Collision->SetPhysMaterialOverride(PhysMat);
     }
 
-    // ¼­¹ö¸¸ Æø¹ß Å¸ÀÌ¸Ó
+    // ì„œë²„ë§Œ í­ë°œ íƒ€ì´ë¨¸
     if (HasAuthority())
     {
         GetWorldTimerManager().SetTimer(
@@ -72,16 +72,16 @@ void ACVProjectile_ClusterGrenade::OnProjectileHit(
     FVector NormalImpulse,
     const FHitResult& Hit)
 {
-    // ¿©±â¼­´Â "Æ¨±â´Â" µ¿ÀÛ¸¸ Ã³¸®ÇÏ°í, BaseÃ³·³ Destroy()´Â ÇÏÁö ¾ÊÀ½.
+    // ì—¬ê¸°ì„œëŠ” "íŠ•ê¸°ëŠ”" ë™ì‘ë§Œ ì²˜ë¦¬í•˜ê³ , Baseì²˜ëŸ¼ Destroy()ëŠ” í•˜ì§€ ì•ŠìŒ.
     if (UPrimitiveComponent* RootPrim = Cast<UPrimitiveComponent>(GetRootComponent()))
     {
         FVector Velocity = RootPrim->GetPhysicsLinearVelocity();
 
-        // ¼Óµµ °¨¼è (¹«ÇÑ Æ¨±è ¹æÁö)
+        // ì†ë„ ê°ì‡  (ë¬´í•œ íŠ•ê¹€ ë°©ì§€)
         Velocity *= 0.8f;
 
-        // ¹Ù´Ú°ú ºÎµúÈú ¶§ Z ¹æÇâ ¹İ»ç
-        if (FMath::Abs(Hit.Normal.Z) > 0.6f) // °ÅÀÇ ¹Ù´Ú¸é
+        // ë°”ë‹¥ê³¼ ë¶€ë”ªí ë•Œ Z ë°©í–¥ ë°˜ì‚¬
+        if (FMath::Abs(Hit.Normal.Z) > 0.6f) // ê±°ì˜ ë°”ë‹¥ë©´
         {
             Velocity.Z *= -0.6f;
         }
@@ -94,7 +94,7 @@ void ACVProjectile_ClusterGrenade::OnProjectileHit(
         }
     }
 
-    // Æø¹ßÀº FuseTime Å¸ÀÌ¸Ó¿¡¼­ Ã³¸®ÇÒ°ÍÀÓ.
+    // í­ë°œì€ FuseTime íƒ€ì´ë¨¸ì—ì„œ ì²˜ë¦¬í• ê²ƒì„.
 }
 
 void ACVProjectile_ClusterGrenade::Explode()
@@ -111,7 +111,7 @@ void ACVProjectile_ClusterGrenade::Explode()
 
     Multicast_PlayExplosionFX();
 
-    // Æø¹ß ¹İ°æ ³» Ä³¸¯ÅÍ¿¡°Ô ÇÇÇØ Àû¿ë
+    // í­ë°œ ë°˜ê²½ ë‚´ ìºë¦­í„°ì—ê²Œ í”¼í•´ ì ìš©
     TArray<AActor*> OverlappingActors;
     ExplosionRadiusComp->GetOverlappingActors(OverlappingActors, ACharacter::StaticClass());
 

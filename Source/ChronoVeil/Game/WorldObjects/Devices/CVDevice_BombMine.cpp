@@ -20,7 +20,7 @@ void ACVDevice_BombMine::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// µµÈ­¼±(Á¡È­)VFX¸¦ Device¿¡ ºÙ¿© Àç»ý
+	// ë„í™”ì„ (ì í™”)VFXë¥¼ Deviceì— ë¶™ì—¬ ìž¬ìƒ
 	if (FuseVFX)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAttached(
@@ -53,12 +53,12 @@ void ACVDevice_BombMine::OnDeviceOverlap(
 		return;
 	}
 
-	// ÀÏ´Ü Äð´Ù¿î ÀÌÆåÆ® ´ë½Å ÇÏµåÄÚµùÀ¸·Î ÇÑ¹ø¸¸ Æø¹ßÇÏ°Ô ±¸Çö. ³ªÁß¿¡ Äð´Ù¿îÅ¬·¡½º(EffectÅ¬·¡½º)¸¸µé¾î¾ßÇÒµí.
+	// ì¼ë‹¨ ì¿¨ë‹¤ìš´ ì´íŽ™íŠ¸ ëŒ€ì‹  í•˜ë“œì½”ë”©ìœ¼ë¡œ í•œë²ˆë§Œ í­ë°œí•˜ê²Œ êµ¬í˜„. ë‚˜ì¤‘ì— ì¿¨ë‹¤ìš´í´ëž˜ìŠ¤(Effectí´ëž˜ìŠ¤)ë§Œë“¤ì–´ì•¼í• ë“¯.
 	if (!bArmed && OtherActor && OtherActor != this)
 	{
 		bArmed = true;
 
-		// µô·¹ÀÌ ÈÄ Æø¹ß
+		// ë”œë ˆì´ í›„ í­ë°œ
 		GetWorld()->GetTimerManager().SetTimer(
 			ExplosionTimer,
 			this,

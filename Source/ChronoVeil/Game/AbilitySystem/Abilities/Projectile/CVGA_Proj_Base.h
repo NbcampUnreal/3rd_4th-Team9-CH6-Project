@@ -15,11 +15,11 @@ public:
     UCVGA_Proj_Base();
 
 protected:
-    // ±âº»À¸·Î ½ò Åõ»çÃ¼ Å¬·¡½º (´Ü¹ßÇü : ÇÏ³ªÀÇ °´Ã¼¸¸ »ı¼ºÇÏ°í ½ÍÀ» ¶§ ¼³Á¤.)
+    // ê¸°ë³¸ìœ¼ë¡œ ì  íˆ¬ì‚¬ì²´ í´ë˜ìŠ¤ (ë‹¨ë°œí˜• : í•˜ë‚˜ì˜ ê°ì²´ë§Œ ìƒì„±í•˜ê³  ì‹¶ì„ ë•Œ ì„¤ì •.)
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile")
     TSubclassOf<ACVProjectile_Base> ProjectileClass;
 
-    // ¿©·¯°³ÀÇ Åõ»çÃ¼ Å¬·¡½º »ı¼º (¿¬¹ßÇü : ¿©·¯°³ÀÇ °´Ã¼°¡ »ı¼ºµÆÀ¸¸é ÁÁ°ÚÀ»¶§ ¼³Á¤.)
+    // ì—¬ëŸ¬ê°œì˜ íˆ¬ì‚¬ì²´ í´ë˜ìŠ¤ ìƒì„± (ì—°ë°œí˜• : ì—¬ëŸ¬ê°œì˜ ê°ì²´ê°€ ìƒì„±ëìœ¼ë©´ ì¢‹ê² ì„ë•Œ ì„¤ì •.)
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile")
     TArray<TSubclassOf<ACVProjectile_Base>> ProjectileClasses;
 
@@ -30,10 +30,10 @@ protected:
     float LifeSpan = 0.f;
 
 protected:
-    // °øÅë Åõ»çÃ¼ ½ºÆù ÇïÆÛ
-    // - InClass: ½ÇÁ¦·Î ½ºÆùÇÒ Åõ»çÃ¼ Å¬·¡½º
-    // - SpawnTM: ¿ùµå¿¡ ¹èÄ¡ÇÒ Æ®·£½ºÆû
-    // - ActorInfo: Ability ½ÃÀüÀÚ Á¤º¸ (Avatar/Controller µî Æ÷ÇÔ)
+    // ê³µí†µ íˆ¬ì‚¬ì²´ ìŠ¤í° í—¬í¼
+    // - InClass: ì‹¤ì œë¡œ ìŠ¤í°í•  íˆ¬ì‚¬ì²´ í´ë˜ìŠ¤
+    // - SpawnTM: ì›”ë“œì— ë°°ì¹˜í•  íŠ¸ëœìŠ¤í¼
+    // - ActorInfo: Ability ì‹œì „ì ì •ë³´ (Avatar/Controller ë“± í¬í•¨)
     ACVProjectile_Base* SpawnProjectile(
         TSubclassOf<ACVProjectile_Base> InClass,
         const FTransform& SpawnTM,

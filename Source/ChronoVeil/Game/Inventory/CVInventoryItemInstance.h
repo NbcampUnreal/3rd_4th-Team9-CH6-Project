@@ -40,7 +40,7 @@ public:
 	UPROPERTY()
 	FCVGameplayTagStackContainer StatTags;
 
-	/** Inventory ItemÀÇ ÀÎ½ºÅÏ½º´Â ¾î¶² DefinitionÀ¸·ÎºÎÅÍ ¸¸µé¾îÁ³´ÂÁö Á¤º¸ */
+	/** Inventory Itemì˜ ì¸ìŠ¤í„´ìŠ¤ëŠ” ì–´ë–¤ Definitionìœ¼ë¡œë¶€í„° ë§Œë“¤ì–´ì¡ŒëŠ”ì§€ ì •ë³´ */
 	UPROPERTY()
 	TSubclassOf<UCVInventoryItemDefinition> ItemDef;
 };

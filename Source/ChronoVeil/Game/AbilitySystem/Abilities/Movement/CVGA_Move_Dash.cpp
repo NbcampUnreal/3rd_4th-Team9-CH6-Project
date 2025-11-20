@@ -5,7 +5,7 @@
 
 UCVGA_Move_Dash::UCVGA_Move_Dash()
 {
-    // ÇÊ¿äÇÏ¸é ¿©±â¼­ NetExecutionPolicy/InstancingPolicy Á¶Á¤ °¡´É
+    // í•„ìš”í•˜ë©´ ì—¬ê¸°ì„œ NetExecutionPolicy/InstancingPolicy ì¡°ì • ê°€ëŠ¥
 }
 
 void UCVGA_Move_Dash::PerformMove(
@@ -22,13 +22,13 @@ void UCVGA_Move_Dash::PerformMove(
 
     FVector DashDir = Character->GetActorForwardVector();
 
-    // ÀÔ·Â ¹æÇâ »ç¿ë ¿É¼Ç
+    // ìž…ë ¥ ë°©í–¥ ì‚¬ìš© ì˜µì…˜
     if (bUseInputDirection)
     {
         if (ACVPlayerController* PC = Cast<ACVPlayerController>(ActorInfo->PlayerController.Get()))
         {
-            // ¿©±â¼­ ½ÇÁ¦ ÀÔ·Â º¤ÅÍ¸¦ °¡Á®¿À´Â ¹æ½ÄÀº ÇÁ·ÎÁ§Æ®¿¡ µû¶ó ´Ù¸¦ ¼ö ÀÖÀ½ (È®½ÇÇÏÁö ¾ÊÀ½)
-            // ¿¹½Ã·Î CharacterMovementÀÇ LastInputVector¸¦ »ç¿ë
+            // ì—¬ê¸°ì„œ ì‹¤ì œ ìž…ë ¥ ë²¡í„°ë¥¼ ê°€ì ¸ì˜¤ëŠ” ë°©ì‹ì€ í”„ë¡œì íŠ¸ì— ë”°ë¼ ë‹¤ë¥¼ ìˆ˜ ìžˆìŒ (í™•ì‹¤í•˜ì§€ ì•ŠìŒ)
+            // ì˜ˆì‹œë¡œ CharacterMovementì˜ LastInputVectorë¥¼ ì‚¬ìš©
             const FVector InputDir = Character->GetLastMovementInputVector();
             if (!InputDir.IsNearlyZero())
             {
@@ -45,7 +45,7 @@ void UCVGA_Move_Dash::PerformMove(
 
     const FVector LaunchVelocity = DashDir * DashStrength;
 
-    // Z´Â À¯ÁöÇÏ°í XY¸¸ Launch - Áö¸é ´ë½Ã ´À³¦
+    // ZëŠ” ìœ ì§€í•˜ê³  XYë§Œ Launch - ì§€ë©´ ëŒ€ì‹œ ëŠë‚Œ
     Character->LaunchCharacter(
         FVector(LaunchVelocity.X, LaunchVelocity.Y, 0.0f),
         true,   // XY Override

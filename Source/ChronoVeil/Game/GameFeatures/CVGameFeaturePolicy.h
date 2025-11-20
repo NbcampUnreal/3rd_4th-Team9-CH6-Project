@@ -11,8 +11,8 @@
 //class UGameFeatureData;
 //
 ///**
-// * ChronoVeilÀÇ GameplayFeaturePolicy
-// * - GameFeature PluginÀÇ Register/Activate »óÅÂ ¸ğ´ÏÅÍ¸µ
+// * ChronoVeilì˜ GameplayFeaturePolicy
+// * - GameFeature Pluginì˜ Register/Activate ìƒíƒœ ëª¨ë‹ˆí„°ë§
 // */
 //UCLASS()
 //class CHRONOVEIL_API UCVGameplayFeaturePolicy : public UDefaultGameFeaturesProjectPolicies
@@ -26,13 +26,13 @@
 //	virtual void InitGameFeatureManager() override;
 //	virtual void ShutdownGameFeatureManager() override;
 //
-//	/** Observer·Î µî·ÏÇÑ °´Ã¼¸¦ °ü¸® */
+//	/** Observerë¡œ ë“±ë¡í•œ ê°ì²´ë¥¼ ê´€ë¦¬ */
 //	UPROPERTY(Transient)
 //	TArray<TObjectPtr<UObject>> Observers;
 //};
 //
 ///**
-// * GameFeature PluginÀÇ Register/Unregister ´Ü°è¿¡¼­ GameplayCuePath¸¦ µî·Ï/ÇØÁ¦
+// * GameFeature Pluginì˜ Register/Unregister ë‹¨ê³„ì—ì„œ GameplayCuePathë¥¼ ë“±ë¡/í•´ì œ
 // */
 //UCLASS()
 //class CHRONOVEIL_API UCVGameFeature_AddGameplayCuePaths : public UObject, public IGameFeatureStateChangeObserver

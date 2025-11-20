@@ -7,9 +7,9 @@
 class ACVDevice_AffectionDoll;
 
 //
-// ¾ÖÁ¤ÀÎÇü ¼³Ä¡ ¾îºô¸®Æ¼
-// - Ä³¸¯ÅÍ ¾Õ ¹Ù´Ú¿¡ ¾ÖÁ¤ÀÎÇü µð¹ÙÀÌ½º¸¦ ¼³Ä¡
-// - ½ÇÁ¦ ¿¬Ãâ/Ç®¸µ ·ÎÁ÷Àº ACVDevice_AffectionDoll ÂÊ¿¡ ±¸Çö
+// ì• ì •ì¸í˜• ì„¤ì¹˜ ì–´ë¹Œë¦¬í‹°
+// - ìºë¦­í„° ì•ž ë°”ë‹¥ì— ì• ì •ì¸í˜• ë””ë°”ì´ìŠ¤ë¥¼ ì„¤ì¹˜
+// - ì‹¤ì œ ì—°ì¶œ/í’€ë§ ë¡œì§ì€ ACVDevice_AffectionDoll ìª½ì— êµ¬í˜„
 //
 UCLASS()
 class CHRONOVEIL_API UCVGA_Install_AffectionDoll : public UCVGA_Install_Base
@@ -20,7 +20,7 @@ public:
 	UCVGA_Install_AffectionDoll();
 
 protected:
-	// ¼³Ä¡ÇÒ ÀÎÇü Å¬·¡½º (BP ·Î BP_CVDevice_AffectionDoll ÁöÁ¤ ±ÇÀå)
+	// ì„¤ì¹˜í•  ì¸í˜• í´ëž˜ìŠ¤ (BP ë¡œ BP_CVDevice_AffectionDoll ì§€ì • ê¶Œìž¥)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Install|AffectionDoll")
 	TSubclassOf<ACVDevice_AffectionDoll> AffectionDollClass;
 

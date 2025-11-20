@@ -12,10 +12,10 @@
 //
 //
 ///**
-// * °æ·® Lyra ÆĞÅÏ: Pawn ÃÊ±âÈ­ »óÅÂ(InitState) ÅëÇÕ + ASC ¿¬°á
-// * - Feature µî·Ï/ÇØÁ¦
-// * - PawnData ¼¼ÆÃ °¨Áö ¡æ InitState ¼±Çü ÁøÇà
-// * - ASC Init/Uninit ¹× Delegate ºê·ÎµåÄ³½ºÆ®
+// * ê²½ëŸ‰ Lyra íŒ¨í„´: Pawn ì´ˆê¸°í™” ìƒíƒœ(InitState) í†µí•© + ASC ì—°ê²°
+// * - Feature ë“±ë¡/í•´ì œ
+// * - PawnData ì„¸íŒ… ê°ì§€ â†’ InitState ì„ í˜• ì§„í–‰
+// * - ASC Init/Uninit ë° Delegate ë¸Œë¡œë“œìºìŠ¤íŠ¸
 // */
 //UCLASS(ClassGroup = (CV), meta = (BlueprintSpawnableComponent))
 //class CHRONOVEIL_API UCVPawnExtensionComponent : public UPawnComponent, public IGameFrameworkInitStateInterface
@@ -25,10 +25,10 @@
 //public:
 //	UCVPawnExtensionComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 //
-//	/** GameFrameworkComponentManager¿¡ µî·ÏÇÒ FeatureName */
+//	/** GameFrameworkComponentManagerì— ë“±ë¡í•  FeatureName */
 //	static const FName NAME_ActorFeatureName;
 //
-//	/** ÆíÀÇ ÇÔ¼ö */
+//	/** í¸ì˜ í•¨ìˆ˜ */
 //	static UCVPawnExtensionComponent* FindPawnExtensionComponent(const AActor* Actor)
 //	{
 //		return (Actor ? Actor->FindComponentByClass<UCVPawnExtensionComponent>() : nullptr);
@@ -37,22 +37,22 @@
 //	template <class T>
 //	const T* GetPawnData() const { return Cast<T>(PawnData); }
 //
-//	/** ¼­¹ö ±ÇÇÑ¿¡¼­¸¸ PawnData ¼³Á¤ */
+//	/** ì„œë²„ ê¶Œí•œì—ì„œë§Œ PawnData ì„¤ì • */
 //	void SetPawnData(const UCVPawnData* InPawnData);
 //
-//	/** ÀÔ·Â Àç¼³Á¤ÀÌ ÇÊ¿äÇÒ ¶§ InitState Ã¼ÀÎ ÀçÆò°¡ Æ®¸®°Å */
+//	/** ì…ë ¥ ì¬ì„¤ì •ì´ í•„ìš”í•  ë•Œ InitState ì²´ì¸ ì¬í‰ê°€ íŠ¸ë¦¬ê±° */
 //	void SetupPlayerInputComponent();
 //
-//	/** ASC ÃÊ±âÈ­/ÇØÁ¦ */
+//	/** ASC ì´ˆê¸°í™”/í•´ì œ */
 //	UCVAbilitySystemComponent* GetCVAbilitySystemComponent() const { return AbilitySystemComponent; }
 //	void InitializeAbilitySystem(UCVAbilitySystemComponent* InASC, AActor* InOwnerActor);
 //	void UninitializeAbilitySystem();
 //
-//	/** ASC ÃÊ±âÈ­/ÇØÁ¦ ½ÃÁ¡ Delegate µî·Ï(ÇÑ °´Ã¼ 1È¸) */
+//	/** ASC ì´ˆê¸°í™”/í•´ì œ ì‹œì  Delegate ë“±ë¡(í•œ ê°ì²´ 1íšŒ) */
 //	void OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate Delegate);
 //	void OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate Delegate);
 //
-//	/** ¼­¹ö Æ÷Á¦¼Ç ½Ã ASC ÃÊ±âÈ­ + AbilitySet ºÎ¿© */
+//	/** ì„œë²„ í¬ì œì…˜ ì‹œ ASC ì´ˆê¸°í™” + AbilitySet ë¶€ì—¬ */
 //	void HandlePossessed(ACVCharacter* Char);
 //
 //	// ---------- UPawnComponent ----------
@@ -67,11 +67,11 @@
 //	virtual void CheckDefaultInitialization() final;
 //
 //public:
-//	/** PawnÀ» »ı¼º ½ÃÁ¡¿¡ ÁÖÀÔÇÏ´Â µ¥ÀÌÅÍ(InitialOnly·Î º¹Á¦µÇ´Â °ÍÀ» ±ÇÀå) */
+//	/** Pawnì„ ìƒì„± ì‹œì ì— ì£¼ì…í•˜ëŠ” ë°ì´í„°(InitialOnlyë¡œ ë³µì œë˜ëŠ” ê²ƒì„ ê¶Œì¥) */
 //	UPROPERTY(EditInstanceOnly, Category = "CV|Pawn")
 //	TObjectPtr<const UCVPawnData> PawnData = nullptr;
 //
-//	/** ASC Ä³½Ã */
+//	/** ASC ìºì‹œ */
 //	UPROPERTY()
 //	TObjectPtr<UCVAbilitySystemComponent> AbilitySystemComponent = nullptr;
 //

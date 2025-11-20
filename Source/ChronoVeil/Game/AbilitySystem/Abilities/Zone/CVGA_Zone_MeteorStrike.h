@@ -15,7 +15,7 @@ public:
     UCVGA_Zone_MeteorStrike();
 
 protected:
-    // ¶³¾îÁø À§Ä¡¿¡ ±ò¸± ÀåÆÇ(Zone) Å¬·¡½º
+    // ë–¨ì–´ì§„ ìœ„ì¹˜ì— ê¹”ë¦´ ì¥íŒ(Zone) í´ë˜ìŠ¤
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Zone|Meteor")
     TSubclassOf<ACVZone_MeteorImpact> MeteorImpactZoneClass;
 

@@ -18,7 +18,7 @@ public:
 		return FCVGameplayAbilityTargetData_SingleTargetHit::StaticStruct();
 	}
 
-	// Åº¾à ID (Ä«Æ®¸®Áö)
+	// íƒ„ì•½ ID (ì¹´íŠ¸ë¦¬ì§€)
 	UPROPERTY()
 	int32 CartridgeID;
 };

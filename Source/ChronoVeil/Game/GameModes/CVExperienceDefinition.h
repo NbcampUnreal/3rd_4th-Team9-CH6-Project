@@ -1,13 +1,13 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "Engine/DataAsset.h" //  UE5.7¿¡¼± PrimaryDataAsset.hÀÌ DataAsset.h·Î ÅëÇÕµÊ.
+#include "Engine/DataAsset.h" //  UE5.7ì—ì„  PrimaryDataAsset.hì´ DataAsset.hë¡œ í†µí•©ë¨.
 #include "CVExperienceDefinition.generated.h"
 
 class UCVPawnData;
 
 /**
- * °æÇè(Experience) ±âº» ¼³Á¤ ¹­À½
- * - DefaultPawnDataClass: ÀÌ °æÇè¿¡¼­ »ç¿ëÇÒ ±âº» PawnData Å¬·¡½º (CDO¸¦ Áï½Ã ¾ò¾î¾²±â À§ÇÔ)
+ * ê²½í—˜(Experience) ê¸°ë³¸ ì„¤ì • ë¬¶ìŒ
+ * - DefaultPawnDataClass: ì´ ê²½í—˜ì—ì„œ ì‚¬ìš©í•  ê¸°ë³¸ PawnData í´ë˜ìŠ¤ (CDOë¥¼ ì¦‰ì‹œ ì–»ì–´ì“°ê¸° ìœ„í•¨)
  */
 UCLASS(BlueprintType)
 class CHRONOVEIL_API UCVExperienceDefinition : public UPrimaryDataAsset
@@ -17,15 +17,15 @@ class CHRONOVEIL_API UCVExperienceDefinition : public UPrimaryDataAsset
 public:
     UCVExperienceDefinition(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-    // PrimaryAssetTypeÀ» ¸í½ÃÀûÀ¸·Î CVExperienceDefinitionÀ¸·Î °íÁ¤ÇÏ°í ½ÍÀ¸¸é override
+    // PrimaryAssetTypeì„ ëª…ì‹œì ìœ¼ë¡œ CVExperienceDefinitionìœ¼ë¡œ ê³ ì •í•˜ê³  ì‹¶ìœ¼ë©´ override
     virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 
-    // DefaultPawnDataClassÀÇ CDO¸¦ µ¹·ÁÁÜ (CPP¿¡ ±¸ÇöµÇ¾î ÀÖÀ¸´Ï ¼±¾ğ ÇÊ¿ä)
+    // DefaultPawnDataClassì˜ CDOë¥¼ ëŒë ¤ì¤Œ (CPPì— êµ¬í˜„ë˜ì–´ ìˆìœ¼ë‹ˆ ì„ ì–¸ í•„ìš”)
     UFUNCTION(BlueprintCallable, Category = "Experience")
     const UCVPawnData* GetDefaultPawnData() const;
 
 public:
-    // CPP¿¡¼­ »ç¿ëÇÏ´Â ÀÌ¸§°ú µ¿ÀÏÇÏ°Ô ¸ÂÃã
+    // CPPì—ì„œ ì‚¬ìš©í•˜ëŠ” ì´ë¦„ê³¼ ë™ì¼í•˜ê²Œ ë§ì¶¤
     UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
     TSoftObjectPtr<UCVPawnData> DefaultPawnData;
     //TObjectPtr<UCVPawnData> DefaultPawnDataClass;

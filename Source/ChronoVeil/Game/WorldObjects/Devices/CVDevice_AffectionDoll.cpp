@@ -20,7 +20,7 @@ ACVDevice_AffectionDoll::ACVDevice_AffectionDoll()
 
 	LifeTime = 2.0f;
 
-	// ³×Æ®¿öÅ©
+	// ë„¤íŠ¸ì›Œí¬
 	bReplicates = true;
 	SetReplicateMovement(true);
 }
@@ -84,7 +84,7 @@ void ACVDevice_AffectionDoll::ApplyPull(float DeltaTime)
 			continue;
 		}
 
-		// ÀÚ±â ¼ÒÀ¯ÀÚ(¼³Ä¡ÀÚ)¸¦ ²ø¾î´ç±æÁö ¿©ºÎ´Â Á¤Ã¥¿¡ µû¶ó ¼±ÅÃ
+		// ìê¸° ì†Œìœ ì(ì„¤ì¹˜ì)ë¥¼ ëŒì–´ë‹¹ê¸¸ì§€ ì—¬ë¶€ëŠ” ì •ì±…ì— ë”°ë¼ ì„ íƒ
 		// if (Character == GetOwningPawn()) 
 		// {
 		//		Continue;
@@ -92,7 +92,7 @@ void ACVDevice_AffectionDoll::ApplyPull(float DeltaTime)
 
 		const FVector CharLoc = Character->GetActorLocation();
 		FVector ToCenter = Center - CharLoc;
-		ToCenter.Z = 0.f; // ¼öÆò ¹æÇâ¸¸ ²ø¾î´ç±â°í ½ÍÀ¸¸é Z Á¦°ÅÇÔ.
+		ToCenter.Z = 0.f; // ìˆ˜í‰ ë°©í–¥ë§Œ ëŒì–´ë‹¹ê¸°ê³  ì‹¶ìœ¼ë©´ Z ì œê±°í•¨.
 
 		const float Distance = ToCenter.Size();
 		if (Distance <= KINDA_SMALL_NUMBER)
@@ -102,15 +102,15 @@ void ACVDevice_AffectionDoll::ApplyPull(float DeltaTime)
 
 		FVector Dir = ToCenter / Distance;
 
-		// DeltaTime ¹İ¿µÇØ¼­ frame-rate(½Ã°£ºñÀ²) µ¶¸³ÀûÀÎ ÈûÀ» ¾²´Â ´À³¦À» ÁÜ.
+		// DeltaTime ë°˜ì˜í•´ì„œ frame-rate(ì‹œê°„ë¹„ìœ¨) ë…ë¦½ì ì¸ í˜ì„ ì“°ëŠ” ëŠë‚Œì„ ì¤Œ.
 		const float Strength = PullStrength * DeltaTime;
 		FVector LaunchVel = Dir * Strength;
 
-		// ±âÁ¸ Z ¼Óµµ´Â À¯Áö, XY ¸¸ µ¤¾î¾²±â
+		// ê¸°ì¡´ Z ì†ë„ëŠ” ìœ ì§€, XY ë§Œ ë®ì–´ì“°ê¸°
 		FVector CurrentVel = Character->GetVelocity();
 		LaunchVel.Z = CurrentVel.Z;
 
-		// XY Override = true, Z Override = false : ¸»±×´ë·Î xyÃà ±âÁØÀ¸·Î ²ø´õ ´ç±â´Â ÈûÀ» Àû¿ëÇÏ°í ½ÍÀº°ÅÀÓ.
+		// XY Override = true, Z Override = false : ë§ê·¸ëŒ€ë¡œ xyì¶• ê¸°ì¤€ìœ¼ë¡œ ëŒë” ë‹¹ê¸°ëŠ” í˜ì„ ì ìš©í•˜ê³  ì‹¶ì€ê±°ì„.
 		Character->LaunchCharacter(LaunchVel, true, false);
 	}
 }

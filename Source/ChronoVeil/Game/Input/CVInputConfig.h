@@ -4,14 +4,14 @@
 //#include "CoreMinimal.h"
 //#include "Engine/DataAsset.h"
 //#include "GameplayTagContainer.h"
-//#include "CVMappableConfigPair.h"   // °æ·Î´Â ½ÇÁ¦ Æú´õ¿¡ ¸Â°Ô
+//#include "CVMappableConfigPair.h"   // ê²½ë¡œëŠ” ì‹¤ì œ í´ë”ì— ë§ê²Œ
 //#include "CVInputConfig.generated.h"
 //
 //class UInputAction;
 //class UInputMappingContext;
 //
 //
-///** ÀÔ·Â ·¹ÀÌ¾î (IMC ¿ì¼±¼øÀ§/ÀüÈ¯ °ü¸®¿ë) // ÃßÈÄ¿¡ GameplayTag·Î °ü¸®ÇØ¾ßÇÒ±î °í¹ÎÁßÀÓ. */
+///** ì…ë ¥ ë ˆì´ì–´ (IMC ìš°ì„ ìˆœìœ„/ì „í™˜ ê´€ë¦¬ìš©) // ì¶”í›„ì— GameplayTagë¡œ ê´€ë¦¬í•´ì•¼í• ê¹Œ ê³ ë¯¼ì¤‘ì„. */
 //UENUM(BlueprintType)
 //enum class ECVInputLayer : uint8
 //{
@@ -23,8 +23,8 @@
 //};
 //
 ///**
-// * ÇÑ ¾×¼Ç°ú GameplayTag¸¦ ¸ÅÇÎÇÏ´Â ¿£Æ®¸®
-// * - Native¿ë/Ability¿ë ¸ğµÎ µ¿ÀÏ ±¸Á¶ »ç¿ë
+// * í•œ ì•¡ì…˜ê³¼ GameplayTagë¥¼ ë§¤í•‘í•˜ëŠ” ì—”íŠ¸ë¦¬
+// * - Nativeìš©/Abilityìš© ëª¨ë‘ ë™ì¼ êµ¬ì¡° ì‚¬ìš©
 // */
 //USTRUCT(BlueprintType)
 //struct FCVTaggedInputAction
@@ -32,15 +32,15 @@
 //	GENERATED_BODY()
 //
 //public:
-//	// Enhanced InputÀÇ ¾×¼Ç
+//	// Enhanced Inputì˜ ì•¡ì…˜
 //	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 //	TObjectPtr<UInputAction> InputAction = nullptr;
 //
-//	// ÀÌ ¾×¼ÇÀ» ½Äº°/¹ÙÀÎµùÇÏ´Â ÅÂ±× (¿¹: InputTag.Move, InputTag.Look.Mouse, InputTag.Ability.Drone)
+//	// ì´ ì•¡ì…˜ì„ ì‹ë³„/ë°”ì¸ë”©í•˜ëŠ” íƒœê·¸ (ì˜ˆ: InputTag.Move, InputTag.Look.Mouse, InputTag.Ability.Drone)
 //	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input", meta = (Categories = "InputTag"))
 //	FGameplayTag InputTag;
 //
-//	// ÄÁÆ®·Ñ·¯ ´Ü°è¿¡¼­ ¼ÒºñÇÒÁö ¿©ºÎ(º¸Åë Native´Â true, Ability´Â false ±ÇÀå)
+//	// ì»¨íŠ¸ë¡¤ëŸ¬ ë‹¨ê³„ì—ì„œ ì†Œë¹„í• ì§€ ì—¬ë¶€(ë³´í†µ NativeëŠ” true, AbilityëŠ” false ê¶Œì¥)
 //	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 //	bool bConsumeInput = true;
 //
@@ -48,10 +48,10 @@
 //};
 //
 ///**
-// * °æ·® Lyra ½ºÅ¸ÀÏ ÀÔ·Â ±¸¼º
-// * - NativeInputActions: ÄÁÆ®·Ñ·¯/Ä³¸¯ÅÍ¿¡¼­ Á÷Á¢ Ã³¸®(ÀÌµ¿/½ÃÁ¡ µî)
-// * - AbilityInputActions: GameplayTag Å¥·Î ASC¿¡ Àü´ŞÇÏ¿© Ability È°¼ºÈ­
-// * - MappableConfigs: IMC ¹­À½(PMI_Default_KBM µî)°ú ¿ì¼±¼øÀ§
+// * ê²½ëŸ‰ Lyra ìŠ¤íƒ€ì¼ ì…ë ¥ êµ¬ì„±
+// * - NativeInputActions: ì»¨íŠ¸ë¡¤ëŸ¬/ìºë¦­í„°ì—ì„œ ì§ì ‘ ì²˜ë¦¬(ì´ë™/ì‹œì  ë“±)
+// * - AbilityInputActions: GameplayTag íë¡œ ASCì— ì „ë‹¬í•˜ì—¬ Ability í™œì„±í™”
+// * - MappableConfigs: IMC ë¬¶ìŒ(PMI_Default_KBM ë“±)ê³¼ ìš°ì„ ìˆœìœ„
 // */
 //UCLASS()
 //class CHRONOVEIL_API UCVInputConfig : public UDataAsset
@@ -59,15 +59,15 @@
 //	GENERATED_BODY()
 //
 //public:
-//	/** ÀÌµ¿/½ÃÁ¡ µî ³×ÀÌÆ¼ºê Ã³¸® ¾×¼Ç */
+//	/** ì´ë™/ì‹œì  ë“± ë„¤ì´í‹°ë¸Œ ì²˜ë¦¬ ì•¡ì…˜ */
 //	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|Native")
 //	TArray<FCVTaggedInputAction> NativeInputActions;
 //
-//	/** Ability ÀÔ·Â(´©¸§/È¦µå/¶À)À» ÅÂ±×·Î ASC¿¡ Àü´Ş */
+//	/** Ability ì…ë ¥(ëˆ„ë¦„/í™€ë“œ/ë—Œ)ì„ íƒœê·¸ë¡œ ASCì— ì „ë‹¬ */
 //	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|Ability")
 //	TArray<FCVTaggedInputAction> AbilityInputActions;
 //
-//	/** ±âº»/µå·Ğ µî ¸ÅÇÎ ÄÁÅØ½ºÆ® ¼¼Æ® */
+//	/** ê¸°ë³¸/ë“œë¡  ë“± ë§¤í•‘ ì»¨í…ìŠ¤íŠ¸ ì„¸íŠ¸ */
 //	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|Mappings")
 //	TArray<FCVMappableConfigPair> MappableConfigs;
 //
@@ -76,26 +76,26 @@
 //
 //
 //public:
-//	/** ÅÂ±×·Î Native ¾×¼Ç Á¶È¸ (¾øÀ¸¸é nullptr) */
+//	/** íƒœê·¸ë¡œ Native ì•¡ì…˜ ì¡°íšŒ (ì—†ìœ¼ë©´ nullptr) */
 //	UFUNCTION(BlueprintCallable, Category = "Input")
 //	UInputAction* FindNativeActionByTag(const FGameplayTag& Tag, bool& bOutConsume) const;
 //
-//	/** ÅÂ±×·Î Ability ¾×¼Ç Á¶È¸ (¾øÀ¸¸é nullptr) */
+//	/** íƒœê·¸ë¡œ Ability ì•¡ì…˜ ì¡°íšŒ (ì—†ìœ¼ë©´ nullptr) */
 //	UFUNCTION(BlueprintCallable, Category = "Input")
 //	UInputAction* FindAbilityActionByTag(const FGameplayTag& Tag, bool& bOutConsume) const;
 //
-//	/** µğÆúÆ® È°¼ºÈ­ ´ë»ó IMCµé ¹İÈ¯ (non-const Æ÷ÀÎÅÍ) */
+//	/** ë””í´íŠ¸ í™œì„±í™” ëŒ€ìƒ IMCë“¤ ë°˜í™˜ (non-const í¬ì¸í„°) */
 //	UFUNCTION(BlueprintCallable, Category = "Input")
 //	void GetDefaultMappableConfigs(TArray<UInputMappingContext*>& OutIMCs,
 //		TArray<int32>& OutPriorities) const;
 //
-//	/** Æ¯Á¤ ·¹ÀÌ¾îÀÇ IMCµé¸¸ ÃßÃâ (¿¹: Drone/Vehicle ÀüÈ¯¿ë) */
+//	/** íŠ¹ì • ë ˆì´ì–´ì˜ IMCë“¤ë§Œ ì¶”ì¶œ (ì˜ˆ: Drone/Vehicle ì „í™˜ìš©) */
 //	UFUNCTION(BlueprintCallable, Category = "Input")
 //	void GetMappableConfigsByLayerTag(const FGameplayTag& LayerTag,
 //		TArray<UInputMappingContext*>& OutIMCs,
 //		TArray<int32>& OutPriorities) const;
 //
-//	/** ÅÂ±× Á¸Àç ¿©ºÎ ºü¸¥ È®ÀÎ */
+//	/** íƒœê·¸ ì¡´ì¬ ì—¬ë¶€ ë¹ ë¥¸ í™•ì¸ */
 //	UFUNCTION(BlueprintCallable, Category = "Input")
 //	bool HasInputTag(const FGameplayTag& Tag) const;
 //};

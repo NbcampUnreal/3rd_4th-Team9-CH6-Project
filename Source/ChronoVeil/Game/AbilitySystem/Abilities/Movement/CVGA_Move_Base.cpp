@@ -20,7 +20,7 @@ void UCVGA_Move_Base::ActivateAbility(
 
     PerformMove(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-    // ´Ü¹ß¼º ÀÌµ¿±â¸é ¹Ù·Î EndAbility¸¦ ¹ßµ¿½ÃÅ°ÀÚ.
+    // ë‹¨ë°œì„± ì´ë™ê¸°ë©´ ë°”ë¡œ EndAbilityë¥¼ ë°œë™ì‹œí‚¤ì.
     EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }
 
@@ -30,5 +30,5 @@ void UCVGA_Move_Base::PerformMove(
     const FGameplayAbilityActivationInfo ActivationInfo,
     const FGameplayEventData* TriggerEventData)
 {
-    // ±âº» ±¸Çö ¾øÀ½. ÆÄ»ı¿¡¼­ override.
+    // ê¸°ë³¸ êµ¬í˜„ ì—†ìŒ. íŒŒìƒì—ì„œ override.
 }

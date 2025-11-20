@@ -29,7 +29,7 @@ public:
 	virtual void OnRegister() final;
 	virtual void GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView) final;
 
-//protected:  // ¿ø·¡´Â ÇØ´ç ¼±¾ğÀ» ÇØÁÖ´Â°Ô ÁÁÀ½. ±×·¯³ª ÄÚµå¸¦ ¼öÁ¤ÇÏ´Âµ¥ ¾î·Á¿òÀÌ ÀÖ¾î. ÁÖ¼®Ã³¸®¸¸.. 
+//protected:  // ì›ë˜ëŠ” í•´ë‹¹ ì„ ì–¸ì„ í•´ì£¼ëŠ”ê²Œ ì¢‹ìŒ. ê·¸ëŸ¬ë‚˜ ì½”ë“œë¥¼ ìˆ˜ì •í•˜ëŠ”ë° ì–´ë ¤ì›€ì´ ìˆì–´. ì£¼ì„ì²˜ë¦¬ë§Œ.. 
 	UPROPERTY()
 	TObjectPtr<UCVCameraModeStack> CameraModeStack;
 

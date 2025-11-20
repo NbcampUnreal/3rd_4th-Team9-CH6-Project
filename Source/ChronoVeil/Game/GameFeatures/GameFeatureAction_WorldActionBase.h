@@ -13,7 +13,7 @@
 //struct FWorldContext;
 //
 ///**
-// * ¿ùµå¸¦ ¼øÈ¸ÇÏ¸é¼­ GameFeature¸¦ Àû¿ëÇÏ´Â º£ÀÌ½º ¾×¼Ç
+// * ì›”ë“œë¥¼ ìˆœíšŒí•˜ë©´ì„œ GameFeatureë¥¼ ì ìš©í•˜ëŠ” ë² ì´ìŠ¤ ì•¡ì…˜
 // */
 //UCLASS(Abstract)
 //class CHRONOVEIL_API UGameFeatureAction_WorldActionBase : public UGameFeatureAction
@@ -24,6 +24,6 @@
 //	/** UGameFeatureAction interface */
 //	virtual void OnGameFeatureActivating(FGameFeatureActivatingContext& Context) override;
 //
-//	/** ÆÄ»ı Å¬·¡½º¿¡¼­ ±¸ÇöÇØ¾ß ÇÏ´Â ÇÔ¼ö: ¿ùµå¿¡ ½ÇÁ¦·Î Àû¿ë */
+//	/** íŒŒìƒ í´ë˜ìŠ¤ì—ì„œ êµ¬í˜„í•´ì•¼ í•˜ëŠ” í•¨ìˆ˜: ì›”ë“œì— ì‹¤ì œë¡œ ì ìš© */
 //	virtual void AddToWorld(const FWorldContext& WorldContext, const FGameFeatureStateChangeContext& ChangeContext) PURE_VIRTUAL(UGameFeatureAction_WorldActionBase::AddToWorld, );
 //};

@@ -6,8 +6,8 @@ UCVGA_Install_ToyTowerJump::UCVGA_Install_ToyTowerJump()
 {
     SpawnOffset = FVector(1200.0f, 0.f, 0.f);
     LifeSpan = 10.f;
-    // DeviceClasses ´Â BP¿¡¼­ ToyTower / JumpPad ³Ö¾îµµ µÇ°í,
-    // C++¿¡¼­ Á÷Á¢ AddDefaulted()·Î Ã¤¿öµµ µÊ.
+    // DeviceClasses ëŠ” BPì—ì„œ ToyTower / JumpPad ë„£ì–´ë„ ë˜ê³ ,
+    // C++ì—ì„œ ì§ì ‘ AddDefaulted()ë¡œ ì±„ì›Œë„ ë¨.
 }
 
 void UCVGA_Install_ToyTowerJump::ActivateAbility(
@@ -55,7 +55,7 @@ void UCVGA_Install_ToyTowerJump::SpawnObstacleDevices(
             + Avatar->GetActorForwardVector() * SpawnOffset.X;
         SpawnLocation.Z += SpawnOffset.Z;
 
-        // Á¡ÇÁÆÐµå´Â Ä³¸¯ÅÍ µÚ¿¡ ½ºÆù
+        // ì í”„íŒ¨ë“œëŠ” ìºë¦­í„° ë’¤ì— ìŠ¤í°
         if (DeviceClassItem->IsChildOf(ACVDevice_JumpPad::StaticClass()))
         {
             SpawnLocation += Avatar->GetActorForwardVector() * JumpPadBackOffset;

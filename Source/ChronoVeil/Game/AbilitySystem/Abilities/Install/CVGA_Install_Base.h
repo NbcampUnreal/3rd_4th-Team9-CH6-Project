@@ -7,7 +7,7 @@
 class ACVDevice_Base;
 struct FGameplayAbilityActorInfo;
 
-// ¸ğµç ¼³Ä¡¹° GameplayAbilityÀÇ ±âÃÊ Å¬·¡½º
+// ëª¨ë“  ì„¤ì¹˜ë¬¼ GameplayAbilityì˜ ê¸°ì´ˆ í´ë˜ìŠ¤
 UCLASS(Abstract)
 class CHRONOVEIL_API UCVGA_Install_Base : public UCVGameplayAbility
 {
@@ -17,11 +17,11 @@ public:
     UCVGA_Install_Base();
 
 protected:
-    // ´ÜÀÏ ¼³Ä¡¹° (BombMine, HpPotion °°Àº °Íµé)
+    // ë‹¨ì¼ ì„¤ì¹˜ë¬¼ (BombMine, HpPotion ê°™ì€ ê²ƒë“¤)
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Install")
     TSubclassOf<ACVDevice_Base> DeviceClass;
 
-    // º¹¼ö ¼³Ä¡¹° (ToyTower + JumpPad °°ÀÌ ¿©·¯ °³ ½ºÆùÇÏ´Â °æ¿ì)
+    // ë³µìˆ˜ ì„¤ì¹˜ë¬¼ (ToyTower + JumpPad ê°™ì´ ì—¬ëŸ¬ ê°œ ìŠ¤í°í•˜ëŠ” ê²½ìš°)
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Install")
     TArray<TSubclassOf<ACVDevice_Base>> DeviceClasses;
 
@@ -32,17 +32,17 @@ protected:
     float LifeSpan = 0.f;
 
 protected:
-    // °øÅë ½ºÆù ÇÔ¼ö
+    // ê³µí†µ ìŠ¤í° í•¨ìˆ˜
     ACVDevice_Base* SpawnDevice(
         TSubclassOf<ACVDevice_Base> InClass,
         const FTransform& SpawnTM,
         const FGameplayAbilityActorInfo* ActorInfo);
 
-    // ´ÜÀÏ ¼³Ä¡¹° ½ºÆù
+    // ë‹¨ì¼ ì„¤ì¹˜ë¬¼ ìŠ¤í°
     ACVDevice_Base* SpawnSingleDevice(
         const FGameplayAbilityActorInfo* ActorInfo);
 
-    // ¿©·¯ ¼³Ä¡¹° ½ºÆù
+    // ì—¬ëŸ¬ ì„¤ì¹˜ë¬¼ ìŠ¤í°
     TArray<ACVDevice_Base*> SpawnMultipleDevices(
         const FGameplayAbilityActorInfo* ActorInfo);
 };
