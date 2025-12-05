@@ -1,0 +1,80 @@
+##############################
+# Unreal Engine Git LFS 설정
+##############################
+
+# ⚠ 주의:
+# Content/Fab/ 아래의 .uasset / .umap / 기타 에셋들은
+# .gitignore에서 완전히 제외되므로,
+# 아래 LFS 규칙은 "Content/Fab 이외 경로"에만 적용된다고 보면 됨.
+
+# 핵심 UE 에셋들 (LFS 관리 대상)
+*.uasset filter=lfs diff=lfs merge=lfs -text
+*.umap   filter=lfs diff=lfs merge=lfs -text
+
+# UE5 관련 바이너리 청크들
+*.ubulk  filter=lfs diff=lfs merge=lfs -text
+*.uexp   filter=lfs diff=lfs merge=lfs -text
+
+################################
+# (선택) 추가 바이너리 리소스
+# 필요해지면 아래 주석을 해제해서 사용
+################################
+
+# 3D / 아트 에셋
+#*.fbx    filter=lfs diff=lfs merge=lfs -text
+#*.obj    filter=lfs diff=lfs merge=lfs -text
+#*.tga    filter=lfs diff=lfs merge=lfs -text
+#*.png    filter=lfs diff=lfs merge=lfs -text
+#*.jpg    filter=lfs diff=lfs merge=lfs -text
+#*.jpeg   filter=lfs diff=lfs merge=lfs -text
+#*.exr    filter=lfs diff=lfs merge=lfs -text
+#*.hdr    filter=lfs diff=lfs merge=lfs -text
+#*.psd    filter=lfs diff=lfs merge=lfs -text
+
+# 애니메이션 / 스켈레톤 관련
+#*.anim      filter=lfs diff=lfs merge=lfs -text
+#*.fbxanim   filter=lfs diff=lfs merge=lfs -text
+
+# 사운드 / 음악
+#*.wav    filter=lfs diff=lfs merge=lfs -text
+#*.mp3    filter=lfs diff=lfs merge=lfs -text
+#*.ogg    filter=lfs diff=lfs merge=lfs -text
+
+# 영상 / 시네마틱
+#*.mp4    filter=lfs diff=lfs merge=lfs -text
+#*.mov    filter=lfs diff=lfs merge=lfs -text
+
+# UI 폰트 등 바이너리 리소스
+#*.ttf    filter=lfs diff=lfs merge=lfs -text
+#*.otf    filter=lfs diff=lfs merge=lfs -text
+
+##############################
+# 텍스트 파일 기본 설정
+##############################
+
+# 기본 텍스트 파일 자동 개행/머지
+* text=auto eol=lf
+
+# 코드 / 설정 / 빌드 스크립트 / 문서
+*.cs        text
+*.h         text
+*.hpp       text
+*.c         text
+*.cpp       text
+*.inl       text
+*.usf       text
+*.ush       text
+*.ini       text
+*.uproject  text
+*.uplugin   text
+*.Build.cs  text
+*.Target.cs text
+*.csproj    text
+*.props     text
+*.targets   text
+*.json      text
+*.xml       text
+*.txt       text
+*.md        text
+*.yml       text
+*.yaml      text

@@ -1,0 +1,96 @@
+##############################
+# Unreal Engine 기본 무시 목록
+##############################
+
+# 절대 Git에 올리지 말아야 하는 경로
+#    - Content/Fab/ : 대용량 Fab/마켓플레이스 임포트 결과 (30GB+ 예상)
+#      → 항상 압축해서 Google Drive로만 공유
+Content/Fab/
+Content/EssentialAnimation/
+
+# 엔진 빌드/캐시/저장파일 (언제든 재생성 가능)
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# 설치 빌드 파일
+Build/InstalledBuild.xml
+
+# 자동 생성 헤더 (리플렉션)
+*.generated.h
+*.generated.cpp
+
+# 로컬 세팅 / 런처 관련 임시파일
+*.ini.local
+*.log
+*.tmp
+
+##############################
+# IDE / OS 관련 파일
+##############################
+
+# Visual Studio
+.vs/
+*.sln
+*.suo
+*.VC.db
+*.VC.VC.opendb
+*.opensdf
+*.sdf
+*.ipch
+
+# Rider / JetBrains
+.idea/
+
+# VSCode
+.vscode/
+
+# 기타 편집기/툴 메타
+*.user
+*.userprefs
+
+# OS 임시 파일
+.DS_Store
+Thumbs.db
+
+##############################
+# 빌드 산출물 / 디버그 심볼
+##############################
+*.pdb
+*.ipdb
+*.iobj
+*.ilk
+
+# 패키징 결과물 (Git에 올리지 말 것)
+*.pak
+
+##############################
+# 백업 / 임시 / 잡파일
+##############################
+*_Backup/
+*.bak
+*.old
+
+##############################
+# 절대 커밋해야 하는 것 (팀 규칙 차원)
+##############################
+# 아래는 "ignore 예외 설정"이 아니라,
+# 반드시 Git에 포함해야 하는 폴더/파일 목록이다:
+# - Content/      (단, Content/Fab/은 위에서 이미 무시됨)
+# - Config/
+# - Source/
+# - Plugins/   (사용 중인 플러그인)
+# - Shaders/   (커스텀 셰이더 있을 때)
+# - *.uproject
+# - *.uplugin
+
+# 혹시 위 폴더들이 다른 규칙에 의해 무시되면
+# 아래 예외 규칙을 추가할 수 있다 (필요할 때만)
+#!Content/
+#!Config/
+#!Source/
+#!Plugins/
+#!Shaders/
+#!*.uproject
+#!*.uplugin
