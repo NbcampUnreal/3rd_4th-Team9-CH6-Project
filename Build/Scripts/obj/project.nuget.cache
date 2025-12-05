@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "J+FdM7XDDRc=",
+  "dgSpecHash": "VgJ5mGrccptRBB14U5lj+zgJ2VZyYLlP0RDXlwK1dXeJ1QEr9Djn9sLuLz3WvzBMvI0XKF1fBX3AOniVk6PfTQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\USER\\Desktop\\RemnantSoul\\Build\\Scripts\\Lyra.Automation.csproj",
+  "projectFilePath": "C:\\Users\\USER\\Desktop\\RemnantSoul_Team\\Build\\Scripts\\Lyra.Automation.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\USER\\.nuget\\packages\\bitfaster.caching\\2.4.1\\bitfaster.caching.2.4.1.nupkg.sha512",
     "C:\\Users\\USER\\.nuget\\packages\\blake3\\0.5.1\\blake3.0.5.1.nupkg.sha512",
