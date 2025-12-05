@@ -94,3 +94,16 @@ Thumbs.db
 #!Shaders/
 #!*.uproject
 #!*.uplugin
+
+
+#########################################
+# Lyra / Unreal Automation C# Build Files
+#########################################
+
+# C# build output folders (auto-generated)
+Build/Scripts/bin/
+Build/Scripts/obj/
+*.cache
+*.editorconfig
+*.csproj.user
+*.csproj.AssemblyReference.cache
