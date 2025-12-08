@@ -8672,11 +8672,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\USER\\Desktop\\RemnantSoul\\Build\\Scripts\\Lyra.Automation.csproj",
+      "projectUniqueName": "C:\\Users\\USER\\Desktop\\RemnantSoul_Team\\Build\\Scripts\\Lyra.Automation.csproj",
       "projectName": "Lyra.Automation",
-      "projectPath": "C:\\Users\\USER\\Desktop\\RemnantSoul\\Build\\Scripts\\Lyra.Automation.csproj",
+      "projectPath": "C:\\Users\\USER\\Desktop\\RemnantSoul_Team\\Build\\Scripts\\Lyra.Automation.csproj",
       "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\USER\\Desktop\\RemnantSoul\\Build\\Scripts\\obj\\",
+      "outputPath": "C:\\Users\\USER\\Desktop\\RemnantSoul_Team\\Build\\Scripts\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

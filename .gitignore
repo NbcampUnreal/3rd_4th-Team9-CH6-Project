@@ -7,6 +7,7 @@
 #      → 항상 압축해서 Google Drive로만 공유
 Content/Fab/
 Content/EssentialAnimation/
+Content/Animations/
 
 # 엔진 빌드/캐시/저장파일 (언제든 재생성 가능)
 Binaries/
@@ -69,8 +70,8 @@ Thumbs.db
 # 백업 / 임시 / 잡파일
 ##############################
 *_Backup/
-*.bak
-*.old
+*.bak/
+*.old/
 
 ##############################
 # 절대 커밋해야 하는 것 (팀 규칙 차원)
@@ -94,3 +95,63 @@ Thumbs.db
 #!Shaders/
 #!*.uproject
 #!*.uplugin
+
+
+#########################################
+# Lyra / Unreal Automation C# Build Files
+#########################################
+
+# C# build output folders (auto-generated)
+Build/Scripts/bin/
+Build/Scripts/obj/
+*.cache
+*.editorconfig
+*.csproj.user
+*.csproj.AssemblyReference.cache
+
+
+##############################
+# Build 폴더 내 로컬 빌드 결과물 / 환경 의존 파일
+##############################
+
+# 개인 로컬에서 생성된 Build 하위 결과물 전체
+Build/Android/
+Build/BatchFiles/
+Build/Replays/
+Build/Scripts/
+Build/Windows/
+Build/EditorPerfStats.csv
+Build/LyraBuild.xml
+Build/LyraTests.xml
+Build/UnrealGameSync.ini
+
+# 플랫폼별/툴별로 자동 생성되는 서브 빌드 산출물
+Build/**/Binaries/
+Build/**/Intermediate/
+Build/**/Saved/
+
+
+##############################
+# 플러그인 빌드 산출물
+##############################
+Plugins/**/Binaries/
+Plugins/**/Intermediate/
+
+
+##############################
+# 셰이더 / 캐시 / 메타데이터 (빌드/환경 의존)
+##############################
+*.ushadercache
+*.ushadercache.tmp
+*.shaderdb
+
+*.uasset.metadata
+*.umap.metadata
+
+
+##############################
+# Saved 하위 (로그/크래시/쿠킹 결과)
+##############################
+Saved/Cooked/
+Saved/Logs/
+Saved/Crashes/
