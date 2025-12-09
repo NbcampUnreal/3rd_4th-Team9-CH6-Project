@@ -34,7 +34,7 @@ void ARSArmorBase::UpdateExtraMeshForHeadSlot()
 
 	if (bIsHeadSlot && bSecondaryAdditive && SecondaryArmorMesh.IsNull() == false)
 	{
-		USkeletalMesh* ExtraMesh = ULyraAssetManager::GetAsset<USkeletalMesh>(SecondaryArmorMesh);
+		USkeletalMesh* ExtraMesh = ULyraAssetManager::GetAssetByPath<USkeletalMesh>(SecondaryArmorMesh);
 		if (ExtraMesh)
 		{
 			ExtraMeshComponent->SetSkeletalMesh(ExtraMesh);
@@ -117,7 +117,7 @@ void ARSArmorBase::SetArmorMesh(TSoftObjectPtr<USkeletalMesh> InArmorMesh)
 	USkeletalMesh* LoadedArmorMesh = nullptr;
 	if (InArmorMesh.IsNull() == false)
 	{
-		LoadedArmorMesh = ULyraAssetManager::GetAsset<USkeletalMesh>(InArmorMesh);
+		LoadedArmorMesh = ULyraAssetManager::GetAssetByPath<USkeletalMesh>(InArmorMesh);
 	}
 	
 	ArmorMeshComponent->SetSkeletalMesh(LoadedArmorMesh);
@@ -125,7 +125,7 @@ void ARSArmorBase::SetArmorMesh(TSoftObjectPtr<USkeletalMesh> InArmorMesh)
 
 	if (SkinMaterialSlotName.IsNone() == false && SkinMaterial.IsNull() == false)
 	{
-		UMaterialInterface* LoadedMaterial = ULyraAssetManager::GetAsset<UMaterialInterface>(SkinMaterial);
+		UMaterialInterface* LoadedMaterial = ULyraAssetManager::GetAssetByPath<UMaterialInterface>(SkinMaterial);
 		ArmorMeshComponent->SetMaterialByName(SkinMaterialSlotName, LoadedMaterial);
 	}
 }

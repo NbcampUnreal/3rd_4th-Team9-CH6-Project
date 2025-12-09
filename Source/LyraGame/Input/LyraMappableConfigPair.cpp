@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Input/LyraMappableConfigPair.h"
 
@@ -38,7 +38,7 @@ bool FMappableConfigPair::RegisterPair(const FMappableConfigPair& Pair)
 	if (ULyraSettingsLocal* Settings = ULyraSettingsLocal::Get())
 	{
 		// Register the pair with the settings, but do not activate it yet
-		if (const UPlayerMappableInputConfig* LoadedConfig = AssetManager.GetAsset(Pair.Config))
+		if (const UPlayerMappableInputConfig* LoadedConfig = AssetManager.GetAssetByPath(Pair.Config))
 		{
 			Settings->RegisterInputConfig(Pair.Type, LoadedConfig, false);
 			return true;
@@ -54,7 +54,7 @@ void FMappableConfigPair::UnregisterPair(const FMappableConfigPair& Pair)
 
 	if (ULyraSettingsLocal* Settings = ULyraSettingsLocal::Get())
 	{
-		if (const UPlayerMappableInputConfig* LoadedConfig = AssetManager.GetAsset(Pair.Config))
+		if (const UPlayerMappableInputConfig* LoadedConfig = AssetManager.GetAssetByPath(Pair.Config))
 		{
 			Settings->UnregisterInputConfig(LoadedConfig);
 		}

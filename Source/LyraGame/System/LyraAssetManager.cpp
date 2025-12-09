@@ -7,7 +7,7 @@
 //#include "Data/RSCheatData.h"
 #include "Data/RSClassData.h"
 #include "Data/RSItemData.h"
-//#include "Data/RSAssetData.h"
+#include "Data/RSAssetData.h"
 #include "Data/RSCharacterData.h"
 //#include "Data/RSMonsterData.h"
 #include "AbilitySystemGlobals.h"
@@ -151,14 +151,14 @@ const ULyraGameData& ULyraAssetManager::GetGameData()
 
 const ULyraPawnData* ULyraAssetManager::GetDefaultPawnData() const
 {
-	return GetAsset(DefaultPawnData);
+	return GetAssetByPath(DefaultPawnData);
 }
 
-//const URSAssetData& ULyraAssetManager::GetAssetData()
-//{
-//	return GetOrLoadTypedGameData<URSAssetData>(AssetDataPath);
-//}
-//
+const URSAssetData& ULyraAssetManager::GetAssetData()
+{
+	return GetOrLoadTypedGameData<URSAssetData>(AssetDataPath);
+}
+
 const URSClassData& ULyraAssetManager::GetClassData()
 {
 	return GetOrLoadTypedGameData<URSClassData>(ClassDataPath);
