@@ -16,10 +16,10 @@ class URSCharacterData;
 //class URSElectricFieldPhaseData;
 //class UPrimaryDataAsset;
 //class URSAssetData;
-//class URSItemData;
+class URSItemData;
 class ULyraGameData;
 class ULyraPawnData;
-//class URSClassData;
+class URSClassData;
 
 struct FLyraBundles
 {
@@ -60,10 +60,10 @@ public:
 	const ULyraGameData& GetGameData();
 	const ULyraPawnData* GetDefaultPawnData() const;
 	//const URSAssetData& GetAssetData();
-	//const URSClassData& GetClassData();
+	const URSClassData& GetClassData();
 	const URSCharacterData& GetCharacterData();
 	//const URSMonsterData& GetMonsterData();
-	//const URSItemData& GetItemData();
+	const URSItemData& GetItemData();
 	//const URSElectricFieldPhaseData& GetElectricFieldPhaseData();
 	//const URSCheatData& GetCheatData();
 	//const URSUIData& GetUIData();
@@ -108,8 +108,8 @@ protected:
 	//UPROPERTY(Config)
 	//TSoftObjectPtr<URSAssetData> AssetDataPath;
 
-	//UPROPERTY(Config)
-	//TSoftObjectPtr<URSClassData> ClassDataPath;
+	UPROPERTY(Config)
+	TSoftObjectPtr<URSClassData> ClassDataPath;
 
 	UPROPERTY(Config)
 	TSoftObjectPtr<URSCharacterData> CharacterDataPath;
@@ -120,8 +120,8 @@ protected:
 	//UPROPERTY(Config)
 	//TSoftObjectPtr<URSMonsterData> MonsterDataPath;
 
-	//UPROPERTY(Config)
-	//TSoftObjectPtr<URSItemData> ItemDataPath;
+	UPROPERTY(Config)
+	TSoftObjectPtr<URSItemData> ItemDataPath;
 
 	//UPROPERTY(Config)
 	//TSoftObjectPtr<URSElectricFieldPhaseData> ElectricFieldPhaseDataPath;
