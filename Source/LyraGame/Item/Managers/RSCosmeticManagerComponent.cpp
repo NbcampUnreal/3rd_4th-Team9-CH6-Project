@@ -4,7 +4,7 @@
 #include "Actors/RSArmorBase.h"
 #include "Character/LyraCharacter.h"
 #include "Data/RSCharacterData.h"
-//#include "Item/Fragments/RSItemFragment_Equipable_Armor.h"
+#include "Item/Fragments/RSItemFragment_Equipable_Armor.h"
 #include "System/LyraAssetManager.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RSCosmeticManagerComponent)
@@ -40,14 +40,14 @@ void URSCosmeticManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReas
 	Super::EndPlay(EndPlayReason);
 }
 
-void URSCosmeticManagerComponent::RefreshArmorMesh(EArmorType ArmorType /*, const URSItemFragment_Equipable_Armor* ArmorFragment*/)
+void URSCosmeticManagerComponent::RefreshArmorMesh(EArmorType ArmorType , const URSItemFragment_Equipable_Armor* ArmorFragment)
 {
 	if (ArmorType == EArmorType::Count)
 		return;
 	
 	InitializeManager();
 	
-	/*if (ArmorFragment)
+	if (ArmorFragment)
 	{
 		if (ArmorFragment == nullptr || ArmorFragment->ArmorType != ArmorType)
 			return;
@@ -75,7 +75,7 @@ void URSCosmeticManagerComponent::RefreshArmorMesh(EArmorType ArmorType /*, cons
 			}
 		}
 	}
-	else*/
+	else
 	{
 		if (ArmorType == EArmorType::Chest)
 		{

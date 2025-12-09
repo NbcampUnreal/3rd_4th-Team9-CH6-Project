@@ -5,7 +5,7 @@
 #include "RSCosmeticManagerComponent.generated.h"
 
 class ARSArmorBase;
-//class UD1ItemFragment_Equipable_Armor;
+class URSItemFragment_Equipable_Armor;
 
 UCLASS(BlueprintType, Blueprintable)
 class URSCosmeticManagerComponent : public UPawnComponent
@@ -20,7 +20,7 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
 public:
-	void RefreshArmorMesh(EArmorType ArmorType /*, const UD1ItemFragment_Equipable_Armor* ArmorFragment*/);
+	void RefreshArmorMesh(EArmorType ArmorType, const URSItemFragment_Equipable_Armor* ArmorFragment);
 	void GetMeshComponents(TArray<UMeshComponent*>& OutMeshComponents) const;
 
 private:

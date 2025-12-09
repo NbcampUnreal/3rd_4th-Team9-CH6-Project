@@ -1,6 +1,6 @@
 ﻿#include "RSEquipmentManagerComponent.h"
 
-//#include "RSEquipManagerComponent.h"
+#include "RSEquipManagerComponent.h"
 //#include "RSInventoryManagerComponent.h"
 //#include "RSItemManagerComponent.h"
 #include "Character/LyraCharacter.h"
@@ -19,9 +19,9 @@ void FRSEquipmentEntry::Init(URSItemInstance* InItemInstance, int32 InItemCount)
 {
 	check(InItemInstance && InItemCount > 0);
 
-	/*URSEquipManagerComponent* EquipManager = EquipmentManager->GetEquipManager();
+	URSEquipManagerComponent* EquipManager = EquipmentManager->GetEquipManager();
 	if (EquipManager == nullptr)
-		return;*/
+		return;
 
 	const URSItemFragment_Equipable* EquippableFragment = InItemInstance->FindFragmentByClass<URSItemFragment_Equipable>();
 	if (EquippableFragment == nullptr)
@@ -29,7 +29,7 @@ void FRSEquipmentEntry::Init(URSItemInstance* InItemInstance, int32 InItemCount)
 
 	if (ItemInstance)
 	{
-		//EquipManager->Unequip(EquipmentSlotType);
+		EquipManager->Unequip(EquipmentSlotType);
 	}
 
 	ItemInstance = InItemInstance;
@@ -37,30 +37,30 @@ void FRSEquipmentEntry::Init(URSItemInstance* InItemInstance, int32 InItemCount)
 	const URSItemTemplate& ItemTemplate = URSItemData::Get().FindItemTemplateByID(ItemInstance->GetItemTemplateID());
 	ItemCount = FMath::Clamp(InItemCount, 1, ItemTemplate.MaxStackCount);
 
-	//if (EquippableFragment->EquipmentType == EEquipmentType::Armor || EquipmentManager->IsSameEquipState(EquipmentSlotType, EquipManager->GetCurrentEquipState()))
+	if (EquippableFragment->EquipmentType == EEquipmentType::Armor || EquipmentManager->IsSameEquipState(EquipmentSlotType, EquipManager->GetCurrentEquipState()))
 	{
-		//EquipManager->Equip(EquipmentSlotType, ItemInstance);
+		EquipManager->Equip(EquipmentSlotType, ItemInstance);
 	}
 }
 
 URSItemInstance* FRSEquipmentEntry::Reset()
 {
-	/*URSEquipManagerComponent* EquipManager = EquipmentManager->GetEquipManager();
+	URSEquipManagerComponent* EquipManager = EquipmentManager->GetEquipManager();
 	if (EquipManager == nullptr)
-		return nullptr;*/
+		return nullptr;
 
 	if (ItemInstance)
 	{
-		//EquipManager->Unequip(EquipmentSlotType);
+		EquipManager->Unequip(EquipmentSlotType);
 	}
 
 	URSItemInstance* RemovedItemInstance = ItemInstance;
 	ItemInstance = nullptr;
 	ItemCount = 0;
 
-	//if (EquipmentManager->IsAllEmpty(EquipManager->GetCurrentEquipState()))
+	if (EquipmentManager->IsAllEmpty(EquipManager->GetCurrentEquipState()))
 	{
-		//EquipManager->ChangeEquipState(EEquipState::Unarmed);
+		EquipManager->ChangeEquipState(EEquipState::Unarmed);
 	}
 
 	return RemovedItemInstance;
@@ -348,7 +348,7 @@ void URSEquipmentManagerComponent::SetEquipment(EEquipmentSlotType EquipmentSlot
 
 	if (IsWeaponSlot(EquipmentSlotType))
 	{
-		/*if (URSEquipManagerComponent* EquipManager = GetEquipManager())
+		if (URSEquipManagerComponent* EquipManager = GetEquipManager())
 		{
 			EWeaponSlotType WeaponSlotType = URSEquipManagerComponent::ConvertToWeaponSlotType(EquipmentSlotType);
 			EEquipState EquipState = URSEquipManagerComponent::ConvertToEquipState(WeaponSlotType);
@@ -356,7 +356,7 @@ void URSEquipmentManagerComponent::SetEquipment(EEquipmentSlotType EquipmentSlot
 			{
 				EquipManager->ChangeEquipState(EquipState);
 			}
-		}*/
+		}
 	}
 }
 
@@ -477,9 +477,9 @@ const URSItemInstance* URSEquipmentManagerComponent::FindPairItemInstance(const 
 	}
 	else if (BaseEquippableFragment->EquipmentType == EEquipmentType::Armor)
 	{
-		/*const URSItemFragment_Equipable_Armor* BaseArmorFragment = Cast<URSItemFragment_Equipable_Armor>(BaseEquippableFragment);
+		const URSItemFragment_Equipable_Armor* BaseArmorFragment = Cast<URSItemFragment_Equipable_Armor>(BaseEquippableFragment);
 		OutEquipmentSlotType = URSEquipManagerComponent::ConvertToEquipmentSlotType(BaseArmorFragment->ArmorType);
-		SelectedItemInstance = GetItemInstance(OutEquipmentSlotType);*/
+		SelectedItemInstance = GetItemInstance(OutEquipmentSlotType);
 	}
 
 	if (InBaseItemInstance == SelectedItemInstance)
@@ -499,7 +499,7 @@ bool URSEquipmentManagerComponent::IsAllEmpty(EEquipState EquipState) const
 		return false;
 
 	bool bAllEmpty = true;
-	/*for (EEquipmentSlotType SlotType : URSEquipManagerComponent::GetEquipmentSlotsByEquipState(EquipState))
+	for (EEquipmentSlotType SlotType : URSEquipManagerComponent::GetEquipmentSlotsByEquipState(EquipState))
 	{
 		const FRSEquipmentEntry& Entry = EquipmentList.Entries[(int32)SlotType];
 		if (Entry.ItemInstance)
@@ -507,7 +507,7 @@ bool URSEquipmentManagerComponent::IsAllEmpty(EEquipState EquipState) const
 			bAllEmpty = false;
 			break;
 		}
-	}*/
+	}
 	return bAllEmpty;
 }
 
@@ -523,6 +523,16 @@ ALyraPlayerController* URSEquipmentManagerComponent::GetPlayerController() const
 		return LyraCharacter->GetLyraPlayerController();
 	}
 	return nullptr;
+}
+
+URSEquipManagerComponent* URSEquipmentManagerComponent::GetEquipManager() const
+{
+	URSEquipManagerComponent* EquipManager = nullptr;
+	if (ALyraCharacter* Character = GetCharacter())
+	{
+		EquipManager = Character->FindComponentByClass<URSEquipManagerComponent>();
+	}
+	return EquipManager;
 }
 
 URSItemInstance* URSEquipmentManagerComponent::GetItemInstance(EEquipmentSlotType EquipmentSlotType) const

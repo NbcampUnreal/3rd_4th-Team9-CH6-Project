@@ -5,12 +5,12 @@
 #include "Net/Serialization/FastArraySerializer.h"
 #include "RSEquipmentManagerComponent.generated.h"
 
-//class URSEquipManagerComponent;
+class URSEquipManagerComponent;
 class ALyraCharacter;
 class ALyraPlayerController;
 class URSItemInstance;
 class URSItemTemplate;
-//class URSEquipmentManagerComponent;
+class URSEquipmentManagerComponent;
 //class URSInventoryManagerComponent;
 
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnEquipmentEntryChanged, EEquipmentSlotType, URSItemInstance*, int32/*ItemCount*/);
@@ -147,7 +147,7 @@ public:
 
 	ALyraCharacter* GetCharacter() const;
 	ALyraPlayerController* GetPlayerController() const;
-	//URSEquipManagerComponent* GetEquipManager() const;
+	URSEquipManagerComponent* GetEquipManager() const;
 
 	URSItemInstance* GetItemInstance(EEquipmentSlotType EquipmentSlotType) const;
 	int32 GetItemCount(EEquipmentSlotType EquipmentSlotType) const;

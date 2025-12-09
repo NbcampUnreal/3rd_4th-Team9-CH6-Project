@@ -11,8 +11,8 @@ struct FRSWeaponAttachInfo
 	GENERATED_BODY()
 
 public:
-	//UPROPERTY(EditDefaultsOnly)
-	//TSubclassOf<ARSEquipmentBase> SpawnWeaponClass;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ARSEquipmentBase> SpawnWeaponClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	FName AttachSocket;
