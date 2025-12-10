@@ -11,7 +11,7 @@ class ALyraPlayerController;
 class URSItemInstance;
 class URSItemTemplate;
 class URSEquipmentManagerComponent;
-//class URSInventoryManagerComponent;
+class URSInventoryManagerComponent;
 
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnEquipmentEntryChanged, EEquipmentSlotType, URSItemInstance*, int32/*ItemCount*/);
 
@@ -103,7 +103,6 @@ protected:
 	virtual void ReadyForReplication() override;
 
 public:
-	/*
 	int32 CanMoveOrMergeEquipment(URSEquipmentManagerComponent* OtherComponent, EEquipmentSlotType FromEquipmentSlotType, EEquipmentSlotType ToEquipmentSlotType) const;
 	int32 CanMoveOrMergeEquipment(URSInventoryManagerComponent* OtherComponent, const FIntPoint& FromItemSlotPos, EEquipmentSlotType ToEquipmentSlotType) const;
 
@@ -116,7 +115,6 @@ public:
 
 	bool CanSwapEquipment_Quick(URSEquipmentManagerComponent* OtherComponent, EEquipmentSlotType FromEquipmentSlotType, EEquipmentSlotType& OutToEquipmentSlotType) const;
 	bool CanSwapEquipment_Quick(URSInventoryManagerComponent* OtherComponent, const FIntPoint& FromItemSlotPos, EEquipmentSlotType& OutToEquipmentSlotType, FIntPoint& OutToItemSlotPos);
-	*/
 
 	int32 CanAddEquipment(int32 ItemTemplateID, EItemRarity ItemRarity, int32 ItemCount, EEquipmentSlotType ToEquipmentSlotType) const;
 
