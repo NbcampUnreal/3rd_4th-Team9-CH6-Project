@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -16,6 +16,7 @@ struct FFrame;
 struct FGameplayAbilityTargetDataHandle;
 
 LYRAGAME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Gameplay_AbilityInputBlocked);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FAbilityChangedDelegate, FGameplayAbilitySpecHandle, bool/*bGiven*/);
 
 /**
  * ULyraAbilitySystemComponent
@@ -103,4 +104,8 @@ protected:
 
 	// Number of abilities running in each activation group.
 	int32 ActivationGroupCounts[(uint8)ELyraAbilityActivationGroup::MAX];
+
+public:
+	FTimerHandle BlockAnimMontageTimerHandle;
+	FAbilityChangedDelegate AbilityChangedDelegate;
 };

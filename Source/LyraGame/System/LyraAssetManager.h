@@ -6,6 +6,7 @@
 #include "LyraAssetManagerStartupJob.h"
 #include "Templates/SubclassOf.h"
 #include "Data/RSAssetData.h"
+#include "Data/RSUIData.h"
 #include "LyraAssetManager.generated.h"
 
 class UPrimaryDataAsset;
@@ -13,7 +14,7 @@ class UPrimaryDataAsset;
 //class URSMonsterData;
 class URSCharacterData;
 //class URSClassData;
-//class URSCheatData;
+class URSCheatData;
 //class URSElectricFieldPhaseData;
 //class UPrimaryDataAsset;
 class URSAssetData;
@@ -70,8 +71,8 @@ public:
 	//const URSMonsterData& GetMonsterData();
 	const URSItemData& GetItemData();
 	//const URSElectricFieldPhaseData& GetElectricFieldPhaseData();
-	//const URSCheatData& GetCheatData();
-	//const URSUIData& GetUIData();
+	const URSCheatData& GetCheatData();
+	const URSUIData& GetUIData();
 
 
 protected:
@@ -131,11 +132,11 @@ protected:
 	//UPROPERTY(Config)
 	//TSoftObjectPtr<URSElectricFieldPhaseData> ElectricFieldPhaseDataPath;
 
-	//UPROPERTY(Config)
-	//TSoftObjectPtr<URSCheatData> CheatDataPath;
+	UPROPERTY(Config)
+	TSoftObjectPtr<URSCheatData> CheatDataPath;
 
-	//UPROPERTY(Config)
-	//TSoftObjectPtr<URSUIData> UIDataPath;
+	UPROPERTY(Config)
+	TSoftObjectPtr<URSUIData> UIDataPath;
 
 	UPROPERTY(Transient)
 	TMap<TObjectPtr<UClass>, TObjectPtr<UPrimaryDataAsset>> GameDataMap;

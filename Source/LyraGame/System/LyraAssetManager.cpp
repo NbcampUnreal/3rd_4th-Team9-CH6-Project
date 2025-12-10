@@ -4,7 +4,7 @@
 #include "LyraLogChannels.h"
 #include "LyraGameplayTags.h"
 #include "LyraGameData.h"
-//#include "Data/RSCheatData.h"
+#include "Data/RSCheatData.h"
 #include "Data/RSClassData.h"
 #include "Data/RSItemData.h"
 #include "Data/RSAssetData.h"
@@ -184,15 +184,15 @@ const URSItemData& ULyraAssetManager::GetItemData()
 //	return GetOrLoadTypedGameData<URSElectricFieldPhaseData>(ElectricFieldPhaseDataPath);
 //}
 //
-//const URSCheatData& ULyraAssetManager::GetCheatData()
-//{
-//	return GetOrLoadTypedGameData<URSCheatData>(CheatDataPath);
-//}
-//
-//const URSUIData& ULyraAssetManager::GetUIData()
-//{
-//	return GetOrLoadTypedGameData<URSUIData>(UIDataPath);
-//}
+const URSCheatData& ULyraAssetManager::GetCheatData()
+{
+	return GetOrLoadTypedGameData<URSCheatData>(CheatDataPath);
+}
+
+const URSUIData& ULyraAssetManager::GetUIData()
+{
+	return GetOrLoadTypedGameData<URSUIData>(UIDataPath);
+}
 
 UPrimaryDataAsset* ULyraAssetManager::LoadGameDataOfClass(TSubclassOf<UPrimaryDataAsset> DataClass, const TSoftObjectPtr<UPrimaryDataAsset>& DataClassPath, FPrimaryAssetType PrimaryAssetType)
 {
