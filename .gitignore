@@ -155,3 +155,4 @@ Plugins/**/Intermediate/
 Saved/Cooked/
 Saved/Logs/
 Saved/Crashes/
+.vsconfig
