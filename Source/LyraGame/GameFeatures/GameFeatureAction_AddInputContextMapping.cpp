@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GameFeatureAction_AddInputContextMapping.h"
 #include "Components/GameFrameworkComponentManager.h"
@@ -104,7 +104,7 @@ void UGameFeatureAction_AddInputContextMapping::RegisterInputMappingContextsForL
 					}
 
 					// Register this IMC with the settings!
-					if (UInputMappingContext* IMC = AssetManager.GetAsset(Entry.InputMapping))
+					if (UInputMappingContext* IMC = AssetManager.GetAssetByPath(Entry.InputMapping))
 					{
 						Settings->RegisterInputMappingContext(IMC);
 					}

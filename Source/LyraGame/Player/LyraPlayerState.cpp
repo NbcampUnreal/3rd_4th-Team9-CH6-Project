@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "LyraPlayerState.h"
 
@@ -18,6 +18,10 @@
 #include "LyraPlayerController.h"
 #include "Messages/LyraVerbMessage.h"
 #include "Net/UnrealNetwork.h"
+
+#include "Data/RSClassData.h"
+#include "Item/Managers/RSEquipmentManagerComponent.h"
+#include "Character/LyraCharacter.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraPlayerState)
 
@@ -79,17 +83,17 @@ void ALyraPlayerState::OnDeactivated()
 
 	switch (GetPlayerConnectionType())
 	{
-		case ELyraPlayerConnectionType::Player:
-		case ELyraPlayerConnectionType::InactivePlayer:
-			//@TODO: Ask the experience if we should destroy disconnecting players immediately or leave them around
-			// (e.g., for long running servers where they might build up if lots of players cycle through)
-			bDestroyDeactivatedPlayerState = true;
-			break;
-		default:
-			bDestroyDeactivatedPlayerState = true;
-			break;
+	case ELyraPlayerConnectionType::Player:
+	case ELyraPlayerConnectionType::InactivePlayer:
+		//@TODO: Ask the experience if we should destroy disconnecting players immediately or leave them around
+		// (e.g., for long running servers where they might build up if lots of players cycle through)
+		bDestroyDeactivatedPlayerState = true;
+		break;
+	default:
+		bDestroyDeactivatedPlayerState = true;
+		break;
 	}
-	
+
 	SetPlayerConnectionType(ELyraPlayerConnectionType::InactivePlayer);
 
 	if (bDestroyDeactivatedPlayerState)
@@ -130,13 +134,13 @@ void ALyraPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, PawnData, SharedParams);
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, MyPlayerConnectionType, SharedParams)
-	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, MyTeamID, SharedParams);
+		DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, MyTeamID, SharedParams);
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, MySquadID, SharedParams);
 
 	SharedParams.Condition = ELifetimeCondition::COND_SkipOwner;
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, ReplicatedViewRotation, SharedParams);
 
-	DOREPLIFETIME(ThisClass, StatTags);	
+	DOREPLIFETIME(ThisClass, StatTags);
 }
 
 FRotator ALyraPlayerState::GetReplicatedViewRotation() const
@@ -209,7 +213,7 @@ void ALyraPlayerState::SetPawnData(const ULyraPawnData* InPawnData)
 	}
 
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, NAME_LyraAbilityReady);
-	
+
 	ForceNetUpdate();
 }
 
@@ -298,3 +302,31 @@ void ALyraPlayerState::ClientBroadcastMessage_Implementation(const FLyraVerbMess
 	}
 }
 
+void ALyraPlayerState::Server_SelectClass_Implementation(ECharacterClassType ClassType)
+{
+	if (HasAuthority() == false)
+		return;
+
+	if (ClassType == ECharacterClassType::Count || ClassType == CharacterClassType)
+		return;
+
+	CharacterClassType = ClassType;
+	const FRSClassInfoEntry& ClassEntry = URSClassData::Get().GetClassInfoEntry(CharacterClassType);
+
+	if (ALyraCharacter* LyraCharacter = GetPawn<ALyraCharacter>())
+	{
+		if (URSEquipmentManagerComponent* EquipmentManager = LyraCharacter->GetComponentByClass<URSEquipmentManagerComponent>())
+		{
+			for (const FRSDefaultItemEntry& DefaultItemEntry : ClassEntry.DefaultItemEntries)
+			{
+				EquipmentManager->SetEquipment(DefaultItemEntry.EquipmentSlotType, DefaultItemEntry.ItemTemplateClass, DefaultItemEntry.ItemRarity, DefaultItemEntry.ItemCount);
+			}
+		}
+	}
+
+	/*AbilitySetGrantedHandles.TakeFromAbilitySystem(AbilitySystemComponent);
+	if (ULyraAbilitySet* AbilitySet = ClassEntry.ClassAbilitySet)
+	{
+		AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &AbilitySetGrantedHandles, this);
+	}*/
+}

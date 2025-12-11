@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -6,7 +6,7 @@
 #include "ModularPlayerState.h"
 #include "System/GameplayTagStack.h"
 #include "Teams/LyraTeamAgentInterface.h"
-
+#include "RSDefine.h"
 #include "LyraPlayerState.generated.h"
 
 struct FLyraVerbMessage;
@@ -106,19 +106,19 @@ public:
 	void SetSquadID(int32 NewSquadID);
 
 	// Adds a specified number of stacks to the tag (does nothing if StackCount is below 1)
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Teams)
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Teams)
 	void AddStatTagStack(FGameplayTag Tag, int32 StackCount);
 
 	// Removes a specified number of stacks from the tag (does nothing if StackCount is below 1)
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Teams)
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Teams)
 	void RemoveStatTagStack(FGameplayTag Tag, int32 StackCount);
 
 	// Returns the stack count of the specified tag (or 0 if the tag is not present)
-	UFUNCTION(BlueprintCallable, Category=Teams)
+	UFUNCTION(BlueprintCallable, Category = Teams)
 	int32 GetStatTagStackCount(FGameplayTag Tag) const;
 
 	// Returns true if there is at least one stack of the specified tag
-	UFUNCTION(BlueprintCallable, Category=Teams)
+	UFUNCTION(BlueprintCallable, Category = Teams)
 	bool HasStatTag(FGameplayTag Tag) const;
 
 	// Send a message to just this player
@@ -163,10 +163,10 @@ private:
 	UPROPERTY()
 	FOnLyraTeamIndexChangedDelegate OnTeamChangedDelegate;
 
-	UPROPERTY(ReplicatedUsing=OnRep_MyTeamID)
+	UPROPERTY(ReplicatedUsing = OnRep_MyTeamID)
 	FGenericTeamId MyTeamID;
 
-	UPROPERTY(ReplicatedUsing=OnRep_MySquadID)
+	UPROPERTY(ReplicatedUsing = OnRep_MySquadID)
 	int32 MySquadID;
 
 	UPROPERTY(Replicated)
@@ -181,4 +181,12 @@ private:
 
 	UFUNCTION()
 	void OnRep_MySquadID();
+
+public:
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void Server_SelectClass(ECharacterClassType ClassType);
+
+public:
+	UPROPERTY(Replicated)
+	ECharacterClassType CharacterClassType = ECharacterClassType::Count;
 };

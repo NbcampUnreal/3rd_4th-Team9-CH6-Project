@@ -8,6 +8,8 @@
 Content/Fab/
 Content/EssentialAnimation/
 Content/Animations/
+Content/Sound/
+Content/Weapon/
 
 # 엔진 빌드/캐시/저장파일 (언제든 재생성 가능)
 Binaries/

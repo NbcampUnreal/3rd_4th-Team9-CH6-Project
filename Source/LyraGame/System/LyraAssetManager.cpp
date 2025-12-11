@@ -4,12 +4,12 @@
 #include "LyraLogChannels.h"
 #include "LyraGameplayTags.h"
 #include "LyraGameData.h"
-//#include "Data/D1CheatData.h"
-//#include "Data/D1ClassData.h"
-//#include "Data/D1ItemData.h"
-//#include "Data/D1AssetData.h"
+#include "Data/RSCheatData.h"
+#include "Data/RSClassData.h"
+#include "Data/RSItemData.h"
+#include "Data/RSAssetData.h"
 #include "Data/RSCharacterData.h"
-//#include "Data/D1MonsterData.h"
+//#include "Data/RSMonsterData.h"
 #include "AbilitySystemGlobals.h"
 #include "Character/LyraPawnData.h"
 #include "Misc/App.h"
@@ -125,7 +125,7 @@ void ULyraAssetManager::StartInitialLoading()
 		//STARTUP_JOB_WEIGHTED(GetClassData(), 25.f);
 		STARTUP_JOB_WEIGHTED(GetCharacterData(), 25.f);
 		//STARTUP_JOB_WEIGHTED(GetMonsterData(), 25.f);
-		//STARTUP_JOB_WEIGHTED(GetItemData(), 25.f);
+		STARTUP_JOB_WEIGHTED(GetItemData(), 25.f);
 		//STARTUP_JOB_WEIGHTED(GetElectricFieldPhaseData(), 25.f);
 		//STARTUP_JOB_WEIGHTED(GetUIData(), 25.f);
 	}
@@ -151,48 +151,48 @@ const ULyraGameData& ULyraAssetManager::GetGameData()
 
 const ULyraPawnData* ULyraAssetManager::GetDefaultPawnData() const
 {
-	return GetAsset(DefaultPawnData);
+	return GetAssetByPath(DefaultPawnData);
 }
 
-//const UD1AssetData& ULyraAssetManager::GetAssetData()
-//{
-//	return GetOrLoadTypedGameData<UD1AssetData>(AssetDataPath);
-//}
-//
-//const UD1ClassData& ULyraAssetManager::GetClassData()
-//{
-//	return GetOrLoadTypedGameData<UD1ClassData>(ClassDataPath);
-//}
-//
+const URSAssetData& ULyraAssetManager::GetAssetData()
+{
+	return GetOrLoadTypedGameData<URSAssetData>(AssetDataPath);
+}
+
+const URSClassData& ULyraAssetManager::GetClassData()
+{
+	return GetOrLoadTypedGameData<URSClassData>(ClassDataPath);
+}
+
 const URSCharacterData& ULyraAssetManager::GetCharacterData()
 {
 	return GetOrLoadTypedGameData<URSCharacterData>(CharacterDataPath);
 }
 //
-//const UD1MonsterData& ULyraAssetManager::GetMonsterData()
+//const URSMonsterData& ULyraAssetManager::GetMonsterData()
 //{
-//	return GetOrLoadTypedGameData<UD1MonsterData>(MonsterDataPath);
+//	return GetOrLoadTypedGameData<URSMonsterData>(MonsterDataPath);
 //}
 //
-//const UD1ItemData& ULyraAssetManager::GetItemData()
+const URSItemData& ULyraAssetManager::GetItemData()
+{
+	return GetOrLoadTypedGameData<URSItemData>(ItemDataPath);
+}
+//
+//const URSElectricFieldPhaseData& ULyraAssetManager::GetElectricFieldPhaseData()
 //{
-//	return GetOrLoadTypedGameData<UD1ItemData>(ItemDataPath);
+//	return GetOrLoadTypedGameData<URSElectricFieldPhaseData>(ElectricFieldPhaseDataPath);
 //}
 //
-//const UD1ElectricFieldPhaseData& ULyraAssetManager::GetElectricFieldPhaseData()
-//{
-//	return GetOrLoadTypedGameData<UD1ElectricFieldPhaseData>(ElectricFieldPhaseDataPath);
-//}
-//
-//const UD1CheatData& ULyraAssetManager::GetCheatData()
-//{
-//	return GetOrLoadTypedGameData<UD1CheatData>(CheatDataPath);
-//}
-//
-//const UD1UIData& ULyraAssetManager::GetUIData()
-//{
-//	return GetOrLoadTypedGameData<UD1UIData>(UIDataPath);
-//}
+const URSCheatData& ULyraAssetManager::GetCheatData()
+{
+	return GetOrLoadTypedGameData<URSCheatData>(CheatDataPath);
+}
+
+const URSUIData& ULyraAssetManager::GetUIData()
+{
+	return GetOrLoadTypedGameData<URSUIData>(UIDataPath);
+}
 
 UPrimaryDataAsset* ULyraAssetManager::LoadGameDataOfClass(TSubclassOf<UPrimaryDataAsset> DataClass, const TSoftObjectPtr<UPrimaryDataAsset>& DataClassPath, FPrimaryAssetType PrimaryAssetType)
 {

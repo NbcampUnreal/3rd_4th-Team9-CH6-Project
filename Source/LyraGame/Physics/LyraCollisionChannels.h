@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -8,17 +8,12 @@
  * also DefaultEngine.ini [/Script/Engine.CollisionProfile] should match with this list
  **/
 
-// Trace against Actors/Components which provide interactions.
-#define Lyra_TraceChannel_Interaction					ECC_GameTraceChannel1
+#define RS_ObjectChannel_Weapon         ECC_GameTraceChannel6
+#define RS_ObjectChannel_Projectile		ECC_GameTraceChannel7
+#define RS_TraceChannel_AimAssist       ECC_GameTraceChannel1
+#define RS_TraceChannel_Interaction		ECC_GameTraceChannel8
 
-// Trace used by weapons, will hit physics assets instead of capsules
-#define Lyra_TraceChannel_Weapon						ECC_GameTraceChannel2
-
-// Trace used by by weapons, will hit pawn capsules instead of physics assets
-#define Lyra_TraceChannel_Weapon_Capsule				ECC_GameTraceChannel3
-
-// Trace used by by weapons, will trace through multiple pawns rather than stopping on the first hit
-#define Lyra_TraceChannel_Weapon_Multi					ECC_GameTraceChannel4
-
-// Allocated to aim assist by the ShooterCore game feature
-// ECC_GameTraceChannel5
+#define RS_PhysicalMaterial_Default		SurfaceType_Default
+#define RS_PhysicalMaterial_Character	SurfaceType1
+#define RS_PhysicalMaterial_Rock		SurfaceType2
+#define RS_PhysicalMaterial_Wood		SurfaceType3
