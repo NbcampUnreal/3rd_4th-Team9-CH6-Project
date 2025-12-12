@@ -21,7 +21,7 @@ public class RemnantSoul : ModuleRules
 			"Slate"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { });
+		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayAbilities", "GameplayTags", "GameplayTasks" });
 
 		PublicIncludePaths.AddRange(new string[] {
 			"RemnantSoul",
