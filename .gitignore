@@ -14,7 +14,7 @@ Content/ThirdPerson/
 Content/Variant_Combat/
 Content/Variant_Platforming/
 Content/Variant_SideScrolling/
-Content/Vrising/
+
 
 # generated files
 *.generated.h
