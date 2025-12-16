@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "AbilitySystemInterface.h"
 #include "GameplayTagContainer.h"
-#include "GXChest.generated.h"
+#include "RSChest.generated.h"
 
 class UAbilitySystemComponent;
 class UBoxComponent;
@@ -15,7 +15,7 @@ class UGameplayEffect;
 
 
 UCLASS()
-class REMNANTSOUL_API AGXChest : 
+class REMNANTSOUL_API ARSChest : 
 public AActor,
 public IAbilitySystemInterface
 {
@@ -23,7 +23,7 @@ public IAbilitySystemInterface
 
 public:	
 	// Sets default values for this actor's properties
-	AGXChest();
+	ARSChest();
 
 	virtual  UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	

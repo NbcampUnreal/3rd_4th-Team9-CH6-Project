@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 
 #include "RemnantSoulPlayerController.h"
@@ -33,29 +33,68 @@ void ARemnantSoulPlayerController::BeginPlay()
 	}
 }
 
+//void ARemnantSoulPlayerController::SetupInputComponent()
+//{
+//	Super::SetupInputComponent();
+//
+//	// only add IMCs for local player controllers
+//	if (IsLocalPlayerController())
+//	{
+//		// Add Input Mapping Contexts
+//		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+//		{
+//			for (UInputMappingContext* CurrentContext : DefaultMappingContexts)
+//			{
+//				Subsystem->AddMappingContext(CurrentContext, 0);
+//			}
+//
+//			// only add these IMCs if we're not using mobile touch input
+//			if (!SVirtualJoystick::ShouldDisplayTouchInterface())
+//			{
+//				for (UInputMappingContext* CurrentContext : MobileExcludedMappingContexts)
+//				{
+//					Subsystem->AddMappingContext(CurrentContext, 0);
+//				}
+//			}
+//		}
+//	}
+//}
+
 void ARemnantSoulPlayerController::SetupInputComponent()
 {
-	Super::SetupInputComponent();
+    Super::SetupInputComponent();
 
-	// only add IMCs for local player controllers
-	if (IsLocalPlayerController())
-	{
-		// Add Input Mapping Contexts
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-		{
-			for (UInputMappingContext* CurrentContext : DefaultMappingContexts)
-			{
-				Subsystem->AddMappingContext(CurrentContext, 0);
-			}
+    const bool bTouch = SVirtualJoystick::ShouldDisplayTouchInterface();
+    UE_LOG(LogTemp, Warning, TEXT("[PC] ShouldDisplayTouchInterface=%d  IsLocalPlayerController=%d"),
+        bTouch ? 1 : 0, IsLocalPlayerController() ? 1 : 0);
 
-			// only add these IMCs if we're not using mobile touch input
-			if (!SVirtualJoystick::ShouldDisplayTouchInterface())
-			{
-				for (UInputMappingContext* CurrentContext : MobileExcludedMappingContexts)
-				{
-					Subsystem->AddMappingContext(CurrentContext, 0);
-				}
-			}
-		}
-	}
+    if (IsLocalPlayerController())
+    {
+        if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+            ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+        {
+            UE_LOG(LogTemp, Warning, TEXT("[PC] DefaultMappingContexts Num=%d"), DefaultMappingContexts.Num());
+            for (UInputMappingContext* CurrentContext : DefaultMappingContexts)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("[PC] Add Default IMC: %s"),
+                    CurrentContext ? *CurrentContext->GetName() : TEXT("NULL"));
+                Subsystem->AddMappingContext(CurrentContext, 0);
+            }
+
+            UE_LOG(LogTemp, Warning, TEXT("[PC] MobileExcludedMappingContexts Num=%d"), MobileExcludedMappingContexts.Num());
+            if (!bTouch)
+            {
+                for (UInputMappingContext* CurrentContext : MobileExcludedMappingContexts)
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("[PC] Add MobileExcluded IMC: %s"),
+                        CurrentContext ? *CurrentContext->GetName() : TEXT("NULL"));
+                    Subsystem->AddMappingContext(CurrentContext, 0);
+                }
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("[PC] TouchInterface ON -> MobileExcluded IMCs NOT added"));
+            }
+        }
+    }
 }
