@@ -24,4 +24,8 @@ protected:
 	// 화면에 띄울 위젯 클래스
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<class UUserWidget> MainMenuWidgetClass;
+
+	//bgm넣을 변수
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	class USoundBase* MenuBGM;
 };
