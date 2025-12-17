@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -38,7 +38,7 @@ protected:
 	/** Gameplay initialization */
 	virtual void BeginPlay() override;
 
-	/** Input mapping context setup */
-	virtual void SetupInputComponent() override;
+	///** Input mapping context setup */
+	//virtual void SetupInputComponent() override;
 
 };
