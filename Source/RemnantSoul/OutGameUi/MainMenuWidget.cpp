@@ -6,6 +6,7 @@
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "GameFramework/GameUserSettings.h"
 
 void UMainMenuWidget::NativeConstruct()
 {
@@ -41,6 +42,17 @@ void UMainMenuWidget::OnStartGameClicked()
 	// 레벨 이동
 	if (LevelToLoad != NAME_None)
 	{
+		APlayerController* PC = GetOwningPlayer(); //플레이어 컨트롤러를 가져옴
+
+		if (PC)
+		{
+			//메뉴 레벨 떠나기 전 게임 모드로 돌아가라고 명령
+			FInputModeGameOnly GameInputMode;
+			PC->SetInputMode(GameInputMode);
+
+			PC->bShowMouseCursor = false; // 마우스 커서 숨김
+		}
+
 		UGameplayStatics::OpenLevel(this, LevelToLoad);
 	}
 }
@@ -67,4 +79,25 @@ void UMainMenuWidget::OnBackClicked()
 		// SetActiveWidgetIndex(0): 스위처의 첫 번째(Index 0)을 보여줘라!
 		MenuSwitcher->SetActiveWidgetIndex(0);
 	}
+}
+
+void UMainMenuWidget::SetGraphicsQuality(int32 QualityLevel)
+{
+	UGameUserSettings* UserSettings = GEngine->GetGameUserSettings();
+	if (UserSettings)
+	{
+		UserSettings->SetOverallScalabilityLevel(QualityLevel);
+		UserSettings->ApplySettings(false);
+		UserSettings->SaveSettings();
+	}
+}
+
+int32 UMainMenuWidget::GetCurrentQualityLevel() const
+{
+	UGameUserSettings* UserSettings = GEngine->GetGameUserSettings();
+	if (UserSettings)
+	{
+		return UserSettings->GetOverallScalabilityLevel();
+	}
+	return 0;
 }

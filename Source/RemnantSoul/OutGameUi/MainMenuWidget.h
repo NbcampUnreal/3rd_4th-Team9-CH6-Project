@@ -58,4 +58,12 @@ public:
 	// 이동할 레벨의 이름
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Level")
 	FName LevelToLoad = FName("Cave");
+
+	//그래픽 설정 관련 함수
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	void SetGraphicsQuality(int32 QualityLevel);  // 그래픽 품질 변경 0~3까지
+
+	UFUNCTION(BlueprintPure, Category = "Settings")
+	int32 GetCurrentQualityLevel() const; // 현재 그래픽 상태
+
 };
