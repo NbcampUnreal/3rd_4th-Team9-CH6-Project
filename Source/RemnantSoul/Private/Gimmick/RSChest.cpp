@@ -1,7 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GXChest.h"
+#include "Gimmick/RSChest.h"
 #include "AbilitySystemComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -9,7 +9,7 @@
 #include "GameplayTags.h"		
 
 // Sets default values
-AGXChest::AGXChest()
+ARSChest::ARSChest()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -29,12 +29,12 @@ AGXChest::AGXChest()
 
 }
 
-UAbilitySystemComponent* AGXChest::GetAbilitySystemComponent() const
+UAbilitySystemComponent* ARSChest::GetAbilitySystemComponent() const
 {
 	return ASC;
 }
 
-void AGXChest::NotifyActorBeginOverlap(AActor* Other)
+void ARSChest::NotifyActorBeginOverlap(AActor* Other)
 {
 	Super::NotifyActorBeginOverlap(Other);
 	
@@ -47,14 +47,14 @@ void AGXChest::NotifyActorBeginOverlap(AActor* Other)
 	
 }
 
-void AGXChest::PostInitializeComponents()
+void ARSChest::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	ASC-> InitAbilityActorInfo(this, this);
 	
 }
 
-void AGXChest::ApplyEffectToTarget(AActor* Target)
+void ARSChest::ApplyEffectToTarget(AActor* Target)
 {
 	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target);
 	if (TargetASC)
@@ -70,7 +70,7 @@ void AGXChest::ApplyEffectToTarget(AActor* Target)
 }
 
 
-void AGXChest::InvokeGameplayCue(AActor* Target)
+void ARSChest::InvokeGameplayCue(AActor* Target)
 {
 	FGameplayCueParameters Param;
 	Param.SourceObject = this;
