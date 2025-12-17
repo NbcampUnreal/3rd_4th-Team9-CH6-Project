@@ -36,6 +36,6 @@ protected:
 		const FGameplayAbilityActivationInfo ActivationInfo,
 		const FGameplayEventData* TriggerEventData) override;
 
-	void PerformAttackTrace(const FGameplayAbilityActorInfo* ActorInfo);
+	void PerformAttackTrace(const FGameplayAbilityActorInfo* ActorInfo,float AttackDamageValue);
 	
 };
