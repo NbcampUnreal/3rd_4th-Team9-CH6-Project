@@ -4,10 +4,10 @@
 #include "OutGameUi/MenuGameModeBase.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
 
 AMenuGameModeBase::AMenuGameModeBase()
 {
-	// 메뉴에서는 폰(캐릭터)이 필요 없으므로 DefaultPawn을 비웁니다.
 	DefaultPawnClass = nullptr;
 }
 
@@ -34,5 +34,10 @@ void AMenuGameModeBase::BeginPlay()
 		FInputModeUIOnly InputMode;
 		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 		PC->SetInputMode(InputMode);
+	}
+
+	if (MenuBGM)
+	{
+		UGameplayStatics::PlaySound2D(this, MenuBGM);
 	}
 }
