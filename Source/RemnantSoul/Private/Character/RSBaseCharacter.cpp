@@ -218,9 +218,11 @@ void ARSBaseCharacter::HandleDeath()
 		if (ARSPlayerController* RSPC = Cast<ARSPlayerController>(PC))
 		{
 			RSPC->OnPlayerDeath();
-			Destroy();
+			//Destroy();
 			//TODO: 캐릭터 삭제 코드는 애니메이션 작업에 따라 사망 애니메이션 출력으로 수정 필요
 		}
 	}
+	Destroy();
+
 }
 
