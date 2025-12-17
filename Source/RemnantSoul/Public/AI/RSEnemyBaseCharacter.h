@@ -6,6 +6,7 @@
 #include "RSEnemyBaseCharacter.generated.h"
 
 class UAbilitySystemComponent;
+class URSEnemyBasicAttributeSet;
 
 UCLASS()
 class REMNANTSOUL_API ARSEnemyBaseCharacter : public ACharacter, public IAbilitySystemInterface
@@ -15,9 +16,13 @@ class REMNANTSOUL_API ARSEnemyBaseCharacter : public ACharacter, public IAbility
 public:
 	ARSEnemyBaseCharacter();
 	
-	/* GAS */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS")
+	/* Ability System Component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
 	UAbilitySystemComponent* AbilitySystemComponent;
+
+	/* AttributeSet */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
+	TObjectPtr<URSEnemyBasicAttributeSet> EnemyBasicAttributeSet;
 	
 protected:
 	virtual void PossessedBy(AController* NewController) override;
