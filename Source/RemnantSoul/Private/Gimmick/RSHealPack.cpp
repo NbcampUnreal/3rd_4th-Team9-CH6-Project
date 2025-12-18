@@ -3,11 +3,11 @@
 
 #include "Gimmick/RSHealPack.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "RemnantSoul/RemnantSoul.h"
+#include "RemnantSoul.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayAbilitySpec.h"
 #include "GAS/GA/RSGameplayAbility_ActiveParticle.h"
-#include "RemnantSoul/RSGameplayTags.h"
+#include "RSGameplayTags.h"
 
 ARSHealPack::ARSHealPack()
 	: ActiveSteamParticlePeriod(5.f)

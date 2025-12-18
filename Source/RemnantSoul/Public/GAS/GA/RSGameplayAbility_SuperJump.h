@@ -4,11 +4,6 @@
 #include "Abilities/GameplayAbility.h"
 #include "RSGameplayAbility_SuperJump.generated.h"
 
-/**
- * Super Jump Ability
- * - Boosted Jump Power
- * - Ends on Landed
- */
 UCLASS()
 class REMNANTSOUL_API URSGameplayAbility_SuperJump : public UGameplayAbility
 {
