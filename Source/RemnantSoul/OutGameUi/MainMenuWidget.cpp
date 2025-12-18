@@ -101,3 +101,38 @@ int32 UMainMenuWidget::GetCurrentQualityLevel() const
 	}
 	return 0;
 }
+
+void UMainMenuWidget::SetDisplayMode(int32 ModeIndex)
+{
+	UGameUserSettings* UserSettings = GEngine->GetGameUserSettings();
+	if (UserSettings)
+	{
+		//0은 창모드 1은 전체화면
+		EWindowMode::Type NewMode = (ModeIndex == 0) ? EWindowMode::Windowed : EWindowMode::Fullscreen;
+
+		UserSettings->SetFullscreenMode(NewMode);
+
+		//해상도도 같이 적용
+		FIntPoint CurrentRes = UserSettings->GetScreenResolution();
+		UserSettings->SetScreenResolution(CurrentRes);
+
+		UserSettings->ApplySettings(false);
+		UserSettings->SaveSettings();
+
+	}
+}
+
+int32 UMainMenuWidget::GetCurrentDisplayMode() const
+{
+	UGameUserSettings* UserSettings = GEngine->GetGameUserSettings();
+	if (UserSettings)
+	{
+		EWindowMode::Type CurrentMode = UserSettings->GetFullscreenMode();
+
+		if (CurrentMode == EWindowMode::Fullscreen || CurrentMode == EWindowMode::WindowedFullscreen)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
