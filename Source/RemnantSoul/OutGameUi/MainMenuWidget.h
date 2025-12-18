@@ -66,4 +66,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Settings")
 	int32 GetCurrentQualityLevel() const; // 현재 그래픽 상태
 
+
+	//화면 모드 관련 함수
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	void SetDisplayMode(int32 ModeIndex);  //화면 모드 변경
+		
+	UFUNCTION(BlueprintPure, Category = "Settings")
+	int32 GetCurrentDisplayMode() const; // 현재 창 모드
+
+
+
 };
