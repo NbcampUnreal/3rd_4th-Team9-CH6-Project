@@ -37,9 +37,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputAction* AttackAction;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UInputAction* RollAction;
+	
 	/* Input Callbacks */
 	void Input_Move(const FInputActionValue& Value);
 	void Input_Look(const FInputActionValue& Value);
 	void Input_Attack();
+	void Input_Roll();
+
 	
 };
