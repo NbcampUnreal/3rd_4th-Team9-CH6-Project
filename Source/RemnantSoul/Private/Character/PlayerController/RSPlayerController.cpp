@@ -57,6 +57,12 @@ void ARSPlayerController::SetupInputComponent()
 		EnhancedInput->BindAction(AttackAction,ETriggerEvent::Started,this,&ARSPlayerController::Input_Attack
 		);
 	}
+
+	if (RollAction)
+	{
+		EnhancedInput->BindAction(RollAction,ETriggerEvent::Started,this,&ARSPlayerController::Input_Roll
+		);
+	}
 }
 
 /* ================= Input ================= */
@@ -88,6 +94,15 @@ void ARSPlayerController::Input_Attack()
 		Ch->HandleAttackInput();
 	}
 }
+
+void ARSPlayerController::Input_Roll()
+{
+	if (ARSBaseCharacter* Ch = Cast<ARSBaseCharacter>(GetPawn()))
+	{
+		Ch->RollInput();
+	}
+}
+
 
 void ARSPlayerController::OnPlayerDeath()
 {

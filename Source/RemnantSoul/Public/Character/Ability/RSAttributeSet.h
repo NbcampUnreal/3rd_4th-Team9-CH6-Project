@@ -49,6 +49,15 @@ public:
 	FGameplayAttributeData MaxStamina;
 	RS_ATTRIBUTE_ACCESSORS(URSAttributeSet, MaxStamina)
 
+	//중복 활성화 방지용 구르기 내부 쿨타임
+	UPROPERTY(BlueprintReadOnly, Category="Cooldown")
+	FGameplayAttributeData RollCooldown;
+	RS_ATTRIBUTE_ACCESSORS(URSAttributeSet, RollCooldown)
+
+	UPROPERTY(BlueprintReadOnly, Category="Cooldown")
+	FGameplayAttributeData MaxRollCooldown;
+	RS_ATTRIBUTE_ACCESSORS(URSAttributeSet, MaxRollCooldown)
+
 protected:
 	// GameplayEffect 적용 후 Attribute 값 보정을 위해 GAS가 자동 호출하는 콜백
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;

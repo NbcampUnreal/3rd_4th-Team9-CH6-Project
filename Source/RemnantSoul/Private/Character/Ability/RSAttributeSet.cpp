@@ -13,6 +13,8 @@ URSAttributeSet::URSAttributeSet()
 	InitMaxStamina(100.f);
 	InitAttackDamage(10.f);
 
+	InitRollCooldown(0.f);
+	InitMaxRollCooldown(1.0f); //GE에서 값을 덮어쓸 수 있음.
 }
 
 void URSAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
