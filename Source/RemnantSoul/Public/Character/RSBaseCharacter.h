@@ -30,6 +30,7 @@ public:
 	void HandleMoveInput(const FVector2D& MoveVector);
 	void HandleLookInput(const FVector2D& LookVector);
 	void HandleAttackInput();
+	void RollInput();
 
 
 	void HandleDeath();

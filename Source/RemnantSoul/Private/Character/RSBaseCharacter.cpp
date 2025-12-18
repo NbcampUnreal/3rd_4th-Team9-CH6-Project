@@ -154,6 +154,61 @@ void ARSBaseCharacter::HandleAttackInput()
 	}
 }
 
+void ARSBaseCharacter::RollInput()
+{
+	if (bIsDead || !AbilitySystem)
+	{
+		UE_LOG(LogRSAbility, Warning,
+			TEXT("[AttackInput] Blocked - Dead: %d, ASC Valid: %d"),
+			bIsDead,
+			AbilitySystem != nullptr
+		);
+		return;
+	}
+
+	const FGameplayTag RollTag =
+		FGameplayTag::RequestGameplayTag(TEXT("Ability.Roll"));
+
+	FGameplayTagContainer TagContainer(RollTag);
+
+	/* 1. 해당 태그를 가진 어빌리티가 있는지 확인 */
+	TArray<FGameplayAbilitySpec*> MatchingSpecs;
+	AbilitySystem->GetActivatableGameplayAbilitySpecsByAllMatchingTags(
+		TagContainer,
+		MatchingSpecs,
+		false
+	);
+
+	if (MatchingSpecs.Num() == 0)
+	{
+		UE_LOG(LogRSAbility, Warning,
+			TEXT("[AttackInput] No Ability found with tag: %s"),
+			*RollTag.ToString()
+		);
+		return;
+	}
+
+	UE_LOG(LogRSAbility, Log,
+		TEXT("[AttackInput] Found %d Ability(s) with tag: %s"),
+		MatchingSpecs.Num(),
+		*RollTag.ToString()
+	);
+
+	/* 2. 실제 활성화 시도 */
+	AbilitySystem->TryActivateAbilitiesByTag(TagContainer);
+
+	/* 3. 활성화 결과 확인 */
+	for (const FGameplayAbilitySpec* Spec : MatchingSpecs)
+	{
+		const bool bIsActive = Spec->IsActive();
+
+		UE_LOG(LogRSAbility, Log,
+			TEXT("[AttackInput] Ability %s | Active: %d"),
+			*GetNameSafe(Spec->Ability),
+			bIsActive
+		);
+	}
+}
 
 /* ===== GAS ===== */
 
