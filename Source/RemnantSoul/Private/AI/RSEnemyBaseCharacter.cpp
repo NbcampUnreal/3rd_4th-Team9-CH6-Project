@@ -1,6 +1,6 @@
 ﻿#include "AI/RSEnemyBaseCharacter.h"
 #include "AbilitySystemComponent.h"
-#include "AI/RSEnemyBasicAttributeSet.h"
+#include "AI/RSEnemyBaseAttributeSet.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -13,7 +13,7 @@ ARSEnemyBaseCharacter::ARSEnemyBaseCharacter()
 	AbilitySystemComponent->SetIsReplicated(false);
 
 	/* AttributeSet 설정 */
-	EnemyBasicAttributeSet = CreateDefaultSubobject<URSEnemyBasicAttributeSet>(TEXT("EnemyBasicAttributeSet"));
+	EnemyBasicAttributeSet = CreateDefaultSubobject<URSEnemyBaseAttributeSet>(TEXT("EnemyBasicAttributeSet"));
 
 	/* 캡슐 사이즈 설정 */
 	GetCapsuleComponent()->InitCapsuleSize(35.0f, 90.0f);
