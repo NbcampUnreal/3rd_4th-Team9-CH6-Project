@@ -1,4 +1,4 @@
-﻿#include "RSCharacter.h"
+﻿#include "Character/RSCharacter.h"
 
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -6,6 +6,13 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "AbilitySystemComponent.h"
+#include "GAS/AS/RSAttributeSet_Character.h"
+#include "Component/RSWidgetComponent.h"
+#include "UI/RSUserWidget.h"
+#include "Components/CapsuleComponent.h"
+#include "GAS/AS/RSAttributeSet_Skill.h"
+#include "RSGameplayTags.h"
+
 
 ARSCharacter::ARSCharacter()
 {
@@ -29,13 +36,39 @@ ARSCharacter::ARSCharacter()
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 
 	ASC = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("ASC"));
+
+	AttributeSet = CreateDefaultSubobject<URSAttributeSet_Character>(TEXT("AttributeSet"));
+
+	HPBar = CreateDefaultSubobject<URSWidgetComponent>(TEXT("HPBar"));
+	HPBar->SetupAttachment(GetMesh());
+	HPBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
+	static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/RS/UI/WBP_HPBar.WBP_HPBar_C'"));
+	if (HpBarWidgetRef.Class)
+	{
+		HPBar->SetWidgetClass(HpBarWidgetRef.Class);
+		HPBar->SetWidgetSpace(EWidgetSpace::Screen);
+		HPBar->SetDrawSize(FVector2D(200.0f, 20.f));
+		HPBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
+	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
+	Weapon->SetupAttachment(GetMesh(), FName(TEXT("hand_r")));
+
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> WeaponMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/LyraResource/Weapons/Rifle/Mesh/SK_Rifle.SK_Rifle'"));
+	if (WeaponMeshRef.Object)
+	{
+		WeaponMesh = WeaponMeshRef.Object;
+	}
+
+	WeaponRange = 75.f;
+	WeaponAttackDamage = 100.0f;
+
+	SkillAttributeSet = CreateDefaultSubobject<URSAttributeSet_Skill>(TEXT("SkillAttributeSet"));
 }
 
 void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	UE_LOG(LogTemp, Warning, TEXT("[RS] LookAction=%s"), LookAction ? *LookAction->GetName() : TEXT("NULL"));
 
 	UEnhancedInputComponent* EIC = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
@@ -52,12 +85,13 @@ void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ThisClass::HandleGameplayAbilityInputPressed, 1);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ThisClass::HandleGameplayAbilityInputReleased, 1);
-		
+
 		EnhancedInputComponent->BindAction(SuperJumpAction, ETriggerEvent::Triggered, this, &ThisClass::HandleGameplayAbilityInputPressed, 3);
 		EnhancedInputComponent->BindAction(SuperJumpAction, ETriggerEvent::Completed, this, &ThisClass::HandleGameplayAbilityInputReleased, 3);
 
-
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ThisClass::HandleGameplayAbilityInputPressed, 2);
+
+		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Triggered, this, &ThisClass::HandleGameplayAbilityInputPressed, 3);
 	}
 }
 
@@ -92,6 +126,30 @@ void ARSCharacter::BeginPlay()
 	{
 		APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
 		PlayerController->ConsoleCommand(TEXT("ShowDebug AbilitySystem"));
+	}
+
+	const URSAttributeSet_Character* CurrentAttributeSet = ASC->GetSet<URSAttributeSet_Character>();
+	if (IsValid(CurrentAttributeSet) == true)
+	{
+		CurrentAttributeSet->OnOutOfHealth.AddDynamic(this, &ThisClass::OnOutOfHealth);
+	}
+
+	ASC->GenericGameplayEventCallbacks.FindOrAdd(EVENT_EQUIP_WEAPON).AddUObject(this, &ThisClass::EquipWeapon);
+	ASC->GenericGameplayEventCallbacks.FindOrAdd(EVENT_UNEQUIP_WEAPON).AddUObject(this, &ThisClass::UnequipWeapon);
+}
+
+void ARSCharacter::OnOutOfHealth()
+{
+	GetCapsuleComponent()->SetCollisionProfileName(FName(TEXT("DeadBody")));
+
+	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	GetMesh()->SetSimulatePhysics(true);
+
+	GetController()->UnPossess();
+
+	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+	{
+		MoveComp->DisableMovement();
 	}
 }
 
@@ -162,4 +220,47 @@ void ARSCharacter::HandleGameplayAbilityInputReleased(int32 InInputID)
 UAbilitySystemComponent* ARSCharacter::GetAbilitySystemComponent() const
 {
 	return ASC;
+}
+
+void ARSCharacter::EquipWeapon(const FGameplayEventData* EventData)
+{
+	if (Weapon)
+	{
+		Weapon->SetSkeletalMesh(WeaponMesh);
+
+		const float CurrentAttackRange = ASC->GetNumericAttributeBase(URSAttributeSet_Character::GetAttackRangeAttribute());
+		const float CurrentAttackDamage = ASC->GetNumericAttributeBase(URSAttributeSet_Character::GetAttackDamageAttribute());
+
+		ASC->SetNumericAttributeBase(URSAttributeSet_Character::GetAttackRangeAttribute(), CurrentAttackRange + WeaponRange);
+		ASC->SetNumericAttributeBase(URSAttributeSet_Character::GetAttackDamageAttribute(), CurrentAttackDamage + WeaponAttackDamage);
+
+		FGameplayAbilitySpec NewSkillSpec(SkillAbilityClass);
+		NewSkillSpec.InputID = 3;
+
+		if (!ASC->FindAbilitySpecFromClass(SkillAbilityClass))
+		{
+			ASC->GiveAbility(NewSkillSpec);
+		}
+	}
+}
+
+void ARSCharacter::UnequipWeapon(const FGameplayEventData* EventData)
+{
+	if (Weapon)
+	{
+		FGameplayAbilitySpec* SkillAbilitySpec = ASC->FindAbilitySpecFromClass(SkillAbilityClass);
+		if (SkillAbilitySpec)
+		{
+			ASC->ClearAbility(SkillAbilitySpec->Handle);
+		}
+
+		const float CurrentAttackRange = ASC->GetNumericAttributeBase(URSAttributeSet_Character::GetAttackRangeAttribute());
+		const float CurrentAttackDamage = ASC->GetNumericAttributeBase(URSAttributeSet_Character::GetAttackDamageAttribute());
+
+		ASC->SetNumericAttributeBase(URSAttributeSet_Character::GetAttackRangeAttribute(), CurrentAttackRange - WeaponRange);
+		ASC->SetNumericAttributeBase(URSAttributeSet_Character::GetAttackDamageAttribute(), CurrentAttackDamage - WeaponAttackDamage);
+
+		Weapon->SetSkeletalMesh(nullptr);
+	}
+
 }

@@ -5,6 +5,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "AbilitySystemInterface.h"
+#include "Abilities/GameplayAbilityTypes.h"
 #include "RSCharacter.generated.h"
 
 class UCameraComponent;
@@ -13,6 +14,9 @@ class UInputMappingContext;
 class UInputAction;
 class UAbilitySystemComponent;
 class UGameplayAbility;
+class URSAttributeSet_Character;
+class URSWidgetComponent;
+class URSAttributeSet_Skill;
 
 UCLASS()
 class REMNANTSOUL_API ARSCharacter : public ACharacter, public IAbilitySystemInterface
@@ -28,7 +32,12 @@ public:
 
 	virtual void BeginPlay() override;
 
+protected:
+	UFUNCTION()
+	virtual void OnOutOfHealth();
+
 #pragma endregion
+
 
 #pragma region Component
 
@@ -49,7 +58,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ARSCharacter|Component")
 	TObjectPtr<UAbilitySystemComponent> ASC;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ARSCharacter|Component")
+	TObjectPtr<URSWidgetComponent> HPBar;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ARSCharacter|Component")
+	TObjectPtr<USkeletalMeshComponent> Weapon;
+
 #pragma endregion
+
 
 #pragma region Input
 
@@ -81,6 +97,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ARSCharacter|Input")
 	TObjectPtr<UInputAction> AttackAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ARSCharacter|Input")
+	TObjectPtr<UInputAction> SkillAction;
+
 #pragma endregion
 
 
@@ -93,13 +112,55 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|GameplayAbilitySystem")
 	TMap<int32, TSubclassOf<UGameplayAbility>> GrantedInputAbilities;
 
+	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|GameplayAbilitySystem")
+	TObjectPtr<URSAttributeSet_Character> AttributeSet;
+
+	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|GameplayAbilitySystem")
+	TObjectPtr<URSAttributeSet_Skill> SkillAttributeSet;
+
 #pragma endregion
+
 
 #pragma region Attack
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Attack")
 	TObjectPtr<UAnimMontage> AttackMontage;
+
+#pragma endregion
+
+
+#pragma region Equip
+
+protected:
+	void EquipWeapon(const FGameplayEventData* EventData);
+
+	void UnequipWeapon(const FGameplayEventData* EventData);
+
+protected:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USkeletalMesh> WeaponMesh;
+
+	UPROPERTY(EditAnywhere)
+	float WeaponRange;
+
+	UPROPERTY(EditAnywhere)
+	float WeaponAttackDamage;
+
+#pragma endregion
+
+
+#pragma region Skill
+
+public:
+	UAnimMontage* GetSkillActionMontage() const { return SkillActionMontage; };
+
+protected:
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAnimMontage> SkillActionMontage;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameplayAbility> SkillAbilityClass;
 
 #pragma endregion
 

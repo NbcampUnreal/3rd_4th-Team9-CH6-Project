@@ -3,7 +3,7 @@
 
 #include "GAS/GA/RSGameplayAbility_ActiveParticle.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "RemnantSoul/RSGameplayTags.h"
+#include "RSGameplayTags.h"
 
 URSGameplayAbility_ActiveParticle::URSGameplayAbility_ActiveParticle()
 {
