@@ -4,6 +4,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayAbilitySpec.h"
 #include "Camera/CameraComponent.h"
+#include "InputActionValue.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Character/PlayerController/RSPlayerController.h"
@@ -73,6 +74,13 @@ void ARSBaseCharacter::HandleMoveInput(const FVector2D& MoveVector)
 		return;
 	}
 
+	//입력이 없을 시 방향 초기화
+	if (MoveVector.IsNearlyZero())
+	{
+		LastMovementInput = FVector::ZeroVector;
+		return;
+	}
+
 	// 컨트롤러 회전값에서 Yaw만 사용
 	const FRotator ControlRotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0.f, ControlRotation.Yaw, 0.f);
@@ -84,6 +92,11 @@ void ARSBaseCharacter::HandleMoveInput(const FVector2D& MoveVector)
 	// 입력값 기반 이동 처리
 	AddMovementInput(ForwardDirection, MoveVector.Y);
 	AddMovementInput(RightDirection,   MoveVector.X);
+
+	LastMovementInput =
+	(ForwardDirection * MoveVector.Y) +
+	(RightDirection   * MoveVector.X);
+	//Roll 어빌리티에서 감지하고 실행할 방향 좌표 저장용
 	
 }
 

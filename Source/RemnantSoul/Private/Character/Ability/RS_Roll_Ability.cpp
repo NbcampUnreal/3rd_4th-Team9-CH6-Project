@@ -3,7 +3,9 @@
 
 #include "Character/Ability/RS_Roll_Ability.h"
 #include "AbilitySystemComponent.h"
+#include "Character/RSBaseCharacter.h"
 #include "Character/Ability/RS_Roll_AbilityTask.h"
+#include "Character/Ability/RSAttributeSet.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 
 
@@ -24,8 +26,9 @@ URS_Roll_Ability::URS_Roll_Ability()
 
 	CostGameplayEffectClass = RollCostGE;
 	CooldownGameplayEffectClass = RollCooldownGE;
+	
 }
-
+/*
 void URS_Roll_Ability::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,
@@ -72,6 +75,7 @@ void URS_Roll_Ability::ActivateAbility(
 
 	RollTask->ReadyForActivation();
 }
+*/
 
 void URS_Roll_Ability::OnMontageCompleted()
 {
@@ -82,6 +86,7 @@ void URS_Roll_Ability::OnMontageCancelled()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, true);
 }
+
 
 void URS_Roll_Ability::EndAbility(
 	const FGameplayAbilitySpecHandle Handle,
@@ -99,3 +104,133 @@ void URS_Roll_Ability::EndAbility(
 		bWasCancelled
 	);
 }
+
+
+static UAnimMontage* SelectRollMontage(
+	ACharacter* Character,
+	const FVector& InputDir,
+	UAnimMontage* F,
+	UAnimMontage* B,
+	UAnimMontage* L,
+	UAnimMontage* R
+)
+{
+	if (!Character || InputDir.IsNearlyZero())
+	{
+		return F; // 입력 없으면 전방 회피
+	}
+
+	const FVector Forward = Character->GetActorForwardVector();
+	const FVector Right   = Character->GetActorRightVector();
+	const FVector Dir     = InputDir.GetSafeNormal();
+
+	const float ForwardDot = FVector::DotProduct(Forward, Dir);
+	const float RightDot   = FVector::DotProduct(Right,   Dir);
+
+	if (ForwardDot >  0.7f) return F;
+	if (ForwardDot < -0.7f) return B;
+	if (RightDot   >  0.0f) return R;
+	return L;
+}
+
+void URS_Roll_Ability::ActivateAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	const FGameplayEventData* TriggerEventData)
+{
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[RollAbility] Commit failed (Not enough stamina?)"));
+		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
+		return;
+	}
+
+	ARSBaseCharacter* Character = Cast<ARSBaseCharacter>(ActorInfo->AvatarActor.Get());
+	if (!Character)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
+		return;
+	}
+
+	//스태미나 디버깅 로그
+	const URSAttributeSet* AttrSet =
+		ActorInfo->AbilitySystemComponent.IsValid()
+		? ActorInfo->AbilitySystemComponent->GetSet<URSAttributeSet>()
+		: nullptr;
+
+	if (AttrSet)
+	{
+		UE_LOG(
+			LogTemp,
+			Log,
+			TEXT("[RollAbility] Current Stamina: %.2f"),
+			AttrSet->GetStamina()
+		);
+	}
+
+	USkeletalMeshComponent* Mesh = Character->GetMesh();
+	if (!Mesh || !Mesh->GetAnimInstance())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[RollAbility] AnimInstance not found"));
+		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
+		return;
+	}
+
+	// 입력 방향 고정
+	const FVector RawInputDir = Character->GetLastMovementInput();
+	const FVector RollInputDir =
+		RawInputDir.IsNearlyZero()
+		? Character->GetActorForwardVector()
+		: RawInputDir;
+
+	UAnimMontage* SelectedMontage =
+		SelectRollMontage(
+			Character,
+			RollInputDir,
+			RollForwardMontage,
+			RollBackwardMontage,
+			RollLeftMontage,
+			RollRightMontage
+		);
+
+	if (!SelectedMontage)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
+		return;
+	}
+
+	// 무적 GE 적용
+	if (InvincibleGE && ActorInfo->AbilitySystemComponent.IsValid())
+	{
+		ActorInfo->AbilitySystemComponent->ApplyGameplayEffectToSelf(
+			InvincibleGE.GetDefaultObject(),
+			1.f,
+			ActorInfo->AbilitySystemComponent->MakeEffectContext()
+		);
+	}
+
+	// 몽타주 태스크
+	UAbilityTask_PlayMontageAndWait* MontageTask =
+		UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
+			this,
+			NAME_None,
+			SelectedMontage,
+			1.f
+		);
+
+	if (!MontageTask)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
+		return;
+	}
+
+	MontageTask->OnCompleted.AddDynamic(this, &URS_Roll_Ability::OnMontageCompleted);
+	MontageTask->OnInterrupted.AddDynamic(this, &URS_Roll_Ability::OnMontageCancelled);
+	MontageTask->OnCancelled.AddDynamic(this, &URS_Roll_Ability::OnMontageCancelled);
+
+	MontageTask->ReadyForActivation();
+}
+
+
+
