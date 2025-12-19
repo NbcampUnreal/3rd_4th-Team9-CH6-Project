@@ -91,7 +91,7 @@ void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ThisClass::HandleGameplayAbilityInputPressed, 2);
 
-		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Triggered, this, &ThisClass::HandleGameplayAbilityInputPressed, 3);
+		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Triggered, this, &ThisClass::HandleGameplayAbilityInputPressed, 4);
 	}
 }
 
@@ -106,7 +106,7 @@ void ARSCharacter::BeginPlay()
 	checkf(IsValid(EILPS) == true, TEXT("EnhancedInputLocalPlayerSubsystem is invalid."));
 
 	EILPS->AddMappingContext(InputMappingContext, 0);
-
+	
 	ASC->InitAbilityActorInfo(this, this);
 
 	for (const auto& GrantedAbility : GrantedAbilities)
