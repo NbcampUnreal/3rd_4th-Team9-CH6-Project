@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/GameUserSettings.h"
+#include "DLSSLibrary.h"
 
 void UMainMenuWidget::NativeConstruct()
 {
@@ -135,4 +136,72 @@ int32 UMainMenuWidget::GetCurrentDisplayMode() const
 		}
 	}
 	return 0;
+}
+
+void UMainMenuWidget::SetDLSSMode(int32 ModeIndex)
+{
+	UDLSSMode DLSSMode = UDLSSMode::Off;
+
+	switch (ModeIndex)
+	{
+	case 0: DLSSMode = UDLSSMode::Off; break;
+	case 1: DLSSMode = UDLSSMode::Performance; break;
+	case 2: DLSSMode = UDLSSMode::Balanced; break;
+	case 3: DLSSMode = UDLSSMode::Quality; break;
+	case 4: DLSSMode = UDLSSMode::UltraPerformance; break;
+	default: DLSSMode = UDLSSMode::Off; break;
+	}
+
+	UDLSSLibrary::SetDLSSMode(GetWorld(), DLSSMode);
+}
+
+int32 UMainMenuWidget::GetCurrentDLSSMode() const
+{
+	UDLSSMode CurrentMode = UDLSSLibrary::GetDLSSMode();
+
+
+	switch (CurrentMode)
+	{
+	case UDLSSMode::Off:            return 0;
+	case UDLSSMode::Performance:    return 1;
+	case UDLSSMode::Balanced:       return 2;
+	case UDLSSMode::Quality:        return 3;
+	case UDLSSMode::UltraPerformance: return 4;
+	default:                        return 0;
+	}
+}
+
+void UMainMenuWidget::SetFrameGeneration(bool bEnable)
+{
+	UDLSSLibrary::EnableDLSSRR(bEnable);
+
+	if (bEnable)
+	{
+		GetOwningPlayer()->ConsoleCommand("r.Streamline.DLSSG.Enable 1");
+	}
+	else
+	{
+		GetOwningPlayer()->ConsoleCommand("r.Streamline.DLSSG.Enable 0");
+	}
+}
+
+bool UMainMenuWidget::GetFrameGenerationState() const
+{
+	IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Streamline.DLSSG.Enable"));
+	if (CVar)
+	{
+		return CVar->GetInt() > 0;
+	}
+	return false;
+}
+
+bool UMainMenuWidget::IsDLSSSupported() const
+{
+	return UDLSSLibrary::IsDLSSSupported();
+}
+
+bool UMainMenuWidget::IsFrameGenSupported() const
+{
+	static const auto CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Streamline.DLSSG.Enable"));
+	return (CVar != nullptr);
 }

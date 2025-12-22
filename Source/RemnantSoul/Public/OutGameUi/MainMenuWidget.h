@@ -59,7 +59,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Level")
 	FName LevelToLoad = FName("Cave");
 
+
 	//그래픽 설정 관련 함수
+
 	UFUNCTION(BlueprintCallable, Category = "Settings")
 	void SetGraphicsQuality(int32 QualityLevel);  // 그래픽 품질 변경 0~3까지
 
@@ -68,6 +70,7 @@ public:
 
 
 	//화면 모드 관련 함수
+
 	UFUNCTION(BlueprintCallable, Category = "Settings")
 	void SetDisplayMode(int32 ModeIndex);  //화면 모드 변경
 		
@@ -75,5 +78,24 @@ public:
 	int32 GetCurrentDisplayMode() const; // 현재 창 모드
 
 
+	// dlss 관련 함수
+
+	UFUNCTION(BlueprintCallable, Category = "Settings|DLSS")
+	void SetDLSSMode(int32 ModeIndex); //dlss 모드 설정
+
+	UFUNCTION(BlueprintCallable, Category = "Settings|DLSS")
+	int32 GetCurrentDLSSMode() const; //현재 dlss 모드 가져옴
+
+	UFUNCTION(BlueprintCallable, Category = "Settings|DLSS")
+	void SetFrameGeneration(bool bEnable); // 프레임 생성 온오프
+
+	UFUNCTION(BlueprintCallable, Category = "Settings|DLSS")
+	bool GetFrameGenerationState() const; // 프레임 생성 상태 가져오기
+
+	UFUNCTION(BlueprintCallable, Category = "Settings|DLSS")
+	bool IsDLSSSupported() const;  // dlss 지원 하드웨어 확인
+
+	UFUNCTION(BlueprintCallable, Category = "Settings|DLSS")
+	bool IsFrameGenSupported() const; // 프레임 생성 지원 하드웨어 확인
 
 };
