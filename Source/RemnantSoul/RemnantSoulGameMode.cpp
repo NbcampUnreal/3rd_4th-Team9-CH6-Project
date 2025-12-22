@@ -1,6 +1,7 @@
 ﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "RemnantSoulGameMode.h"
+#include "RSGameplayTags.h"
 
 ARemnantSoulGameMode::ARemnantSoulGameMode()
 {

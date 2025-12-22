@@ -17,6 +17,9 @@ class UGameplayAbility;
 class URSAttributeSet_Character;
 class URSWidgetComponent;
 class URSAttributeSet_Skill;
+class URSPawnData;
+class URSInputConfig;
+
 
 UCLASS()
 class REMNANTSOUL_API ARSCharacter : public ACharacter, public IAbilitySystemInterface
@@ -32,9 +35,22 @@ public:
 
 	virtual void BeginPlay() override;
 
+public:
+	const URSPawnData* GetPawnData() const { return PawnData; }
+
+	const URSInputConfig* GetInputConfig() const;
+
 protected:
 	UFUNCTION()
 	virtual void OnOutOfHealth();
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Character")
+	TObjectPtr<class URSHeroComponent> HeroComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|PawnData")
+	TObjectPtr<const URSPawnData> PawnData;
+
 
 #pragma endregion
 

@@ -1,8 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Character/PlayerController/RSPlayerController.h"
-#include "EnhancedInputComponent.h"
+#include "Input/RSEnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Character/RSBaseCharacter.h"
 
@@ -29,41 +29,41 @@ void ARSPlayerController::BeginPlay()
 	}
 }
 
-void ARSPlayerController::SetupInputComponent()
-{
-	Super::SetupInputComponent();
-
-	UEnhancedInputComponent* EnhancedInput =
-		Cast<UEnhancedInputComponent>(InputComponent);
-
-	if (!EnhancedInput)
-	{
-		return;
-	}
-
-	if (MoveAction)
-	{
-		EnhancedInput->BindAction(MoveAction,ETriggerEvent::Triggered,this,&ARSPlayerController::Input_Move);
-	}
-
-	if (LookAction)
-	{
-		EnhancedInput->BindAction(LookAction,ETriggerEvent::Triggered,this,&ARSPlayerController::Input_Look
-		);
-	}
-
-	if (AttackAction)
-	{
-		EnhancedInput->BindAction(AttackAction,ETriggerEvent::Started,this,&ARSPlayerController::Input_Attack
-		);
-	}
-
-	if (RollAction)
-	{
-		EnhancedInput->BindAction(RollAction,ETriggerEvent::Started,this,&ARSPlayerController::Input_Roll
-		);
-	}
-}
+//void ARSPlayerController::SetupInputComponent()
+//{
+//	Super::SetupInputComponent();
+//
+//	UEnhancedInputComponent* EnhancedInput =
+//		Cast<UEnhancedInputComponent>(InputComponent);
+//
+//	if (!EnhancedInput)
+//	{
+//		return;
+//	}
+//
+//	if (MoveAction)
+//	{
+//		EnhancedInput->BindAction(MoveAction,ETriggerEvent::Triggered,this,&ARSPlayerController::Input_Move);
+//	}
+//
+//	if (LookAction)
+//	{
+//		EnhancedInput->BindAction(LookAction,ETriggerEvent::Triggered,this,&ARSPlayerController::Input_Look
+//		);
+//	}
+//
+//	if (AttackAction)
+//	{
+//		EnhancedInput->BindAction(AttackAction,ETriggerEvent::Started,this,&ARSPlayerController::Input_Attack
+//		);
+//	}
+//
+//	if (RollAction)
+//	{
+//		EnhancedInput->BindAction(RollAction,ETriggerEvent::Started,this,&ARSPlayerController::Input_Roll
+//		);
+//	}
+//}
 
 /* ================= Input ================= */
 
