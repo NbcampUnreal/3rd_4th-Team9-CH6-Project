@@ -32,87 +32,118 @@ void URSGameplayAbility_CheckHit::ActivateAbility(const FGameplayAbilitySpecHand
 	AttackTraceTask->ReadyForActivation();
 }
 
-void URSGameplayAbility_CheckHit::OnSweepSingleCapsuleResultReady(
-	const FGameplayAbilityTargetDataHandle& TargetDataHandle)
+void URSGameplayAbility_CheckHit::OnSweepSingleCapsuleResultReady(const FGameplayAbilityTargetDataHandle& TargetDataHandle)
 {
-	if (UAbilitySystemBlueprintLibrary::TargetDataHasHitResult(TargetDataHandle, 0))
-	{
-		FHitResult HitResult = UAbilitySystemBlueprintLibrary::GetHitResultFromTargetData(TargetDataHandle, 0);
-		UE_LOG(LogTemp, Log, TEXT("Target %s Detected"), *(HitResult.GetActor()->GetName()));
+    // ---------- [0] Ability/ActorInfo 생존성 방어 ----------
+    // CurrentActorInfo는 EndAbility 후에도 nullptr일 수 있음
+    if (CurrentActorInfo == nullptr)
+    {
+        return; // 이미 종료된 뒤 콜백이 들어온 케이스 방어
+    }
 
-		/*UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo_Ensured();
-		UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitResult.GetActor());
-		if (IsValid(SourceASC) == false || IsValid(TargetASC) == false)
-		{
-			UE_LOG(LogTemp, Error, TEXT("IsValid(SourceASC) == false OR IsValid(TargetASC) == false"));
-			return;
-		}
+    UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo();
+    if (!IsValid(SourceASC))
+    {
+        // 더 진행해봤자 Apply/Cue 불가
+        EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+        return;
+    }
 
-		const URSAttributeSet_Character* SourceAttribute = SourceASC->GetSet<URSAttributeSet_Character>();
-		URSAttributeSet_Character* TargetAttribute = const_cast<URSAttributeSet_Character*>(TargetASC->GetSet<URSAttributeSet_Character>());
-		if (IsValid(SourceAttribute) == false || IsValid(TargetAttribute) == false)
-		{
-			UE_LOG(LogTemp, Error, TEXT("IsValid(SourceAttribute) == false OR IsValid(TargetASC) == false"));
-			return;
-		}
+    // 1. TargetData 기본 안전성 방어
+    const int32 Index = 0;
 
-		const float AttackDamage = SourceAttribute->GetAttackDamage();
-		TargetAttribute->SetHealth(TargetAttribute->GetHealth() - AttackDamage);*/
+    if (TargetDataHandle.Data.Num() <= Index || TargetDataHandle.Data[Index].Get() == nullptr)
+    {
+        // 타겟이 없거나(미검출) 비정상 타겟데이터가 있다면 그냥 EndAbility해주자. 이걸 안해주면 크러시가남..
+        EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+        return;
+    }
 
-		//FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect);
-		//if (EffectSpecHandle.IsValid() == true)
-		//{
-		//	ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, TargetDataHandle);
-		//}
+    //  2. HitResult 경로 
+    if (UAbilitySystemBlueprintLibrary::TargetDataHasHitResult(TargetDataHandle, Index))
+    {
+        const FHitResult HitResult = UAbilitySystemBlueprintLibrary::GetHitResultFromTargetData(TargetDataHandle, Index);
 
-		UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo_Ensured();
-		//const URSAttributeSet_Character* SourceAttributeSet = SourceASC->GetSet<URSAttributeSet_Character>();
-		UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitResult.GetActor());
+        AActor* HitActor = HitResult.GetActor();
+        if (!IsValid(HitActor))
+        {
+            // WorldStatic/Component-only hit 등 Actor가 없을 수 있음
+            EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+            return;
+        }
 
-		//FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect);
-		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect, CurrentLevel);
-		if (EffectSpecHandle.IsValid())
-		{
-			//EffectSpecHandle.Data->SetSetByCallerMagnitude(DATA_DAMAGE, -SourceAttributeSet->GetAttackDamage());            
-			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, TargetDataHandle);
+        UE_LOG(LogTemp, Log, TEXT("Target %s Detected"), *HitActor->GetName());
 
-			FGameplayEffectContextHandle CueContextHandle = UAbilitySystemBlueprintLibrary::GetEffectContext(EffectSpecHandle);
-			CueContextHandle.AddHitResult(HitResult);
-			FGameplayCueParameters CueParam;
-			CueParam.EffectContext = CueContextHandle;
+        // Target ASC는 있을 수도/없을 수도 있음 (월드 오브젝트/ASC 미보유 Actor)
+        UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitActor);
 
-			if (IsValid(TargetASC) == true)
-			{
-				TargetASC->ExecuteGameplayCue(GAMEPLAYCUE_ATTACK_HIT, CueParam);
-			}
-		}
+        //  3. GE 적용 방어 
+        // TriggerEventData가 nullptr였으면 CurrentLevel이 쓰레기일 수 있으니 ActivateAbility에서 가드 권장
+        FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect, CurrentLevel);
 
-		FGameplayEffectSpecHandle BuffEffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackBuffEffect);
-		if (BuffEffectSpecHandle.IsValid())
-		{
-			ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, BuffEffectSpecHandle);
-		}
-	}
-	else if (UAbilitySystemBlueprintLibrary::TargetDataHasActor(TargetDataHandle, 0))
-	{
-		UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo_Ensured();
+        if (EffectSpecHandle.IsValid())
+        {
+            // Apply는 TargetData 기반으로 하므로 TargetASC가 없어도 동작할 수 있음(타겟이 ASC를 가진 경우에만 실제 반영)
+            ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, TargetDataHandle);
 
-		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect, CurrentLevel);
-		if (EffectSpecHandle.IsValid())
-		{
-			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, TargetDataHandle);
+            // Cue 파라미터 구성
+            FGameplayEffectContextHandle CueContextHandle = UAbilitySystemBlueprintLibrary::GetEffectContext(EffectSpecHandle);
+            CueContextHandle.AddHitResult(HitResult);
 
-			FGameplayEffectContextHandle CueContextHandle = UAbilitySystemBlueprintLibrary::GetEffectContext(EffectSpecHandle);
-			CueContextHandle.AddActors(TargetDataHandle.Data[0].Get()->GetActors(), false);
-			FGameplayCueParameters CueParam;
-			CueParam.EffectContext = CueContextHandle;
+            FGameplayCueParameters CueParam;
+            CueParam.EffectContext = CueContextHandle;
 
-			SourceASC->ExecuteGameplayCue(GAMEPLAYCUE_ATTACK_HIT, CueParam);
-		}
-	}
+            // Cue 실행은 TargetASC가 있는 경우에만
+            if (IsValid(TargetASC))
+            {
+                TargetASC->ExecuteGameplayCue(GAMEPLAYCUE_ATTACK_HIT, CueParam);
+            }
+        }
 
-	bool bReplicatedEndAbility = true;
-	bool bWasCancelled = false;
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, bReplicatedEndAbility, bWasCancelled);
+        // 버프는 Source에게 - 여기서 말한 Source는 우리 RSCharacter를 말하는것임.
+        FGameplayEffectSpecHandle BuffEffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackBuffEffect);
+        if (BuffEffectSpecHandle.IsValid())
+        {
+            ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, BuffEffectSpecHandle);
+        }
+    }
+    //  4. Actor 경로(히트리절트가 없는 타겟데이터) 
+    else if (UAbilitySystemBlueprintLibrary::TargetDataHasActor(TargetDataHandle, Index))
+    {
+        // 여기서도 Data[Index] 안전성은 위에서 이미 확보됨
+        const TArray<TWeakObjectPtr<AActor>> Actors = TargetDataHandle.Data[Index].Get()->GetActors();
 
+        // 방어: 타겟 actor가 비어있으면 종료
+        bool bHasValidActor = false;
+        for (const TWeakObjectPtr<AActor>& A : Actors)
+        {
+            if (A.IsValid())
+            {
+                bHasValidActor = true;
+                break;
+            }
+        }
+        if (!bHasValidActor)
+        {
+            EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+            return;
+        }
+
+        FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect, CurrentLevel);
+        if (EffectSpecHandle.IsValid())
+        {
+            ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, TargetDataHandle);
+
+            FGameplayEffectContextHandle CueContextHandle = UAbilitySystemBlueprintLibrary::GetEffectContext(EffectSpecHandle);
+            CueContextHandle.AddActors(Actors, false);
+
+            FGameplayCueParameters CueParam;
+            CueParam.EffectContext = CueContextHandle;
+
+            // SourceASC는 위에서 유효성 확보
+            SourceASC->ExecuteGameplayCue(GAMEPLAYCUE_ATTACK_HIT, CueParam);
+        }
+    }
+
+    EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }

@@ -46,6 +46,16 @@ public:
 
 	FORCEINLINE UCameraComponent* GetCamera() const { return Camera; }
 
+
+	//// Jump Input (Tag 기반)
+	//void OnJumpPressed();
+	//void OnJumpReleased();
+
+	//// GAS Input Event 전달
+	//void SendInputTag(FGameplayTag InputTag);
+	//void SendInputTagReleased(FGameplayTag InputTag);
+
+
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:

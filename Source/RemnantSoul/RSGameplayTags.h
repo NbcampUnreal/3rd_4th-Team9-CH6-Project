@@ -1,6 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
@@ -34,6 +32,13 @@
 #define EVENT_SKILL_CHECKHIT FGameplayTag::RequestGameplayTag(FName("Event.Skill.CheckHit"))
 
 #define STATE_SKILL_COOLDOWN FGameplayTag::RequestGameplayTag(FName("State.Skill.Cooldown"))
+
+
+/* InputAction Tag들 */
+//#define INPUT_ATTACK FGameplayTag::RequestGameplayTag(TEXT("Input.Attack"))
+//#define INPUT_SKILL  FGameplayTag::RequestGameplayTag(TEXT("Input.Skill"))
+//#define INPUT_JUMP   FGameplayTag::RequestGameplayTag(TEXT("Input.Jump"))
+//#define INPUT_SUPERJUMP   FGameplayTag::RequestGameplayTag(TEXT("Input.SuperJump"))
 
 
 class REMNANTSOUL_API RSGameplayTags
