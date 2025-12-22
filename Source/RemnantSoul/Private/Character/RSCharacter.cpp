@@ -72,35 +72,6 @@ ARSCharacter::ARSCharacter()
 	SkillAttributeSet = CreateDefaultSubobject<URSAttributeSet_Skill>(TEXT("SkillAttributeSet"));
 }
 
-//void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-//{
-//	Super::SetupPlayerInputComponent(PlayerInputComponent);
-//
-//	UEnhancedInputComponent* EIC = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-//
-//	EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMoveInput);
-//
-//	EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::HandleLookInput);
-//
-//	//EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-//	//EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-//
-//	if (IsValid(ASC) && IsValid(InputComponent))
-//	{
-//		UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
-//
-//		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ThisClass::HandleGameplayAbilityInputPressed, 1);
-//		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ThisClass::HandleGameplayAbilityInputReleased, 1);
-//
-//		EnhancedInputComponent->BindAction(SuperJumpAction, ETriggerEvent::Triggered, this, &ThisClass::HandleGameplayAbilityInputPressed, 3);
-//		EnhancedInputComponent->BindAction(SuperJumpAction, ETriggerEvent::Completed, this, &ThisClass::HandleGameplayAbilityInputReleased, 3);
-//
-//		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ThisClass::HandleGameplayAbilityInputPressed, 2);
-//
-//		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Triggered, this, &ThisClass::HandleGameplayAbilityInputPressed, 4);
-//	}
-//}
-
 void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -141,7 +112,7 @@ void ARSCharacter::BeginPlay()
 	if (IsValid(GetController()) == true)
 	{
 		APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-		PlayerController->ConsoleCommand(TEXT("ShowDebug AbilitySystem"));
+		//PlayerController->ConsoleCommand(TEXT("ShowDebug AbilitySystem"));
 	}
 
 	const URSAttributeSet_Character* CurrentAttributeSet = ASC->GetSet<URSAttributeSet_Character>();
@@ -171,70 +142,6 @@ void ARSCharacter::OnOutOfHealth()
 	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
 	{
 		MoveComp->DisableMovement();
-	}
-}
-
-void ARSCharacter::HandleMoveInput(const FInputActionValue& InValue)
-{
-	if (IsValid(Controller) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Controller is invalid."));
-		return;
-	}
-
-	const FVector2D InMovementVector = InValue.Get<FVector2D>();
-
-	const FRotator ControlRotation = Controller->GetControlRotation();
-	const FRotator ControlYawRotation(0.0f, ControlRotation.Yaw, 0.0f);
-
-	const FVector ForwardDirection = FRotationMatrix(ControlYawRotation).GetUnitAxis(EAxis::X);
-	const FVector RightDirection = FRotationMatrix(ControlYawRotation).GetUnitAxis(EAxis::Y);
-
-	AddMovementInput(ForwardDirection, InMovementVector.X);
-	AddMovementInput(RightDirection, InMovementVector.Y);
-}
-
-void ARSCharacter::HandleLookInput(const FInputActionValue& InValue)
-{
-	if (IsValid(Controller) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Controller is invalid."));
-		return;
-	}
-
-	const FVector2D InLookVector = InValue.Get<FVector2D>();
-
-	AddControllerYawInput(InLookVector.X);
-	AddControllerPitchInput(InLookVector.Y);
-}
-
-void ARSCharacter::HandleGameplayAbilityInputPressed(int32 InInputID)
-{
-	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(InInputID);
-	if (Spec)
-	{
-		Spec->InputPressed = true;
-		if (Spec->IsActive())
-		{
-			ASC->AbilitySpecInputPressed(*Spec);
-		}
-		else
-		{
-			ASC->TryActivateAbility(Spec->Handle);
-		}
-	}
-}
-
-void ARSCharacter::HandleGameplayAbilityInputReleased(int32 InInputID)
-{
-	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(InInputID);
-	if (Spec)
-	{
-		Spec->InputPressed = false;
-		if (Spec->IsActive())
-		{
-			ASC->AbilitySpecInputReleased(*Spec);
-		}
 	}
 }
 

@@ -19,7 +19,7 @@ void FRSGameplayTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, cons
 
 void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 {
-	// ---- State / Data / Event / Cue ----
+	// State / Data / Event / Cue
 	AddTag(GameplayTags.State_IsJumping, "State.IsJumping", "Character is jumping");
 	AddTag(GameplayTags.State_IsAttacking, "State.IsAttacking", "Character is attacking");
 	AddTag(GameplayTags.State_Invincible, "State.Invincible", "Character is invincible");
@@ -31,11 +31,11 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 
 	AddTag(GameplayTags.GameplayCue_Attack_Hit, "GameplayCue.Attack.Hit", "Attack hit cue");
 
-	// ---- Input Tags (Native) ----
+	// Native Input Tags
 	AddTag(GameplayTags.InputTag_Native_Move, "InputTag.Native.Move", "Native move input");
 	AddTag(GameplayTags.InputTag_Native_Look, "InputTag.Native.Look", "Native look input");
 
-	// ---- Input Tags (Ability) ----
+	// Ability Input Tags
 	AddTag(GameplayTags.InputTag_Ability_Jump, "InputTag.Ability.Jump", "Ability input: Jump");
 	AddTag(GameplayTags.InputTag_Ability_Attack, "InputTag.Ability.Attack", "Ability input: Attack");
 	AddTag(GameplayTags.InputTag_Ability_Skill, "InputTag.Ability.Skill", "Ability input: Skill");

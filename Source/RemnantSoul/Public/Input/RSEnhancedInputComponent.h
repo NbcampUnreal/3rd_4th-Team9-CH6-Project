@@ -17,7 +17,7 @@ public:
 		check(InputConfig);
 		if (const UInputAction* IA = InputConfig->FindNativeInputActionForTag(InputTag, bLogIfNotFound))
 		{
-			BindAction(IA, TriggerEvent, Object, Func); // Func 시그니처: void Func(const FInputActionValue&)
+			BindAction(IA, TriggerEvent, Object, Func);
 		}
 	}
 

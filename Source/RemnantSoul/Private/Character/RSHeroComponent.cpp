@@ -3,7 +3,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "Input/RSEnhancedInputComponent.h"
 #include "Input/RSInputConfig.h"
-#include "AbilitySystemBlueprintLibrary.h" // 래퍼함수안 쓸 때 - 안쓰고서 그냥 HeroComponent와 InputConfig클래스를 이용할 예정.
+#include "AbilitySystemBlueprintLibrary.h" // 래퍼함수안 쓸 때 - 안쓰고서 그냥 HeroComponent와 InputConfig클래스를 이용할 예정임.
+#include "RSGameplayTags.h"
 
 void URSHeroComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -72,10 +73,11 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	TArray<uint32> Handles;
 	IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityTagPressed, &ThisClass::Input_AbilityTagReleased, Handles);
 
-	// Native 바인딩 (태그는 네 RSGameplayTags에 정의)
-	IC->BindNativeAction(InputConfig, /*InputTag_Native_Move*/ FGameplayTag::RequestGameplayTag("InputTag.Native.Move"), ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
+	const FRSGameplayTags& RSGameplayTag = FRSGameplayTags::Get();
+	// Native 태그 바인딩
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 
-	IC->BindNativeAction(InputConfig, /*InputTag_Native_Look*/ FGameplayTag::RequestGameplayTag("InputTag.Native.Look"), ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
 }
 
 void URSHeroComponent::Input_AbilityTagPressed(FGameplayTag InputTag)
@@ -83,10 +85,9 @@ void URSHeroComponent::Input_AbilityTagPressed(FGameplayTag InputTag)
 	ARSCharacter* Char = GetOwnerCharacter();
 	if (!Char) return;
 
-	// A안: GameplayEvent로 통일 (추천)
 	FGameplayEventData Payload;
 	Payload.EventTag = InputTag;
-	Payload.EventMagnitude = 1.f; // Pressed
+	Payload.EventMagnitude = 1.f; // Pressed일때.
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
 }
 
@@ -97,23 +98,9 @@ void URSHeroComponent::Input_AbilityTagReleased(FGameplayTag InputTag)
 
 	FGameplayEventData Payload;
 	Payload.EventTag = InputTag;
-	Payload.EventMagnitude = 0.f; // Released
+	Payload.EventMagnitude = 0.f; // Released일떄.
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
 }
-
-//void URSHeroComponent::Input_Move(const FInputActionValue& Value)
-//{
-//	ARSCharacter* Char = GetOwnerCharacter();
-//	if (!Char) return;
-//	Char->HandleMoveInput(Value); // 또는 Char에 public wrapper 만들기
-//}
-//
-//void URSHeroComponent::Input_Look(const FInputActionValue& Value)
-//{
-//	ARSCharacter* Char = GetOwnerCharacter();
-//	if (!Char) return;
-//	Char->HandleLookInput(Value);
-//}
 
 ARSCharacter* URSHeroComponent::GetOwnerCharacter() const
 {
