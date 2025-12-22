@@ -13,6 +13,13 @@
 #include "GAS/AS/RSAttributeSet_Skill.h"
 #include "RSGameplayTags.h"
 
+//[추가]
+#include "TimerManager.h"
+#include "Interface/Interactable.h"
+#include "DrawDebugHelpers.h"
+#include "Component/Inventory/RSInventoryComponent.h"
+#include "Interface/InventoryOwner.h"
+#include "ItemDataAsset/RSItemData.h"
 
 ARSCharacter::ARSCharacter()
 {
@@ -64,6 +71,8 @@ ARSCharacter::ARSCharacter()
 	WeaponAttackDamage = 100.0f;
 
 	SkillAttributeSet = CreateDefaultSubobject<URSAttributeSet_Skill>(TEXT("SkillAttributeSet"));
+	
+	Inventory = CreateDefaultSubobject<URSInventoryComponent>(TEXT("Inventory"));
 }
 
 void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -76,6 +85,8 @@ void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::HandleLookInput);
 
+	//[추가]
+	EIC->BindAction(InteractAction,ETriggerEvent::Started,this,&ThisClass::HandleInteractInput);
 	//EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 	//EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
@@ -136,6 +147,17 @@ void ARSCharacter::BeginPlay()
 
 	ASC->GenericGameplayEventCallbacks.FindOrAdd(EVENT_EQUIP_WEAPON).AddUObject(this, &ThisClass::EquipWeapon);
 	ASC->GenericGameplayEventCallbacks.FindOrAdd(EVENT_UNEQUIP_WEAPON).AddUObject(this, &ThisClass::UnequipWeapon);
+	
+	//[추가]
+	UpdateInteractFocus();
+
+	GetWorld()->GetTimerManager().SetTimer(
+		InteractTraceTimer,
+		this,
+		&ThisClass::UpdateInteractFocus,
+		InteractTraceInterval,
+		true
+	);
 }
 
 void ARSCharacter::OnOutOfHealth()
@@ -185,6 +207,47 @@ void ARSCharacter::HandleLookInput(const FInputActionValue& InValue)
 
 	AddControllerYawInput(InLookVector.X);
 	AddControllerPitchInput(InLookVector.Y);
+}
+//[추가]
+void ARSCharacter::HandleInteractInput(const FInputActionValue& InValue)
+{
+	AActor* HitActor = nullptr;
+	FHitResult Hit;
+	
+	// 입력 순간에 즉시 트레이스
+	if (!TraceInteractTarget(HitActor, Hit))
+	{
+		return;
+	}
+
+	// 카메라 기준 거리 계산
+	const float Distance = FVector::Distance(
+		Camera->GetComponentLocation(),
+		Hit.ImpactPoint
+	);
+	
+	DrawDebugString(
+	GetWorld(),
+	HitActor->GetActorLocation() + FVector(0,0,40),
+	FString::Printf(TEXT("%.0f cm"), Distance),
+	nullptr,
+	FColor::White,
+	0.1f
+	);
+
+	const float MaxPickupDistance = 500.f;
+
+	if (Distance > MaxPickupDistance)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[Interact] Too far: %.1f cm"), Distance);
+		return;
+	}
+
+	if (HitActor->Implements<UInteractable>())
+	{
+		IInteractable::Execute_Interact(HitActor, this);
+	}
+	
 }
 
 void ARSCharacter::HandleGameplayAbilityInputPressed(int32 InInputID)
@@ -263,4 +326,162 @@ void ARSCharacter::UnequipWeapon(const FGameplayEventData* EventData)
 		Weapon->SetSkeletalMesh(nullptr);
 	}
 
+}
+
+
+void ARSCharacter::UpdateInteractFocus()
+{
+	AActor* HitActor = nullptr;
+	FHitResult Hit;
+
+	if (!TraceInteractTarget(HitActor, Hit))
+	{
+		CurrentInteractTarget = nullptr;
+		CurrentInteractItemData = nullptr;
+		return;
+	}
+
+	const float Distance = FVector::Distance(
+		Camera->GetComponentLocation(),
+		HitActor->GetActorLocation()
+	);
+
+	if (Distance > InteractDistance)
+	{
+		CurrentInteractTarget = nullptr;
+		CurrentInteractItemData = nullptr;
+		return;
+	}
+
+	CurrentInteractTarget = HitActor;
+
+	if (HitActor->Implements<UInteractable>())
+	{
+		CurrentInteractItemData =
+			IInteractable::Execute_GetItemData(HitActor);
+	}
+
+	CurrentInteractTarget = HitActor;
+	CurrentInteractItemData = nullptr;
+
+	// Interactable이면 ItemData도 같이 캐싱
+	if (CurrentInteractTarget && CurrentInteractTarget->Implements<UInteractable>())
+	{
+		CurrentInteractItemData = IInteractable::Execute_GetItemData(CurrentInteractTarget);
+
+		if (CurrentInteractItemData)
+		{
+			UE_LOG(LogTemp, Log, TEXT("[Focus] %s (ItemData OK)"), *GetNameSafe(CurrentInteractTarget));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Focus] %s (No ItemData)"), *GetNameSafe(CurrentInteractTarget));
+		}
+	}
+}
+
+
+
+bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) const
+{
+	OutActor = nullptr;
+
+	if (!Camera) return false;
+	UWorld* World = GetWorld();
+	if (!World) return false;
+
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(InteractTrace), false);
+	Params.AddIgnoredActor(this);
+
+	// 1) 카메라 기준 트레이스 (시선 방향)
+	const FVector CamStart = Camera->GetComponentLocation();
+	const FVector CamDir = Camera->GetForwardVector();
+	const FVector CamEnd = CamStart + CamDir * InteractTraceDistance;
+
+	FHitResult CamHit;
+	const bool bCamHit = World->LineTraceSingleByChannel(
+		CamHit, CamStart, CamEnd, ECC_Visibility, Params
+	);
+
+	const FVector AimPoint = bCamHit ? CamHit.ImpactPoint : CamEnd;
+	
+	DrawDebugLine(
+		World,
+		CamStart,
+		AimPoint,
+		bCamHit ? FColor::Green : FColor::Red,
+		false,
+		0.1f,
+		0,
+		1.5f
+	);
+
+	if (bCamHit)
+	{
+		DrawDebugSphere(
+			World,
+			AimPoint,
+			8.f,
+			12,
+			FColor::Green,
+			false,
+			0.1f
+		);
+	}
+	// 2) 캐릭터 기준 트레이스 (실제로 닿는지)
+	const FVector CharStart = GetActorLocation() + FVector(0.f, 0.f, BaseEyeHeight);
+	const FVector CharEnd = AimPoint;
+
+	FHitResult CharHit;
+	const bool bCharHit = World->LineTraceSingleByChannel(
+		CharHit, CharStart, CharEnd, ECC_Visibility, Params
+	);
+
+	DrawDebugLine(
+		World,
+		CharStart,
+		CharEnd,
+		bCharHit ? FColor::Blue : FColor::Red,
+		false,
+		0.1f,
+		0,
+		1.5f
+	);	
+	if (!bCharHit) return false;
+
+	OutActor = CharHit.GetActor();
+	OutHit = CharHit;   
+	return OutActor != nullptr;
+}
+
+bool ARSCharacter::TryAddItem_Implementation(URSItemData* ItemData, int32 Count)
+{
+	if (!ItemData || Count <= 0)
+	{
+		return false;
+	}
+
+	URSInventoryComponent* Inv = FindComponentByClass<URSInventoryComponent>();
+	if (!Inv)
+	{
+		return false;
+	}
+
+	return Inv->AddItem(ItemData, Count);
+}
+
+bool ARSCharacter::TryRemoveItem_Implementation(URSItemData* ItemData, int32 Count)
+{
+	if (!ItemData || Count <= 0)
+	{
+		return false;
+	}
+
+	URSInventoryComponent* Inv = FindComponentByClass<URSInventoryComponent>();
+	if (!Inv)
+	{
+		return false;
+	}
+
+	return Inv->RemoveItem(ItemData, Count);
 }
