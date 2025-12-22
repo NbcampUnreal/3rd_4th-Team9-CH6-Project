@@ -18,6 +18,9 @@ class UGameplayAbility;
 class URSAttributeSet_Character;
 class URSWidgetComponent;
 class URSAttributeSet_Skill;
+class URSPawnData;
+class URSInputConfig;
+
 
 
 class URSItemData;
@@ -38,9 +41,22 @@ public:
 
 	virtual void BeginPlay() override;
 
+public:
+	const URSPawnData* GetPawnData() const { return PawnData; }
+
+	const URSInputConfig* GetInputConfig() const;
+
 protected:
 	UFUNCTION()
 	virtual void OnOutOfHealth();
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Character")
+	TObjectPtr<class URSHeroComponent> HeroComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|PawnData")
+	TObjectPtr<const URSPawnData> PawnData;
+
 
 #pragma endregion
 
@@ -51,6 +67,16 @@ public:
 	FORCEINLINE USpringArmComponent* GetSpringArm() const { return SpringArm; }
 
 	FORCEINLINE UCameraComponent* GetCamera() const { return Camera; }
+
+
+	//// Jump Input (Tag 기반)
+	//void OnJumpPressed();
+	//void OnJumpReleased();
+
+	//// GAS Input Event 전달
+	//void SendInputTag(FGameplayTag InputTag);
+	//void SendInputTagReleased(FGameplayTag InputTag);
+
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
