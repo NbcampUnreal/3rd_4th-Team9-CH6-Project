@@ -8,6 +8,7 @@
 
 class UAnimMontage;
 class UGameplayEffect;
+class URSAbilityTask_RollMove;
 
 UCLASS()
 class REMNANTSOUL_API URS_Roll_Ability : public UGameplayAbility
@@ -34,10 +35,7 @@ protected:
 	bool bWasCancelled
 	) override;
 
-	//추후 개발을 진행하며 개선방안을 찾아봐야함.
-	//UPROPERTY(EditDefaultsOnly, Category="Roll|Animation")
-	//UAnimMontage* RollMontage;
-
+	
 	UPROPERTY(EditDefaultsOnly, Category="Roll|Effect")
 	TSubclassOf<UGameplayEffect> RollCostGE;
 
@@ -46,23 +44,24 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Roll|Effect")
 	TSubclassOf<UGameplayEffect> RollCooldownGE;
+	
 
+	UPROPERTY(EditDefaultsOnly, Category = "Roll")
+	float RollDistance = 600.f;
+
+	/** Roll 지속 시간 */
+	UPROPERTY(EditDefaultsOnly, Category = "Roll")
+	float RollDuration = 0.6f;
+	
+	float CachedRollAngle = 0.f;
+
+	//이벤트 기반 종료 테스트 코드
 	UFUNCTION()
-	void OnMontageCompleted();
+	void OnRollEndEvent(FGameplayEventData Payload);
 
-	UFUNCTION()
-	void OnMontageCancelled();
+	UPROPERTY(EditDefaultsOnly, Category="Roll|Event")
+	FGameplayTag RollEndEventTag;
 
+	void OnRollBlocked();
 
-	UPROPERTY(EditDefaultsOnly, Category="Roll|Animation")
-	UAnimMontage* RollForwardMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category="Roll|Animation")
-	UAnimMontage* RollBackwardMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category="Roll|Animation")
-	UAnimMontage* RollLeftMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category="Roll|Animation")
-	UAnimMontage* RollRightMontage;
 };

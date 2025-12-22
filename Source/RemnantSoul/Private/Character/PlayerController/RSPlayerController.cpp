@@ -33,8 +33,7 @@ void ARSPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	UEnhancedInputComponent* EnhancedInput =
-		Cast<UEnhancedInputComponent>(InputComponent);
+	UEnhancedInputComponent* EnhancedInput =Cast<UEnhancedInputComponent>(InputComponent);
 
 	if (!EnhancedInput)
 	{

@@ -1,12 +1,13 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Character/Ability/RS_Roll_Ability.h"
 #include "AbilitySystemComponent.h"
 #include "Character/RSBaseCharacter.h"
-#include "Character/Ability/RS_Roll_AbilityTask.h"
-#include "Character/Ability/RSAttributeSet.h"
-#include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
+#include "Character/Animation/RSAnimInstance.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GAS/AT/RSAbilityTask_RollMove.h"
+#include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 
 
 URS_Roll_Ability::URS_Roll_Ability()
@@ -21,72 +22,92 @@ URS_Roll_Ability::URS_Roll_Ability()
 	ActivationBlockedTags.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Roll.CoolDown")));
 
 	//이 어빌리티의 소유자가 State.Dead 태그를 소유할 시 실행 불가, 플레이어 캐릭터 사망 시 어빌리티 실행을 막는 구조로 구상 중이며 추후 리스폰 완성되면 최종적으로 확립할 예정.
-	//ActivationBlockedTags.AddTag(
-	//	FGameplayTag::RequestGameplayTag(TEXT("State.Dead")));
+	//ActivationBlockedTags.AddTag(FGameplayTag::RequestGameplayTag(TEXT("State.Dead")));
+
+	//이벤트 기반 구르기 어빌리티 종료 태그
+	RollEndEventTag = FGameplayTag::RequestGameplayTag(TEXT("Event.Roll.End"));
 
 	CostGameplayEffectClass = RollCostGE;
 	CooldownGameplayEffectClass = RollCooldownGE;
-	
+
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+
 }
-/*
+
+
 void URS_Roll_Ability::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo,
-	const FGameplayEventData* TriggerEventData)
+	const FGameplayEventData* TriggerEventData
+)
 {
-	//어빌리티 실행 조건(스태미나, 내부 쿨타임) 둘 중 하나라도 만족하지 못할 경우 어빌리티 실행 실패.
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
 		return;
 	}
 
-	//ASC가 없을 경우 어빌리티 종료.
-	UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
-	if (!ASC || !RollMontage)
+	ACharacter* Character =
+		Cast<ACharacter>(ActorInfo->AvatarActor.Get());
+	if (!Character)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
 		return;
 	}
 
-	if (InvincibleGE)
+	// 이동 차단
+	if (UCharacterMovementComponent* MoveComp =
+		Character->GetCharacterMovement())
 	{
-		ASC->ApplyGameplayEffectToSelf(
-			InvincibleGE.GetDefaultObject(),
-			1.f,
-			ASC->MakeEffectContext()
+		MoveComp->DisableMovement();
+	}
+
+	// Roll 방향 계산
+	const FVector InputDir = Character->GetLastMovementInputVector();
+	const FVector RollDir = InputDir.IsNearlyZero()? Character->GetActorForwardVector(): InputDir.GetSafeNormal();
+
+	const FVector Forward = Character->GetActorForwardVector();
+	const FVector Right   = Character->GetActorRightVector();
+
+	const float ForwardDot = FVector::DotProduct(Forward, RollDir);
+	const float RightDot   = FVector::DotProduct(Right,   RollDir);
+
+	CachedRollAngle =FMath::RadiansToDegrees(FMath::Atan2(RightDot, ForwardDot));
+
+	if (URSAnimInstance* Anim =Cast<URSAnimInstance>(Character->GetMesh()->GetAnimInstance()))
+	{
+		Anim->SetRollAngle(CachedRollAngle);
+		Anim->SetIsRolling(true);
+	}
+
+	// Roll 이동 태스크
+	const FVector RollMoveDir = Forward * ForwardDot + Right * RightDot;
+
+	URSAbilityTask_RollMove* RollMoveTask = URSAbilityTask_RollMove::RollMove(this,RollMoveDir,600.f,0.6f
 		);
-	}
 
-
-	//애니메이션 파트
-	URS_Roll_AbilityTask* RollTask =
-		URS_Roll_AbilityTask::PlayRollMontage(this, RollMontage);
-
-	if (!RollTask)
+	if (RollMoveTask)
 	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
-		return;
+		RollMoveTask->OnBlocked.AddDynamic(this,&URS_Roll_Ability::OnRollBlocked);
+		RollMoveTask->ReadyForActivation();
 	}
 
-	RollTask->OnCompleted.AddDynamic(this, &URS_Roll_Ability::OnMontageCompleted);
-	RollTask->OnCancelled.AddDynamic(this, &URS_Roll_Ability::OnMontageCancelled);
+	// AnimNotify 종료 이벤트 대기
+	UAbilityTask_WaitGameplayEvent* WaitEndEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this,RollEndEventTag);
 
-	RollTask->ReadyForActivation();
+	if (WaitEndEvent)
+	{
+		WaitEndEvent->EventReceived.AddDynamic(this,&URS_Roll_Ability::OnRollEndEvent);
+		WaitEndEvent->ReadyForActivation();
+	}
 }
-*/
 
-void URS_Roll_Ability::OnMontageCompleted()
+
+void URS_Roll_Ability::OnRollEndEvent(FGameplayEventData Payload)
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 }
-
-void URS_Roll_Ability::OnMontageCancelled()
-{
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, true);
-}
-
 
 void URS_Roll_Ability::EndAbility(
 	const FGameplayAbilitySpecHandle Handle,
@@ -96,141 +117,36 @@ void URS_Roll_Ability::EndAbility(
 	bool bWasCancelled
 )
 {
+	if (ActorInfo && ActorInfo->AvatarActor.IsValid())
+	{
+		if (ACharacter* Character =
+			Cast<ACharacter>(ActorInfo->AvatarActor.Get()))
+		{
+			if (UCharacterMovementComponent* MoveComp =Character->GetCharacterMovement())
+			{
+				MoveComp->SetMovementMode(MOVE_Walking);
+			}
+
+			if (URSAnimInstance* Anim =Cast<URSAnimInstance>(Character->GetMesh()->GetAnimInstance()))
+			{
+				Anim->SetRollAngle(0.f);
+				Anim->SetIsRolling(false);
+			}
+		}
+	}
+	
+	CachedRollAngle = 0.f;
+
 	Super::EndAbility(
 		Handle,
 		ActorInfo,
 		ActivationInfo,
-		false,
+		bReplicateEndAbility,
 		bWasCancelled
 	);
 }
 
-
-static UAnimMontage* SelectRollMontage(
-	ACharacter* Character,
-	const FVector& InputDir,
-	UAnimMontage* F,
-	UAnimMontage* B,
-	UAnimMontage* L,
-	UAnimMontage* R
-)
+void URS_Roll_Ability::OnRollBlocked()
 {
-	if (!Character || InputDir.IsNearlyZero())
-	{
-		return F; // 입력 없으면 전방 회피
-	}
-
-	const FVector Forward = Character->GetActorForwardVector();
-	const FVector Right   = Character->GetActorRightVector();
-	const FVector Dir     = InputDir.GetSafeNormal();
-
-	const float ForwardDot = FVector::DotProduct(Forward, Dir);
-	const float RightDot   = FVector::DotProduct(Right,   Dir);
-
-	if (ForwardDot >  0.7f) return F;
-	if (ForwardDot < -0.7f) return B;
-	if (RightDot   >  0.0f) return R;
-	return L;
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, true);
 }
-
-void URS_Roll_Ability::ActivateAbility(
-	const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo,
-	const FGameplayEventData* TriggerEventData)
-{
-	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[RollAbility] Commit failed (Not enough stamina?)"));
-		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
-		return;
-	}
-
-	ARSBaseCharacter* Character = Cast<ARSBaseCharacter>(ActorInfo->AvatarActor.Get());
-	if (!Character)
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
-		return;
-	}
-
-	//스태미나 디버깅 로그
-	const URSAttributeSet* AttrSet =
-		ActorInfo->AbilitySystemComponent.IsValid()
-		? ActorInfo->AbilitySystemComponent->GetSet<URSAttributeSet>()
-		: nullptr;
-
-	if (AttrSet)
-	{
-		UE_LOG(
-			LogTemp,
-			Log,
-			TEXT("[RollAbility] Current Stamina: %.2f"),
-			AttrSet->GetStamina()
-		);
-	}
-
-	USkeletalMeshComponent* Mesh = Character->GetMesh();
-	if (!Mesh || !Mesh->GetAnimInstance())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[RollAbility] AnimInstance not found"));
-		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
-		return;
-	}
-
-	// 입력 방향 고정
-	const FVector RawInputDir = Character->GetLastMovementInput();
-	const FVector RollInputDir =
-		RawInputDir.IsNearlyZero()
-		? Character->GetActorForwardVector()
-		: RawInputDir;
-
-	UAnimMontage* SelectedMontage =
-		SelectRollMontage(
-			Character,
-			RollInputDir,
-			RollForwardMontage,
-			RollBackwardMontage,
-			RollLeftMontage,
-			RollRightMontage
-		);
-
-	if (!SelectedMontage)
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
-		return;
-	}
-
-	// 무적 GE 적용
-	if (InvincibleGE && ActorInfo->AbilitySystemComponent.IsValid())
-	{
-		ActorInfo->AbilitySystemComponent->ApplyGameplayEffectToSelf(
-			InvincibleGE.GetDefaultObject(),
-			1.f,
-			ActorInfo->AbilitySystemComponent->MakeEffectContext()
-		);
-	}
-
-	// 몽타주 태스크
-	UAbilityTask_PlayMontageAndWait* MontageTask =
-		UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
-			this,
-			NAME_None,
-			SelectedMontage,
-			1.f
-		);
-
-	if (!MontageTask)
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
-		return;
-	}
-
-	MontageTask->OnCompleted.AddDynamic(this, &URS_Roll_Ability::OnMontageCompleted);
-	MontageTask->OnInterrupted.AddDynamic(this, &URS_Roll_Ability::OnMontageCancelled);
-	MontageTask->OnCancelled.AddDynamic(this, &URS_Roll_Ability::OnMontageCancelled);
-
-	MontageTask->ReadyForActivation();
-}
-
-
-

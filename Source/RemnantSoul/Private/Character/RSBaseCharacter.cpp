@@ -41,6 +41,7 @@ ARSBaseCharacter::ARSBaseCharacter()
 	/* Movement */
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
+
 }
 
 UAbilitySystemComponent* ARSBaseCharacter::GetAbilitySystemComponent() const
@@ -74,12 +75,6 @@ void ARSBaseCharacter::HandleMoveInput(const FVector2D& MoveVector)
 		return;
 	}
 
-	//입력이 없을 시 방향 초기화
-	if (MoveVector.IsNearlyZero())
-	{
-		LastMovementInput = FVector::ZeroVector;
-		return;
-	}
 
 	// 컨트롤러 회전값에서 Yaw만 사용
 	const FRotator ControlRotation = Controller->GetControlRotation();
@@ -93,10 +88,7 @@ void ARSBaseCharacter::HandleMoveInput(const FVector2D& MoveVector)
 	AddMovementInput(ForwardDirection, MoveVector.Y);
 	AddMovementInput(RightDirection,   MoveVector.X);
 
-	LastMovementInput =
-	(ForwardDirection * MoveVector.Y) +
-	(RightDirection   * MoveVector.X);
-	//Roll 어빌리티에서 감지하고 실행할 방향 좌표 저장용
+
 	
 }
 
@@ -248,49 +240,5 @@ void ARSBaseCharacter::InitializeAbilities()
 	}
 
 	bAbilitiesInitialized = true;
-}
-
-
-void ARSBaseCharacter::HandleDeath()
-{
-	if (bIsDead)
-	{
-		return;
-	}
-
-	bIsDead = true;
-
-	UE_LOG(LogRSAbility, Log, TEXT("[Death] Character died"));
-
-	// 캐릭터 이동 차단
-	GetCharacterMovement()->DisableMovement();
-	GetCharacterMovement()->StopMovementImmediately();
-
-	// 마우스 회전 차단
-	bUseControllerRotationYaw = false;
-
-	// GAS 처리
-	if (AbilitySystem)
-	{
-		AbilitySystem->CancelAllAbilities();
-		bAbilitiesInitialized = false;
-		//추후 태그 추가 후 주석 해제 필요.
-		//AbilitySystem->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("State.Dead")));
-	}
-
-	//입력 비활성 (캐릭터 기준)
-	DisableInput(nullptr);
-
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		if (ARSPlayerController* RSPC = Cast<ARSPlayerController>(PC))
-		{
-			RSPC->OnPlayerDeath();
-			//Destroy();
-			//TODO: 캐릭터 삭제 코드는 애니메이션 작업에 따라 사망 애니메이션 출력으로 수정 필요
-		}
-	}
-	Destroy();
-
 }
 
