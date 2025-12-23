@@ -10,8 +10,12 @@
 #include "Component/RSWidgetComponent.h"
 #include "UI/RSUserWidget.h"
 #include "Components/CapsuleComponent.h"
+#include "Character/RSHeroComponent.h"
+#include "Input/RSEnhancedInputComponent.h"
 #include "GAS/AS/RSAttributeSet_Skill.h"
 #include "RSGameplayTags.h"
+#include "Character/RSPawnData.h"
+#include "Input/RSInputConfig.h"
 
 //[추가]
 #include "TimerManager.h"
@@ -32,6 +36,8 @@ ARSCharacter::ARSCharacter()
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
+
+	HeroComponent = CreateDefaultSubobject<URSHeroComponent>(TEXT("HeroComponent"));
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->TargetArmLength = 400.f;
@@ -59,9 +65,9 @@ ARSCharacter::ARSCharacter()
 	}
 
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
-	Weapon->SetupAttachment(GetMesh(), FName(TEXT("hand_r")));
+	Weapon->SetupAttachment(GetMesh(), FName(TEXT("hand_rSocket")));
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> WeaponMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/LyraResource/Weapons/Rifle/Mesh/SK_Rifle.SK_Rifle'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> WeaponMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/EssentialAnimation/BowAndArrow/Demo/Mannequin/Weapon/SM_Bow.SM_Bow'")); // /Script/Engine.SkeletalMesh'/Game/LyraResource/Weapons/Rifle/Mesh/SK_Rifle.SK_Rifle'
 	if (WeaponMeshRef.Object)
 	{
 		WeaponMesh = WeaponMeshRef.Object;
@@ -79,30 +85,21 @@ void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	UEnhancedInputComponent* EIC = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-
-	EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMoveInput);
-
-	EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::HandleLookInput);
-
-	//[추가]
-	EIC->BindAction(InteractAction,ETriggerEvent::Started,this,&ThisClass::HandleInteractInput);
-	//EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-	//EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-	if (IsValid(ASC) && IsValid(InputComponent))
+	if (IsValid(HeroComponent))
 	{
-		UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
+    /*
+    UEnhancedInputComponent* EIC = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ThisClass::HandleGameplayAbilityInputPressed, 1);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ThisClass::HandleGameplayAbilityInputReleased, 1);
+	  EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMoveInput);
 
-		EnhancedInputComponent->BindAction(SuperJumpAction, ETriggerEvent::Triggered, this, &ThisClass::HandleGameplayAbilityInputPressed, 3);
-		EnhancedInputComponent->BindAction(SuperJumpAction, ETriggerEvent::Completed, this, &ThisClass::HandleGameplayAbilityInputReleased, 3);
+	  EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::HandleLookInput);
 
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ThisClass::HandleGameplayAbilityInputPressed, 2);
-
-		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Triggered, this, &ThisClass::HandleGameplayAbilityInputPressed, 4);
+	  //[추가]
+	  EIC->BindAction(InteractAction,ETriggerEvent::Started,this,&ThisClass::HandleInteractInput);
+	  //EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+	  //EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+    */
+		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
 	}
 }
 
@@ -116,7 +113,7 @@ void ARSCharacter::BeginPlay()
 	UEnhancedInputLocalPlayerSubsystem* EILPS = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
 	checkf(IsValid(EILPS) == true, TEXT("EnhancedInputLocalPlayerSubsystem is invalid."));
 
-	EILPS->AddMappingContext(InputMappingContext, 0);
+	//EILPS->AddMappingContext(InputMappingContext, 0);
 	
 	ASC->InitAbilityActorInfo(this, this);
 
@@ -136,7 +133,7 @@ void ARSCharacter::BeginPlay()
 	if (IsValid(GetController()) == true)
 	{
 		APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-		PlayerController->ConsoleCommand(TEXT("ShowDebug AbilitySystem"));
+		//PlayerController->ConsoleCommand(TEXT("ShowDebug AbilitySystem"));
 	}
 
 	const URSAttributeSet_Character* CurrentAttributeSet = ASC->GetSet<URSAttributeSet_Character>();
@@ -160,6 +157,11 @@ void ARSCharacter::BeginPlay()
 	);
 }
 
+const URSInputConfig* ARSCharacter::GetInputConfig() const
+{
+	return PawnData ? PawnData->InputConfig : nullptr;
+}
+
 void ARSCharacter::OnOutOfHealth()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(FName(TEXT("DeadBody")));
@@ -175,6 +177,7 @@ void ARSCharacter::OnOutOfHealth()
 	}
 }
 
+/*
 void ARSCharacter::HandleMoveInput(const FInputActionValue& InValue)
 {
 	if (IsValid(Controller) == false)
@@ -279,6 +282,7 @@ void ARSCharacter::HandleGameplayAbilityInputReleased(int32 InInputID)
 		}
 	}
 }
+*/
 
 UAbilitySystemComponent* ARSCharacter::GetAbilitySystemComponent() const
 {
