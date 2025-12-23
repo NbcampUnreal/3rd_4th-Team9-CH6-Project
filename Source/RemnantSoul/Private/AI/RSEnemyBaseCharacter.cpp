@@ -33,6 +33,10 @@ ARSEnemyBaseCharacter::ARSEnemyBaseCharacter()
 	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.f;
+
+	/* IsDead 태그가 변경되었을 경우에 OnDeathTagChanged 함수 호출 */
+	AbilitySystemComponent->RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag("State.IsDead"))
+	.AddUObject(this, &ARSEnemyBaseCharacter::OnDeathTagChanged);
 }
 
 void ARSEnemyBaseCharacter::PossessedBy(AController* NewController)
@@ -45,6 +49,26 @@ void ARSEnemyBaseCharacter::PossessedBy(AController* NewController)
 		AbilitySystemComponent->InitAbilityActorInfo(this, this);
 		GrantAbilities(InitialAbilities);
 	}
+}
+
+void ARSEnemyBaseCharacter::OnDeathTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (NewCount > 0)
+	{
+		HandleDeath();
+	}
+}
+
+void ARSEnemyBaseCharacter::HandleDeath_Implementation()
+{
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCharacterMovement()->DisableMovement();
+
+	FVector Impulse = GetActorForwardVector() * -20000;
+	Impulse.Z = 15000;
+	GetMesh()->AddImpulseAtLocation(Impulse, GetActorLocation());
 }
 
 UAbilitySystemComponent* ARSEnemyBaseCharacter::GetAbilitySystemComponent() const

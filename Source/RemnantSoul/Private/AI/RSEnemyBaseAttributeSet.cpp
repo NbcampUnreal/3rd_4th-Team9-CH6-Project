@@ -48,3 +48,17 @@ void URSEnemyBaseAttributeSet::PostGameplayEffectExecute(const FGameplayEffectMo
 		SetStamina(GetStamina());
 	}
 }
+
+void URSEnemyBaseAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
+{
+	Super::PostAttributeChange(Attribute, OldValue, NewValue);
+
+	if (Attribute == GetHealthAttribute() && NewValue <= 0.f)
+	{
+		/* Death Ability 활성화 */
+		FGameplayTagContainer DeathTagContainer;
+		DeathTagContainer.AddTag(FGameplayTag::RequestGameplayTag(FName("Ability.Death")));
+		
+		GetOwningAbilitySystemComponent()->TryActivateAbilitiesByTag(DeathTagContainer);
+	}
+}
