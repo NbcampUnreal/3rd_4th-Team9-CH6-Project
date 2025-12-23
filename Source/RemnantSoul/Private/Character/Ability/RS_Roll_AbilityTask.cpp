@@ -46,7 +46,11 @@ void URS_Roll_AbilityTask::Activate()
 		return;
 	}
 
+	//Avatar를 기다린 후 실행.
+	SetWaitingOnAvatar();
+
 	// 몽타주 재생
+	const float PlayRate = 1.f;
 	AnimInstance->Montage_Play(RollMontage);
 
 	// 종료 델리게이트 바인딩

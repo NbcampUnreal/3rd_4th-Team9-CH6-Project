@@ -35,8 +35,8 @@ protected:
 	) override;
 
 	//추후 개발을 진행하며 개선방안을 찾아봐야함.
-	UPROPERTY(EditDefaultsOnly, Category="Roll|Animation")
-	UAnimMontage* RollMontage;
+	//UPROPERTY(EditDefaultsOnly, Category="Roll|Animation")
+	//UAnimMontage* RollMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category="Roll|Effect")
 	TSubclassOf<UGameplayEffect> RollCostGE;
@@ -52,5 +52,17 @@ protected:
 
 	UFUNCTION()
 	void OnMontageCancelled();
-	
+
+
+	UPROPERTY(EditDefaultsOnly, Category="Roll|Animation")
+	UAnimMontage* RollForwardMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category="Roll|Animation")
+	UAnimMontage* RollBackwardMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category="Roll|Animation")
+	UAnimMontage* RollLeftMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category="Roll|Animation")
+	UAnimMontage* RollRightMontage;
 };
