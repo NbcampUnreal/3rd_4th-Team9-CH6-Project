@@ -1,4 +1,5 @@
 ﻿#include "AI/RSEnemyBaseCharacter.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AI/RSEnemyBaseAttributeSet.h"
 #include "Components/CapsuleComponent.h"
@@ -38,14 +39,68 @@ void ARSEnemyBaseCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
+	/* 유효성 검사 */
 	if (AbilitySystemComponent)
 	{
 		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+		GrantAbilities(InitialAbilities);
 	}
 }
 
 UAbilitySystemComponent* ARSEnemyBaseCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
+}
+
+TArray<FGameplayAbilitySpecHandle> ARSEnemyBaseCharacter::GrantAbilities(
+	TArray<TSubclassOf<UGameplayAbility>> AbilitiesToGrant)
+{
+	/* 유효성 검사 */
+	if (!AbilitySystemComponent)
+	{
+		return TArray<FGameplayAbilitySpecHandle>();
+	}
+
+	/* 부여된 어빌리티 핸들들을 저장할 배열 */
+	TArray<FGameplayAbilitySpecHandle> AbilityHandles;
+
+	/* 부여할 어빌리티들을 순회하면서 GiveAbility 호출 및 핸들 저장 */
+	for (TSubclassOf<UGameplayAbility> Ability : AbilitiesToGrant)
+	{
+		FGameplayAbilitySpecHandle SpecHandle = AbilitySystemComponent->GiveAbility(
+			FGameplayAbilitySpec(Ability, 1, -1, this
+		));
+
+		AbilityHandles.Add(SpecHandle);
+	}
+
+	SendAbilitiesChangedEvent();
+	return AbilityHandles;
+}
+
+void ARSEnemyBaseCharacter::RemoveAbilities(TArray<FGameplayAbilitySpecHandle> AbilityHandlesToRemove)
+{
+	/* 유효성 검사 */
+	if (!AbilitySystemComponent)
+	{
+		return ;
+	}
+
+	for (FGameplayAbilitySpecHandle AbilityHandle : AbilityHandlesToRemove)
+	{
+		AbilitySystemComponent->ClearAbility(AbilityHandle);
+	}
+
+	SendAbilitiesChangedEvent();
+}
+
+void ARSEnemyBaseCharacter::SendAbilitiesChangedEvent()
+{
+	FGameplayEventData EventData;
+	EventData.EventTag = FGameplayTag::RequestGameplayTag(FName("Event.AbilitiesChanged"));
+	EventData.Instigator = this;
+	EventData.Target = this;
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, EventData.EventTag, EventData);
 }
 
