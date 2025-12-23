@@ -5,6 +5,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "AbilitySystemInterface.h"
+#include  "Interface/InventoryOwner.h"
 #include "Abilities/GameplayAbilityTypes.h"
 #include "RSCharacter.generated.h"
 
@@ -18,8 +19,13 @@ class URSAttributeSet_Character;
 class URSWidgetComponent;
 class URSAttributeSet_Skill;
 
+
+class URSItemData;
+class URSInventoryComponent;
+struct FTimerHandle;
+
 UCLASS()
-class REMNANTSOUL_API ARSCharacter : public ACharacter, public IAbilitySystemInterface
+class REMNANTSOUL_API ARSCharacter : public ACharacter, public IAbilitySystemInterface, public IInventoryOwner
 {
 	GENERATED_BODY()
 
@@ -73,10 +79,15 @@ private:
 	void HandleMoveInput(const FInputActionValue& InValue);
 
 	void HandleLookInput(const FInputActionValue& InValue);
-
+	
+	// [추가] E 키 상호작용
+	void HandleInteractInput(const FInputActionValue& InValue);
+	
 	void HandleGameplayAbilityInputPressed(int32 InInputID);
 
 	void HandleGameplayAbilityInputReleased(int32 InInputID);
+	
+	
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ARSCharacter|Input")
@@ -99,6 +110,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ARSCharacter|Input")
 	TObjectPtr<UInputAction> SkillAction;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ARSCharacter|Input")
+	TObjectPtr<UInputAction> InteractAction;
 
 #pragma endregion
 
@@ -164,4 +178,50 @@ protected:
 
 #pragma endregion
 
+	//[추가]
+#pragma region Interaction
+
+private:
+	//void HandleInteractInput(const FInputActionValue& InValue);
+	void UpdateInteractFocus();
+	bool TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) const;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category="ARSCharacter|Interaction")
+	float InteractTraceDistance = 500.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="ARSCharacter|Interaction")
+	float InteractDistance = 300.f;
+	UPROPERTY(EditDefaultsOnly, Category="ARSCharacter|Interaction")
+	float InteractTraceInterval = 0.1f;
+
+	UPROPERTY(VisibleInstanceOnly, Category="ARSCharacter|Interaction")
+	TObjectPtr<AActor> CurrentInteractTarget = nullptr;
+
+	UPROPERTY(VisibleInstanceOnly, Category="ARSCharacter|Interaction")
+	TObjectPtr<URSItemData> CurrentInteractItemData = nullptr;
+
+	FTimerHandle InteractTraceTimer;
+
+#pragma endregion
+	
+#pragma region Inventory
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Inventory")
+	TObjectPtr<URSInventoryComponent> Inventory;
+	
+	// 인터페이스 구현 선언
+	virtual bool TryAddItem_Implementation(
+		URSItemData* ItemData,
+		int32 Count
+	) override;
+
+	virtual bool TryRemoveItem_Implementation(
+		URSItemData* ItemData,
+		int32 Count
+	) override;
+	
+	
+#pragma endregion
+	
 };
