@@ -30,6 +30,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	bool RemoveItem(URSItemData* ItemData, int32 Count = 1);
 
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	bool UseItem(int32 SlotIndex, AActor* User);
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Inventory")
 	TArray<FInventoryItem> Items;

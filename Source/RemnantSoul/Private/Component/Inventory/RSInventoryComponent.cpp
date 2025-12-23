@@ -104,6 +104,10 @@ bool URSInventoryComponent::RemoveItem(URSItemData* ItemData, int32 Count)
 	return true;
 }
 
+bool URSInventoryComponent::UseItem(int32 SlotIndex, AActor* User)
+{
+}
+
 void URSInventoryComponent::DebugPrintInventory() const
 {
 	UE_LOG(LogTemp, Log, TEXT("=== Inventory Dump ==="));
