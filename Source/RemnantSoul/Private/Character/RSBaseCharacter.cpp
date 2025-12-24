@@ -9,7 +9,6 @@
 #include "Components/CapsuleComponent.h"
 #include "Character/PlayerController/RSPlayerController.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogRSAbility, Log, All);
 
 ARSBaseCharacter::ARSBaseCharacter()
 {
@@ -107,11 +106,7 @@ void ARSBaseCharacter::HandleAttackInput()
 {
 	if (bIsDead || !AbilitySystem)
 	{
-		UE_LOG(LogRSAbility, Warning,
-			TEXT("[AttackInput] Blocked - Dead: %d, ASC Valid: %d"),
-			bIsDead,
-			AbilitySystem != nullptr
-		);
+
 		return;
 	}
 
@@ -130,18 +125,10 @@ void ARSBaseCharacter::HandleAttackInput()
 
 	if (MatchingSpecs.Num() == 0)
 	{
-		UE_LOG(LogRSAbility, Warning,
-			TEXT("[AttackInput] No Ability found with tag: %s"),
-			*AttackTag.ToString()
-		);
+
 		return;
 	}
-
-	UE_LOG(LogRSAbility, Log,
-		TEXT("[AttackInput] Found %d Ability(s) with tag: %s"),
-		MatchingSpecs.Num(),
-		*AttackTag.ToString()
-	);
+	
 
 	/* 2. 실제 활성화 시도 */
 	AbilitySystem->TryActivateAbilitiesByTag(TagContainer);
@@ -151,11 +138,6 @@ void ARSBaseCharacter::HandleAttackInput()
 	{
 		const bool bIsActive = Spec->IsActive();
 
-		UE_LOG(LogRSAbility, Log,
-			TEXT("[AttackInput] Ability %s | Active: %d"),
-			*GetNameSafe(Spec->Ability),
-			bIsActive
-		);
 	}
 }
 
@@ -163,11 +145,7 @@ void ARSBaseCharacter::RollInput()
 {
 	if (bIsDead || !AbilitySystem)
 	{
-		UE_LOG(LogRSAbility, Warning,
-			TEXT("[AttackInput] Blocked - Dead: %d, ASC Valid: %d"),
-			bIsDead,
-			AbilitySystem != nullptr
-		);
+
 		return;
 	}
 
@@ -186,18 +164,11 @@ void ARSBaseCharacter::RollInput()
 
 	if (MatchingSpecs.Num() == 0)
 	{
-		UE_LOG(LogRSAbility, Warning,
-			TEXT("[AttackInput] No Ability found with tag: %s"),
-			*RollTag.ToString()
-		);
+
 		return;
 	}
 
-	UE_LOG(LogRSAbility, Log,
-		TEXT("[AttackInput] Found %d Ability(s) with tag: %s"),
-		MatchingSpecs.Num(),
-		*RollTag.ToString()
-	);
+
 
 	/* 2. 실제 활성화 시도 */
 	AbilitySystem->TryActivateAbilitiesByTag(TagContainer);
@@ -206,12 +177,7 @@ void ARSBaseCharacter::RollInput()
 	for (const FGameplayAbilitySpec* Spec : MatchingSpecs)
 	{
 		const bool bIsActive = Spec->IsActive();
-
-		UE_LOG(LogRSAbility, Log,
-			TEXT("[AttackInput] Ability %s | Active: %d"),
-			*GetNameSafe(Spec->Ability),
-			bIsActive
-		);
+		
 	}
 }
 
@@ -220,11 +186,7 @@ void ARSBaseCharacter::CrouchInput_Pressed()
 {
 	if (bIsDead || !AbilitySystem)
 	{
-		UE_LOG(LogRSAbility, Warning,
-			TEXT("[CrouchInput] Blocked - Dead: %d, ASC Valid: %d"),
-			bIsDead,
-			AbilitySystem != nullptr
-		);
+
 		return;
 	}
 
@@ -242,36 +204,17 @@ void ARSBaseCharacter::CrouchInput_Pressed()
 
 	if (MatchingSpecs.Num() == 0)
 	{
-		UE_LOG(LogRSAbility, Warning,
-			TEXT("[CrouchInput] No Ability found with tag: %s"),
-			*CrouchTag.ToString()
-		);
 		return;
 	}
-
-	UE_LOG(LogRSAbility, Log,
-		TEXT("[CrouchInput] Found %d Ability(s) with tag: %s"),
-		MatchingSpecs.Num(),
-		*CrouchTag.ToString()
-	);
-
+	
 	AbilitySystem->TryActivateAbilitiesByTag(TagContainer);
-
-	for (const FGameplayAbilitySpec* Spec : MatchingSpecs)
-	{
-		UE_LOG(LogRSAbility, Log,
-			TEXT("[CrouchInput] Ability %s | Active: %d"),
-			*GetNameSafe(Spec->Ability),
-			Spec->IsActive()
-		);
-	}
+	
 }
 
 void ARSBaseCharacter::CrouchInput_Released()
 {
 	if (!AbilitySystem)
 	{
-		UE_LOG(LogRSAbility, Warning, TEXT("[CrouchInput_Released] AbilitySystem is nullptr"));
 		return;
 	}
 
@@ -281,7 +224,6 @@ void ARSBaseCharacter::CrouchInput_Released()
 	Payload.EventTag = EndRequestTag;
 	Payload.Instigator = this;
 
-	UE_LOG(LogRSAbility, Log, TEXT("[CrouchInput_Released] Sending GameplayEvent: %s"), *EndRequestTag.ToString());
 
 	AbilitySystem->HandleGameplayEvent(EndRequestTag, &Payload);
 }
@@ -302,12 +244,9 @@ void ARSBaseCharacter::InitializeAbilities()
 	{
 		if (!AbilityClass)
 		{
-			UE_LOG(LogRSAbility, Warning,
-				TEXT("[GAS] AbilityClass is NULL"));
 			continue;
 		}
 
-		UE_LOG(LogRSAbility, Log,TEXT("[GAS] Giving Ability: %s"),*AbilityClass->GetName());
 
 		AbilitySystem->GiveAbility(FGameplayAbilitySpec(AbilityClass, 1));
 	}
