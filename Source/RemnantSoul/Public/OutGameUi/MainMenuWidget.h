@@ -39,19 +39,19 @@ protected:
 	class UWidgetSwitcher* MenuSwitcher;
 
 	// 게임 시작 함수
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnStartGameClicked();
 
 	// 게임 종료 함수
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnQuitGameClicked();
 
 	// 환경설정 버튼 클릭 시 실행
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnSettingsClicked();
 
 	// 뒤로 가기 버튼 클릭 시 실행
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnBackClicked();
 
 public:
