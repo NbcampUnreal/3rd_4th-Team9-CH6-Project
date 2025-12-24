@@ -6,7 +6,7 @@
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Logging/LogMacros.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogRSAbility, Log, All);
+DEFINE_LOG_CATEGORY(LogRSAbility);
 
 
 URS_Couch_Ability::URS_Couch_Ability()
@@ -24,7 +24,57 @@ URS_Couch_Ability::URS_Couch_Ability()
 
 	ActivationOwnedTags.AddTag(CrouchRootTag);
 }
+/*
+void URS_Couch_Ability::ActivateAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	const FGameplayEventData* TriggerEventData)
+{
+	UE_LOG(LogRSAbility, Log, TEXT("[Crouch] Activate"));
 
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	check(ASC);
+
+
+	//기존 태그가 남아있을 경우를 대비한 초기화
+	ASC->RemoveLooseGameplayTag(CrouchStartTag);
+	ASC->RemoveLooseGameplayTag(CrouchLoopTag);
+	ASC->RemoveLooseGameplayTag(CrouchEndTag);
+
+	//Start 진입
+	ASC->AddLooseGameplayTag(CrouchStartTag);
+
+	//Start 종료 대기
+	auto* WaitStartFinished =
+		UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, StartFinishedEventTag);
+	WaitStartFinished->EventReceived.AddDynamic(this, &URS_Couch_Ability::OnStartFinished);
+	WaitStartFinished->ReadyForActivation();
+
+	//Loop 종료 대기
+	if (EndRequestedEventTag.IsValid())
+	{
+		auto* WaitLoopEndRequested =
+			UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, EndRequestedEventTag);
+
+		if (WaitLoopEndRequested)
+		{
+			WaitLoopEndRequested->EventReceived.AddDynamic(this, &URS_Couch_Ability::HandleEndRequested);
+			WaitLoopEndRequested->ReadyForActivation();
+		}
+	}
+	
+	WaitEndFinishedTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, EndFinishedEventTag);
+	WaitEndFinishedTask->EventReceived.AddDynamic(this, &URS_Couch_Ability::OnEndFinished);
+	WaitEndFinishedTask->ReadyForActivation();
+}
+*/
 
 void URS_Couch_Ability::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
@@ -103,7 +153,9 @@ void URS_Couch_Ability::HandleEndRequested(FGameplayEventData Payload)
 	ASC->RemoveLooseGameplayTag(CrouchLoopTag);
 	ASC->AddLooseGameplayTag(CrouchEndTag);
 	UE_LOG(LogRSAbility, Log, TEXT("[Crouch] Removed Loop Tag: %s, Added End Tag: %s"), *CrouchLoopTag.ToString(), *CrouchEndTag.ToString());
-	UE_LOG(LogRSAbility, Log,TEXT("[Crouch] Ability Active in HandleEndRequested: %d"),IsActive());
+	UE_LOG(LogRSAbility, Log,
+	TEXT("[Crouch] Ability Active in HandleEndRequested: %d"),
+	IsActive());
 }
 
 void URS_Couch_Ability::OnEndFinished(FGameplayEventData Payload)
@@ -113,6 +165,27 @@ void URS_Couch_Ability::OnEndFinished(FGameplayEventData Payload)
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 
+/*
+void URS_Couch_Ability::EndAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	bool bReplicateEndAbility,
+	bool bWasCancelled)
+{
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (ASC)
+	{
+		ASC->RemoveLooseGameplayTag(CrouchStartTag);
+		ASC->RemoveLooseGameplayTag(CrouchLoopTag);
+		ASC->RemoveLooseGameplayTag(CrouchEndTag);
+	}
+
+
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+*/
 
 void URS_Couch_Ability::EndAbility(
 	const FGameplayAbilitySpecHandle Handle,
