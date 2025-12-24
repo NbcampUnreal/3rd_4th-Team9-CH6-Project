@@ -44,4 +44,7 @@ public:
 
 	/* Attributes의 값이 GameplayEffect에 의해 변경될 때 호출되는 콜백 함수 */
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+
+	/* Attributes의 값이 변경된 후에 호출되는 콜백 함수 */
+	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
 };
