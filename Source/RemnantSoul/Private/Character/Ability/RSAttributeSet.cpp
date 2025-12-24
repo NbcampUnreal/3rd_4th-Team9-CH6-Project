@@ -41,14 +41,7 @@ void URSAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 			NewHealth
 		);
 
-		if (OldHealth > 0.f && NewHealth <= 0.f)
-		{
-			UE_LOG(LogTemp, Error,
-				TEXT("[AttributeSet] Health <= 0 detected. Calling HandleOutOfHealth()")
-			);
 
-			HandleOutOfHealth(Data);
-		}
 	}
 
 
@@ -62,41 +55,5 @@ void URSAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 		);
 
 		SetStamina(NewStamina);
-	}
-}
-
-void URSAttributeSet::HandleOutOfHealth(const FGameplayEffectModCallbackData& Data)
-{
-	UE_LOG(LogTemp, Error,
-		TEXT("[AttributeSet] HandleOutOfHealth() called")
-	);
-
-	AActor* OwnerActor = GetOwningActor();
-	if (!OwnerActor)
-	{
-		UE_LOG(LogTemp, Error,
-			TEXT("[AttributeSet] OwnerActor is NULL")
-		);
-		return;
-	}
-
-	UE_LOG(LogTemp, Warning,
-		TEXT("[AttributeSet] OwnerActor: %s"),
-		*OwnerActor->GetName()
-	);
-
-	if (ARSBaseCharacter* Player = Cast<ARSBaseCharacter>(OwnerActor))
-	{
-		UE_LOG(LogTemp, Error,
-			TEXT("[AttributeSet] OwnerActor cast to ARSBaseCharacter SUCCESS")
-		);
-
-		Player->HandleDeath();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error,
-			TEXT("[AttributeSet] OwnerActor cast to ARSBaseCharacter FAILED")
-		);
 	}
 }

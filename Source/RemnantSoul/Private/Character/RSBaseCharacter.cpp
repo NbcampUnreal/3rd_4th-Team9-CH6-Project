@@ -215,6 +215,79 @@ void ARSBaseCharacter::RollInput()
 	}
 }
 
+
+void ARSBaseCharacter::CrouchInput_Pressed()
+{
+	if (bIsDead || !AbilitySystem)
+	{
+		UE_LOG(LogRSAbility, Warning,
+			TEXT("[CrouchInput] Blocked - Dead: %d, ASC Valid: %d"),
+			bIsDead,
+			AbilitySystem != nullptr
+		);
+		return;
+	}
+
+	const FGameplayTag CrouchTag =
+		FGameplayTag::RequestGameplayTag(TEXT("Ability.Crouch"));
+
+	FGameplayTagContainer TagContainer(CrouchTag);
+
+	TArray<FGameplayAbilitySpec*> MatchingSpecs;
+	AbilitySystem->GetActivatableGameplayAbilitySpecsByAllMatchingTags(
+		TagContainer,
+		MatchingSpecs,
+		false
+	);
+
+	if (MatchingSpecs.Num() == 0)
+	{
+		UE_LOG(LogRSAbility, Warning,
+			TEXT("[CrouchInput] No Ability found with tag: %s"),
+			*CrouchTag.ToString()
+		);
+		return;
+	}
+
+	UE_LOG(LogRSAbility, Log,
+		TEXT("[CrouchInput] Found %d Ability(s) with tag: %s"),
+		MatchingSpecs.Num(),
+		*CrouchTag.ToString()
+	);
+
+	AbilitySystem->TryActivateAbilitiesByTag(TagContainer);
+
+	for (const FGameplayAbilitySpec* Spec : MatchingSpecs)
+	{
+		UE_LOG(LogRSAbility, Log,
+			TEXT("[CrouchInput] Ability %s | Active: %d"),
+			*GetNameSafe(Spec->Ability),
+			Spec->IsActive()
+		);
+	}
+}
+
+void ARSBaseCharacter::CrouchInput_Released()
+{
+	if (!AbilitySystem)
+	{
+		UE_LOG(LogRSAbility, Warning, TEXT("[CrouchInput_Released] AbilitySystem is nullptr"));
+		return;
+	}
+
+	const FGameplayTag EndRequestTag = FGameplayTag::RequestGameplayTag(TEXT("Event.Crouch.EndRequested"));
+
+	FGameplayEventData Payload;
+	Payload.EventTag = EndRequestTag;
+	Payload.Instigator = this;
+
+	UE_LOG(LogRSAbility, Log, TEXT("[CrouchInput_Released] Sending GameplayEvent: %s"), *EndRequestTag.ToString());
+
+	AbilitySystem->HandleGameplayEvent(EndRequestTag, &Payload);
+}
+
+
+
 /* ===== GAS ===== */
 
 void ARSBaseCharacter::InitializeAbilities()

@@ -7,9 +7,8 @@
 #include "GameplayTagContainer.h"
 #include "RS_Couch_Ability.generated.h"
 
-/**
- * 
- */
+class UAbilityTask_WaitGameplayEvent;
+
 UCLASS()
 class REMNANTSOUL_API URS_Couch_Ability : public UGameplayAbility
 {
@@ -30,11 +29,7 @@ protected:
 		const FGameplayAbilityActivationInfo ActivationInfo,
 		bool bReplicateEndAbility,
 		bool bWasCancelled);
-
-	virtual void InputReleased(
-	const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo) override;
+	
 
 	//어빌리티를 호출하기 위한 코드
 	UPROPERTY(EditDefaultsOnly, Category="Crouch|Tags")
@@ -62,16 +57,19 @@ protected:
 
 	UFUNCTION()
 	void OnStartFinished(FGameplayEventData Payload);
-
-	UFUNCTION()
-	void OnEndRequestedEvent(FGameplayEventData Payload);
 	
 	UFUNCTION()
 	void OnEndFinished(FGameplayEventData Payload);
 
-	void HandleEndRequested();
+	UFUNCTION()
+	void HandleEndRequested(FGameplayEventData Payload);
 	
-	// Start 애니메이션 중 End 입력이 들어왔는지 여부
-	bool bEndRequestedDuringStart = false;
-
+	UPROPERTY()
+	UAbilityTask_WaitGameplayEvent* WaitEndFinishedTask;
+	
+	UPROPERTY()
+	UAbilityTask_WaitGameplayEvent* WaitLoopEndRequested;
+	
+	UPROPERTY()
+	UAbilityTask_WaitGameplayEvent* WaitStartFinished;
 };

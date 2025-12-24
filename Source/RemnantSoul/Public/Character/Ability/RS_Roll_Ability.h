@@ -9,7 +9,7 @@
 class UAnimMontage;
 class UGameplayEffect;
 class URSAbilityTask_RollMove;
-
+class UAbilityTask_WaitGameplayEvent;
 UCLASS()
 class REMNANTSOUL_API URS_Roll_Ability : public UGameplayAbility
 {
@@ -62,6 +62,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Roll|Event")
 	FGameplayTag RollEndEventTag;
 
+	UFUNCTION()
 	void OnRollBlocked();
-
+	
+	UPROPERTY()
+	UAbilityTask_WaitGameplayEvent* WaitEndEvent;
+	
 };

@@ -33,6 +33,8 @@ public:
 	
 	void RollInput();
 
+	void CrouchInput_Pressed();
+	void CrouchInput_Released();
 	
 protected:
 	virtual void BeginPlay() override;
