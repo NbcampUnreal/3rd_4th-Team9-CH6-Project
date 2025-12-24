@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Character/PlayerController/RSPlayerController.h"
@@ -16,91 +16,89 @@ void ARSPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	/* Mapping Context 등록 */
-	if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
-			LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-		{
-			if (DefaultMappingContext)
-			{
-				Subsystem->AddMappingContext(DefaultMappingContext, 0);
-			}
-		}
-	}
+	//if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
+	//{
+	//	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+	//		LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+	//	{
+	//		if (DefaultMappingContext)
+	//		{
+	//			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+	//		}
+	//	}
+	//}
 }
 
-void ARSPlayerController::SetupInputComponent()
-{
-	Super::SetupInputComponent();
+//void ARSPlayerController::SetupInputComponent()
+//{
+//	Super::SetupInputComponent();
+//
+//	UEnhancedInputComponent* EnhancedInput =Cast<UEnhancedInputComponent>(InputComponent);
+//
+//	if (!EnhancedInput)
+//	{
+//		return;
+//	}
+//
+//	if (MoveAction)
+//	{
+//		EnhancedInput->BindAction(MoveAction,ETriggerEvent::Triggered,this,&ARSPlayerController::Input_Move);
+//	}
+//
+//	if (LookAction)
+//	{
+//		EnhancedInput->BindAction(LookAction,ETriggerEvent::Triggered,this,&ARSPlayerController::Input_Look
+//		);
+//	}
+//
+//	if (AttackAction)
+//	{
+//		EnhancedInput->BindAction(AttackAction,ETriggerEvent::Started,this,&ARSPlayerController::Input_Attack
+//		);
+//	}
+//
+//	if (RollAction)
+//	{
+//		EnhancedInput->BindAction(RollAction,ETriggerEvent::Started,this,&ARSPlayerController::Input_Roll
+//		);
+//	}
+//}
 
-	UEnhancedInputComponent* EnhancedInput =Cast<UEnhancedInputComponent>(InputComponent);
-
-	if (!EnhancedInput)
-	{
-		return;
-	}
-
-	if (MoveAction)
-	{
-		EnhancedInput->BindAction(MoveAction,ETriggerEvent::Triggered,this,&ARSPlayerController::Input_Move);
-	}
-
-	if (LookAction)
-	{
-		EnhancedInput->BindAction(LookAction,ETriggerEvent::Triggered,this,&ARSPlayerController::Input_Look
-		);
-	}
-
-	if (AttackAction)
-	{
-		EnhancedInput->BindAction(AttackAction,ETriggerEvent::Started,this,&ARSPlayerController::Input_Attack
-		);
-	}
-
-	if (RollAction)
-	{
-		EnhancedInput->BindAction(RollAction,ETriggerEvent::Started,this,&ARSPlayerController::Input_Roll
-		);
-	}
-}
-
-/* ================= Input ================= */
-
-void ARSPlayerController::Input_Move(const FInputActionValue& Value)
-{
-	const FVector2D MoveVector = Value.Get<FVector2D>();
-
-	if (ARSBaseCharacter* Ch = Cast<ARSBaseCharacter>(GetPawn()))
-	{
-		Ch->HandleMoveInput(MoveVector);
-	}
-}
-
-void ARSPlayerController::Input_Look(const FInputActionValue& Value)
-{
-	const FVector2D LookVector = Value.Get<FVector2D>();
-
-	if (ARSBaseCharacter* Ch = Cast<ARSBaseCharacter>(GetPawn()))
-	{
-		Ch->HandleLookInput(LookVector);
-	}
-}
-
-void ARSPlayerController::Input_Attack()
-{
-	if (ARSBaseCharacter* Ch = Cast<ARSBaseCharacter>(GetPawn()))
-	{
-		Ch->HandleAttackInput();
-	}
-}
-
-void ARSPlayerController::Input_Roll()
-{
-	if (ARSBaseCharacter* Ch = Cast<ARSBaseCharacter>(GetPawn()))
-	{
-		Ch->RollInput();
-	}
-}
+//void ARSPlayerController::Input_Move(const FInputActionValue& Value)
+//{
+//	const FVector2D MoveVector = Value.Get<FVector2D>();
+//
+//	if (ARSBaseCharacter* Ch = Cast<ARSBaseCharacter>(GetPawn()))
+//	{
+//		Ch->HandleMoveInput(MoveVector);
+//	}
+//}
+//
+//void ARSPlayerController::Input_Look(const FInputActionValue& Value)
+//{
+//	const FVector2D LookVector = Value.Get<FVector2D>();
+//
+//	if (ARSBaseCharacter* Ch = Cast<ARSBaseCharacter>(GetPawn()))
+//	{
+//		Ch->HandleLookInput(LookVector);
+//	}
+//}
+//
+//void ARSPlayerController::Input_Attack()
+//{
+//	if (ARSBaseCharacter* Ch = Cast<ARSBaseCharacter>(GetPawn()))
+//	{
+//		Ch->HandleAttackInput();
+//	}
+//}
+//
+//void ARSPlayerController::Input_Roll()
+//{
+//	if (ARSBaseCharacter* Ch = Cast<ARSBaseCharacter>(GetPawn()))
+//	{
+//		Ch->RollInput();
+//	}
+//}
 
 
 void ARSPlayerController::OnPlayerDeath()
