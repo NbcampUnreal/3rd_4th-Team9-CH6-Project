@@ -98,4 +98,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Settings|DLSS")
 	bool IsFrameGenSupported() const; // 프레임 생성 지원 하드웨어 확인
 
+
+	// 레이 트레이싱 함수
+
+	// 레이 트레이싱 품질 변경 (0: 끄기/SW, 1: 중간/HW, 2: 높음/Full RT, 3: PathTracing)
+	UFUNCTION(BlueprintCallable, Category = "Settigns|RayTracing")
+	void SetRayTracingQuality(int32 QualityLevel);
+
+	UFUNCTION(BlueprintPure, Category = "Settigns|RayTracing")
+	int32 GetRayTracingQuality() const;
 };

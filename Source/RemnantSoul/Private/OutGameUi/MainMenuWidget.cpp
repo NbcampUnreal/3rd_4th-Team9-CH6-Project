@@ -36,6 +36,7 @@ void UMainMenuWidget::NativeConstruct()
 	{
 		BackButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnBackClicked);
 	}
+
 }
 
 void UMainMenuWidget::OnStartGameClicked()
@@ -202,4 +203,57 @@ bool UMainMenuWidget::IsFrameGenSupported() const
 {
 	static const auto CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Streamline.DLSSG.Enable"));
 	return (CVar != nullptr);
+}
+
+void UMainMenuWidget::SetRayTracingQuality(int32 QualityLevel)
+{
+	APlayerController* PC = GetOwningPlayer();
+	if (!PC) return;
+
+	//모든 설정 초기화
+	PC->ConsoleCommand("r.Lumen.HardwareRayTracing 0");
+	PC->ConsoleCommand("r.RayTracing.ForceAllRayTracingEffects 0");
+	PC->ConsoleCommand("r.PathTracing 0");
+	
+	switch (QualityLevel)
+	{
+	case 0: //기본, 소프트웨어 루맨 상태 초기화 상태
+		break;
+
+	case 1: //중간, 하드웨어 루맨 상태
+		PC->ConsoleCommand("r.Lumen.HardwareRayTracing 1");
+		break;
+
+	case 2: // 높음, 풀 레이 트레이싱
+		PC->ConsoleCommand("r.Lumen.HardwareRayTracing 1");
+		PC->ConsoleCommand("r.RayTracing.ForceAllRayTracingEffects 1");
+		break;
+
+	case 3: // 패스 트레이싱
+		PC->ConsoleCommand("r.PathTracing 1");
+		break; 
+
+	}
+
+}
+
+int32 UMainMenuWidget::GetRayTracingQuality() const
+{
+	//현재 상태 역추적 후 단계 반환
+	IConsoleManager& IConsole = IConsoleManager::Get();
+
+
+	// 패스 트레이싱 켠 상태인가? 리턴 3
+	static const auto CVarPath = IConsole.FindConsoleVariable(TEXT("r.PathTracing"));
+	if (CVarPath && CVarPath->GetInt() > 0) return 3;
+
+	//풀 RT 켠 상태인가? 리턴 2
+	static const auto CVarFull = IConsole.FindConsoleVariable(TEXT("r.RayTracing.ForceAllRayTracingEffects"));
+	if (CVarFull && CVarFull->GetInt() > 0) return 2;
+	//하드웨어 루멘 켠 상태인가? 1
+	static const auto CVarHW = IConsole.FindConsoleVariable(TEXT("r.Lumen.HardwareRayTracing"));
+	if (CVarHW && CVarHW->GetInt() > 0) return 1;
+
+	//전부 아니면 리턴 0 (기본 소프트웨어 상태)
+	return 0;
 }
