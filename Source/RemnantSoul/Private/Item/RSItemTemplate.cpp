@@ -1,8 +1,11 @@
-﻿
-#include "Item/RSItemTemplate.h"
+﻿#include "Item/RSItemTemplate.h"
 
 #include "Item/RSItemInstance.h"
-#include "Item/RSItemFragment.h"
+#include "Item/Fragments/RSItemFragment.h"
+
+#if WITH_EDITOR
+#include "Misc/DataValidation.h"
+#endif
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RSItemTemplate)
 
@@ -14,52 +17,62 @@ URSItemTemplate::URSItemTemplate(const FObjectInitializer& ObjectInitializer)
 #if WITH_EDITOR
 EDataValidationResult URSItemTemplate::IsDataValid(FDataValidationContext& Context) const
 {
-	EDataValidationResult Result = Super::IsDataValid(Context);
+	EDataValidationResult Result = UObject::IsDataValid(Context);
 
+	// MaxStackCount 검증
 	if (MaxStackCount < 1)
 	{
-		Context.AddError(FText::FromString(TEXT("MaxStackCount must be >= 1")));
+		Context.AddError(FText::FromString(TEXT("MaxStackCount must be greater than or equal to 1.")));
 		Result = EDataValidationResult::Invalid;
 	}
 
-	if (SlotSize.X < 1 || SlotSize.Y < 1)
+	// 무기/방어구 타입인데 SlotTag가 비어있으면 경고
+	if ((ItemType == ERSItemType::Weapon || ItemType == ERSItemType::Armor) && !SlotTag.IsValid())
 	{
-		Context.AddError(FText::FromString(TEXT("SlotSize must be at least 1x1")));
-		Result = EDataValidationResult::Invalid;
+		Context.AddWarning(FText::FromString(TEXT("Weapon/Armor item should have a valid SlotTag.")));
+		if (Result == EDataValidationResult::NotValidated)
+		{
+			Result = EDataValidationResult::Valid;
+		}
 	}
 
-	// 여기서는 최소 검증만 하고,
-	// "무기/방어구는 MaxStackCount == 1이어야 한다" 같은 세부 규칙은
-	// 나중에 Equipable Fragment나 Weapon Template에서 추가해도 된다.
+	// Fragment 개별 검증이 필요하면 여기서 돌려도 됨.
+	// for (URSItemFragment* Fragment : Fragments)
+	// {
+	//     if (Fragment)
+	//     {
+	//         // Fragment 쪽 IsDataValid를 호출하는 패턴으로 확장 가능
+	//     }
+	// }
 
 	return Result;
 }
-#endif
+#endif // WITH_EDITOR
 
-URSItemInstance* URSItemTemplate::CreateItemInstance(AActor* Owner, int32 Count) const
+URSItemInstance* URSItemTemplate::CreateItemInstance(AActor* OwningActor, int32 Count) const
 {
 	if (Count <= 0)
 	{
 		return nullptr;
 	}
 
-	// Owner를 Outer로 두면 GC/저장 시 다루기 쉬움
-	UObject* Outer = Owner ? static_cast<UObject*>(Owner) : GetTransientPackage();
+	// Owner가 없으면 Transient 패키지에 생성
+	UObject* Outer = OwningActor ? Cast<UObject>(OwningActor) : GetTransientPackage();
 
-	URSItemInstance* NewInstance = NewObject<URSItemInstance>(Outer);
+	URSItemInstance* NewInstance = NewObject<URSItemInstance>(Outer, URSItemInstance::StaticClass());
 	if (!NewInstance)
 	{
 		return nullptr;
 	}
 
-	NewInstance->Initialize(const_cast<URSItemTemplate*>(this), Count, Owner);
+	NewInstance->Initialize(const_cast<URSItemTemplate*>(this), Count, OwningActor);
 
-	// Fragment에게도 생성 훅 제공
-	for (URSItemFragment* Frag : Fragments)
+	// Fragment들에게 "인스턴스가 만들어졌다" 알림 (D1 스타일)
+	for (URSItemFragment* Fragment : Fragments)
 	{
-		if (Frag)
+		if (Fragment)
 		{
-			Frag->OnInstanceCreated(NewInstance);
+			Fragment->OnInstanceCreated(NewInstance);
 		}
 	}
 
@@ -73,20 +86,13 @@ const URSItemFragment* URSItemTemplate::FindFragmentByClass(TSubclassOf<URSItemF
 		return nullptr;
 	}
 
-	for (URSItemFragment* Frag : Fragments)
+	for (URSItemFragment* Fragment : Fragments)
 	{
-		if (Frag && Frag->IsA(FragmentClass))
+		if (Fragment && Fragment->IsA(FragmentClass))
 		{
-			return Frag;
+			return Fragment;
 		}
 	}
-	return nullptr;
-}
 
-FPrimaryAssetId URSItemTemplate::GetPrimaryAssetId() const
-{
-	// AssetManager에서 "Item" 타입으로 관리하고 싶다는 가정. - RS프로젝트에 AssetManager를 넣기에는 힘들수도 있을 것 같다.
-	// 필요하면 "RSItem", "RSItemTemplate" 등으로 바꿔도 된다.
-	static const FPrimaryAssetType ItemType(TEXT("Item"));
-	return FPrimaryAssetId(ItemType, GetFName());
+	return nullptr;
 }

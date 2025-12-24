@@ -87,18 +87,6 @@ void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	if (IsValid(HeroComponent))
 	{
-    /* // 해당 주석부분 코드는 HeroComponent쪽으로 이전되었다. HeroComponent 참조 해서 사용할것.
-    UEnhancedInputComponent* EIC = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-
-	  EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMoveInput);
-
-	  EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::HandleLookInput);
-
-	  //[추가]
-	  EIC->BindAction(InteractAction,ETriggerEvent::Started,this,&ThisClass::HandleInteractInput);
-	  //EIC->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-	  //EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-    */
 		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
 	}
 }
@@ -176,113 +164,6 @@ void ARSCharacter::OnOutOfHealth()
 		MoveComp->DisableMovement();
 	}
 }
-
-/* // 해당 주석부분 코드는 HeroComponent쪽으로 이전되었다. HeroComponent 참조 해서 사용할것.
-void ARSCharacter::HandleMoveInput(const FInputActionValue& InValue)
-{
-	if (IsValid(Controller) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Controller is invalid."));
-		return;
-	}
-
-	const FVector2D InMovementVector = InValue.Get<FVector2D>();
-
-	const FRotator ControlRotation = Controller->GetControlRotation();
-	const FRotator ControlYawRotation(0.0f, ControlRotation.Yaw, 0.0f);
-
-	const FVector ForwardDirection = FRotationMatrix(ControlYawRotation).GetUnitAxis(EAxis::X);
-	const FVector RightDirection = FRotationMatrix(ControlYawRotation).GetUnitAxis(EAxis::Y);
-
-	AddMovementInput(ForwardDirection, InMovementVector.X);
-	AddMovementInput(RightDirection, InMovementVector.Y);
-}
-
-void ARSCharacter::HandleLookInput(const FInputActionValue& InValue)
-{
-	if (IsValid(Controller) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Controller is invalid."));
-		return;
-	}
-
-	const FVector2D InLookVector = InValue.Get<FVector2D>();
-
-	AddControllerYawInput(InLookVector.X);
-	AddControllerPitchInput(InLookVector.Y);
-}
-//[추가]
-void ARSCharacter::HandleInteractInput(const FInputActionValue& InValue)
-{
-	AActor* HitActor = nullptr;
-	FHitResult Hit;
-	
-	// 입력 순간에 즉시 트레이스
-	if (!TraceInteractTarget(HitActor, Hit))
-	{
-		return;
-	}
-
-	// 카메라 기준 거리 계산
-	const float Distance = FVector::Distance(
-		Camera->GetComponentLocation(),
-		Hit.ImpactPoint
-	);
-	
-	DrawDebugString(
-	GetWorld(),
-	HitActor->GetActorLocation() + FVector(0,0,40),
-	FString::Printf(TEXT("%.0f cm"), Distance),
-	nullptr,
-	FColor::White,
-	0.1f
-	);
-
-	const float MaxPickupDistance = 500.f;
-
-	if (Distance > MaxPickupDistance)
-	{
-		UE_LOG(LogTemp, Log, TEXT("[Interact] Too far: %.1f cm"), Distance);
-		return;
-	}
-
-	if (HitActor->Implements<UInteractable>())
-	{
-		IInteractable::Execute_Interact(HitActor, this);
-	}
-	
-}
-
-void ARSCharacter::HandleGameplayAbilityInputPressed(int32 InInputID)
-{
-	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(InInputID);
-	if (Spec)
-	{
-		Spec->InputPressed = true;
-		if (Spec->IsActive())
-		{
-			ASC->AbilitySpecInputPressed(*Spec);
-		}
-		else
-		{
-			ASC->TryActivateAbility(Spec->Handle);
-		}
-	}
-}
-
-void ARSCharacter::HandleGameplayAbilityInputReleased(int32 InInputID)
-{
-	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(InInputID);
-	if (Spec)
-	{
-		Spec->InputPressed = false;
-		if (Spec->IsActive())
-		{
-			ASC->AbilitySpecInputReleased(*Spec);
-		}
-	}
-}
-*/
 
 UAbilitySystemComponent* ARSCharacter::GetAbilitySystemComponent() const
 {
