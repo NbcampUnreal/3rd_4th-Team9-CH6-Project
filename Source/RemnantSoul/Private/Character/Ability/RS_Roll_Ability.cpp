@@ -9,7 +9,6 @@
 #include "GAS/AT/RSAbilityTask_RollMove.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogRSAbility, Log, All);
 
 URS_Roll_Ability::URS_Roll_Ability()
 {
@@ -89,59 +88,24 @@ void URS_Roll_Ability::ActivateAbility(
 
 	if (RollMoveTask)
 	{
-		UE_LOG(LogRSAbility, Log, TEXT("[RollAbility] RollMoveTask created"));
 		RollMoveTask->OnBlocked.AddDynamic(this,&URS_Roll_Ability::OnRollBlocked);
 		RollMoveTask->ReadyForActivation();
 	}
 	else
 	{
-		UE_LOG(LogRSAbility, Warning, TEXT("[RollAbility] RollMoveTask is nullptr"));
 	}
 	
 	// AnimNotify 종료 이벤트 대기
-	/*
+	
 	WaitEndEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, RollEndEventTag);
 	WaitEndEvent->EventReceived.AddDynamic(this, &URS_Roll_Ability::OnRollEndEvent);
 	WaitEndEvent->ReadyForActivation();
-	*/
-
-	//디버그 추가 버전
-	WaitEndEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, RollEndEventTag);
-
-	if (!WaitEndEvent)
-	{
-		UE_LOG(LogRSAbility, Error,
-			TEXT("[RollAbility][WaitEvent] WaitGameplayEvent creation FAILED"));
-	}
-	else
-	{
-		UE_LOG(LogRSAbility, Log,
-			TEXT("[RollAbility][WaitEvent] Created | Ability: %s | Tag: %s | IsActive: %d"),
-			*GetName(),
-			*RollEndEventTag.ToString(),
-			IsActive()
-		);
-
-		WaitEndEvent->EventReceived.AddDynamic(this,&URS_Roll_Ability::OnRollEndEvent);
-
-		UE_LOG(LogRSAbility, Log,
-			TEXT("[RollAbility][WaitEvent] Delegate bound | Ability still active: %d"),
-			IsActive()
-		);
-
-		WaitEndEvent->ReadyForActivation();
-
-		UE_LOG(LogRSAbility, Log,
-			TEXT("[RollAbility][WaitEvent] ReadyForActivation called | Task: %s"),
-			*WaitEndEvent->GetName()
-		);
-	}
+	
 }
 
 
 void URS_Roll_Ability::OnRollEndEvent(FGameplayEventData Payload)
 {
-	UE_LOG(LogRSAbility, Log, TEXT("[RollAbility] OnRollEndEvent triggered | EventTag: %s"),*Payload.EventTag.ToString());
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 }
 
@@ -185,7 +149,6 @@ void URS_Roll_Ability::EndAbility(
 
 void URS_Roll_Ability::OnRollBlocked()
 {
-	UE_LOG(LogRSAbility, Log, TEXT("[Roll] OnRollBlocked called → Ending Ability"));
 
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, true);
 }
