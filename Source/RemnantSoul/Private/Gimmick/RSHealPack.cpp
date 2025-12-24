@@ -31,8 +31,8 @@ void ARSHealPack::PostInitializeComponents()
 
 
 	ASC->InitAbilityActorInfo(this, this);
-	//FGameplayAbilitySpec AbilitySpec(URSGameplayAbility_ActiveParticle::StaticClass());
-	//ASC->GiveAbility(AbilitySpec);
+	FGameplayAbilitySpec AbilitySpec(URSGameplayAbility_ActiveParticle::StaticClass());
+	ASC->GiveAbility(AbilitySpec);
 
 	for (const auto& GrantedAbility : GrantedAbilities)
 	{

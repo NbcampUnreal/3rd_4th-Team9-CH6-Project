@@ -87,7 +87,7 @@ void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	if (IsValid(HeroComponent))
 	{
-    /*
+    /* // 해당 주석부분 코드는 HeroComponent쪽으로 이전되었다. HeroComponent 참조 해서 사용할것.
     UEnhancedInputComponent* EIC = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
 	  EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMoveInput);
@@ -177,7 +177,7 @@ void ARSCharacter::OnOutOfHealth()
 	}
 }
 
-/*
+/* // 해당 주석부분 코드는 HeroComponent쪽으로 이전되었다. HeroComponent 참조 해서 사용할것.
 void ARSCharacter::HandleMoveInput(const FInputActionValue& InValue)
 {
 	if (IsValid(Controller) == false)

@@ -49,13 +49,13 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 		return;
 	}
 
-	for (const auto& M : InputConfig->DefaultMappings)
+	for (const auto& Mapping : InputConfig->DefaultMappings)
 	{
-		if (UInputMappingContext* IMC = M.InputMapping)
+		if (UInputMappingContext* IMC = Mapping.InputMapping)
 		{
 			FModifyContextOptions Options;
 			Options.bIgnoreAllPressedKeysUntilRelease = false;
-			Subsystem->AddMappingContext(IMC, M.Priority, Options);
+			Subsystem->AddMappingContext(IMC, Mapping.Priority, Options);
 		}
 	}
 
