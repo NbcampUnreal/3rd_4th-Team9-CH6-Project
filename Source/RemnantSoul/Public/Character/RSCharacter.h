@@ -20,6 +20,11 @@ class URSWidgetComponent;
 class URSAttributeSet_Skill;
 class URSPawnData;
 class URSInputConfig;
+// Item 관련 매니저 컴포넌트들
+class URSCosmeticManagerComponent;
+class URSEquipManagerComponent;
+class URSEquipmentManagerComponent;
+class URSInventoryManagerComponent;
 
 
 
@@ -50,12 +55,7 @@ protected:
 	UFUNCTION()
 	virtual void OnOutOfHealth();
 
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Character")
-	TObjectPtr<class URSHeroComponent> HeroComponent;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|PawnData")
-	TObjectPtr<const URSPawnData> PawnData;
 
 
 #pragma endregion
@@ -85,6 +85,29 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ARSCharacter|Component")
 	TObjectPtr<USkeletalMeshComponent> Weapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Character")
+	TObjectPtr<class URSHeroComponent> HeroComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|PawnData")
+	TObjectPtr<const URSPawnData> PawnData;
+
+	// Item 관련 Component들
+		/** 인벤토리 매니저 (새 구조) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Inventory")
+	TObjectPtr<URSInventoryManagerComponent> InventoryManager;
+
+	/** 논리 장비 매니저 (슬롯 → ItemInstance) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Equipment")
+	TObjectPtr<URSEquipmentManagerComponent> EquipmentManager;
+
+	/** GAS 기반 장비 효과 매니저 (Ability/Attribute/Tag) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Equipment")
+	TObjectPtr<URSEquipManagerComponent> EquipManager;
+
+	/** 코스메틱 매니저 (무기 액터/메시/소켓) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Cosmetic")
+	TObjectPtr<URSCosmeticManagerComponent> CosmeticManager;
 
 #pragma endregion
 

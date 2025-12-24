@@ -17,6 +17,15 @@
 #include "Character/RSPawnData.h"
 #include "Input/RSInputConfig.h"
 
+// Item 관련 매니저 컴포넌트들
+#include "Item/Managers/RSCosmeticManagerComponent.h"
+#include "Item/Managers/RSEquipManagerComponent.h"
+#include "Item/Managers/RSEquipmentManagerComponent.h"
+#include "Item/Managers/RSInventoryManagerComponent.h"
+#include "Item/Managers/RSItemManagerComponent.h"
+
+
+
 //[추가]
 #include "TimerManager.h"
 #include "Interface/Interactable.h"
@@ -37,7 +46,6 @@ ARSCharacter::ARSCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 
-	HeroComponent = CreateDefaultSubobject<URSHeroComponent>(TEXT("HeroComponent"));
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->TargetArmLength = 400.f;
@@ -48,9 +56,16 @@ ARSCharacter::ARSCharacter()
 	Camera->bUsePawnControlRotation = false;
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 
+	HeroComponent = CreateDefaultSubobject<URSHeroComponent>(TEXT("HeroComponent"));
 	ASC = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("ASC"));
-
 	AttributeSet = CreateDefaultSubobject<URSAttributeSet_Character>(TEXT("AttributeSet"));
+	SkillAttributeSet = CreateDefaultSubobject<URSAttributeSet_Skill>(TEXT("SkillAttributeSet"));
+	
+	// Item 관련 매니저 컴포넌트들
+	InventoryManager = CreateDefaultSubobject<URSInventoryManagerComponent>(TEXT("InventoryManager"));
+	EquipmentManager = CreateDefaultSubobject<URSEquipmentManagerComponent>(TEXT("EquipmentManager"));
+	EquipManager = CreateDefaultSubobject<URSEquipManagerComponent>(TEXT("EquipManager"));
+	CosmeticManager = CreateDefaultSubobject<URSCosmeticManagerComponent>(TEXT("CosmeticManager"));
 
 	HPBar = CreateDefaultSubobject<URSWidgetComponent>(TEXT("HPBar"));
 	HPBar->SetupAttachment(GetMesh());
@@ -76,7 +91,6 @@ ARSCharacter::ARSCharacter()
 	WeaponRange = 75.f;
 	WeaponAttackDamage = 100.0f;
 
-	SkillAttributeSet = CreateDefaultSubobject<URSAttributeSet_Skill>(TEXT("SkillAttributeSet"));
 	
 	Inventory = CreateDefaultSubobject<URSInventoryComponent>(TEXT("Inventory"));
 }
