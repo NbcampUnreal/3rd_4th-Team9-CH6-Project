@@ -173,8 +173,6 @@ int32 UMainMenuWidget::GetCurrentDLSSMode() const
 
 void UMainMenuWidget::SetFrameGeneration(bool bEnable)
 {
-	UDLSSLibrary::EnableDLSSRR(bEnable);
-
 	if (bEnable)
 	{
 		GetOwningPlayer()->ConsoleCommand("r.Streamline.DLSSG.Enable 1");
