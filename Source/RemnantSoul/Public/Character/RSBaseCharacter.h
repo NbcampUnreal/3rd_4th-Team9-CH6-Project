@@ -30,13 +30,12 @@ public:
 	void HandleMoveInput(const FVector2D& MoveVector);
 	void HandleLookInput(const FVector2D& LookVector);
 	void HandleAttackInput();
+	
 	void RollInput();
 
-
-	void HandleDeath();
-
-	FVector GetLastMovementInput() const { return LastMovementInput; }
-
+	void CrouchInput_Pressed();
+	void CrouchInput_Released();
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -64,8 +63,7 @@ protected:
 	/* GAS 내부 처리 */
 	void InitializeAbilities();
 
-	FVector LastMovementInput;
-	//Roll 어빌리티에서 사용할 방향 좌표 저장용.
+	
 
 
 };

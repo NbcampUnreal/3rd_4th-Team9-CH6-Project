@@ -61,8 +61,5 @@ public:
 protected:
 	// GameplayEffect 적용 후 Attribute 값 보정을 위해 GAS가 자동 호출하는 콜백
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
-
-	//캐릭터의 체력이 0이 되었을 경우 캐릭터 사망 처리 함수를 콜
-	void HandleOutOfHealth(const FGameplayEffectModCallbackData& Data);
-
+	
 };
