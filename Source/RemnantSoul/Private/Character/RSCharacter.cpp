@@ -67,7 +67,7 @@ ARSCharacter::ARSCharacter()
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
 	Weapon->SetupAttachment(GetMesh(), FName(TEXT("hand_rSocket")));
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> WeaponMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/EssentialAnimation/BowAndArrow/Demo/Mannequin/Weapon/SM_Bow.SM_Bow'")); // /Script/Engine.SkeletalMesh'/Game/LyraResource/Weapons/Rifle/Mesh/SK_Rifle.SK_Rifle'
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> WeaponMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Fab/Medieval_Weapons_VOL2/Meshes/VOL2/SkeletalMesh/SK_Sword_2.SK_Sword_2'")); // /Script/Engine.SkeletalMesh'/Game/LyraResource/Weapons/Rifle/Mesh/SK_Rifle.SK_Rifle'
 	if (WeaponMeshRef.Object)
 	{
 		WeaponMesh = WeaponMeshRef.Object;
@@ -87,7 +87,7 @@ void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	if (IsValid(HeroComponent))
 	{
-    /*
+    /* // 해당 주석부분 코드는 HeroComponent쪽으로 이전되었다. HeroComponent 참조 해서 사용할것.
     UEnhancedInputComponent* EIC = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
 	  EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMoveInput);
@@ -177,7 +177,7 @@ void ARSCharacter::OnOutOfHealth()
 	}
 }
 
-/*
+/* // 해당 주석부분 코드는 HeroComponent쪽으로 이전되었다. HeroComponent 참조 해서 사용할것.
 void ARSCharacter::HandleMoveInput(const FInputActionValue& InValue)
 {
 	if (IsValid(Controller) == false)

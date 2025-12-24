@@ -52,7 +52,7 @@ void URSAbilityTask_SweepSingleCapsule::SpawnAndInitializeTargetActor()
 	TargetActorInstance = Cast<ARSTargetActor_SweepSingleCapsule>(Ability->GetWorld()->SpawnActorDeferred<AGameplayAbilityTargetActor>(TargetActorClass, FTransform::Identity, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn));
 	if (TargetActorInstance)
 	{
-		TargetActorInstance->SetShowDebug(false);
+		TargetActorInstance->SetShowDebug(true);
 		TargetActorInstance->TargetDataReadyDelegate.AddUObject(this, &URSAbilityTask_SweepSingleCapsule::OnTargetDataReady);
 	}
 }
