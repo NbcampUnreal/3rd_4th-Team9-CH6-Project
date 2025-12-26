@@ -6,6 +6,7 @@
 #include "InputActionValue.h"
 #include "Abilities/GameplayAbility.h"
 #include "GameplayTagContainer.h"
+#include "AbilitySystemComponent.h"
 #include "RSBaseCharacter.generated.h"
 
 class UAbilitySystemComponent;
@@ -35,6 +36,9 @@ public:
 
 	void CrouchInput_Pressed();
 	void CrouchInput_Released();
+
+	void RunInput_Pressed();
+	void RunInput_Released();
 	
 protected:
 	virtual void BeginPlay() override;
@@ -63,7 +67,7 @@ protected:
 	/* GAS 내부 처리 */
 	void InitializeAbilities();
 
-	
 
-
+	void OnFinalMoveSpeedChanged(const FOnAttributeChangeData& Data);
+	void OnRunSpeedBonusChanged(const FOnAttributeChangeData& Data);
 };
