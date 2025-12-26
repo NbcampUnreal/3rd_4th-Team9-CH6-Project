@@ -28,6 +28,8 @@ protected:
 
 	void Input_Move(const FInputActionValue& Value);
 	void Input_Look(const FInputActionValue& Value);
-
+	void Input_Interaction(const FInputActionValue& Value);
+	void Input_InventoryToggle(const FInputActionValue& Value);
+	
 	ARSCharacter* GetOwnerCharacter() const;
 };

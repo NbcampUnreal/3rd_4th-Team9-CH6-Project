@@ -5,6 +5,7 @@
 #include "Input/RSInputConfig.h"
 #include "AbilitySystemBlueprintLibrary.h" // 래퍼함수안 쓸 때 - 안쓰고서 그냥 HeroComponent와 InputConfig클래스를 이용할 예정임.
 #include "RSGameplayTags.h"
+#include "Character/PlayerController/RSPlayerController.h"
 
 void URSHeroComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -78,6 +79,10 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
+	
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Interaction,ETriggerEvent::Triggered, this, &ThisClass::Input_Interaction);
+	
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Triggered, this, &ThisClass::Input_InventoryToggle);
 }
 
 void URSHeroComponent::Input_AbilityTagPressed(FGameplayTag InputTag)
@@ -141,3 +146,24 @@ void URSHeroComponent::Input_Look(const FInputActionValue& InputActionValue)
 	if (!FMath::IsNearlyZero(Value.Y))
 		Character->AddControllerPitchInput(Value.Y);
 }
+
+void URSHeroComponent::Input_Interaction(const FInputActionValue& Value)
+{
+	ARSCharacter* Char = GetOwnerCharacter();
+	if (!Char) return;
+
+	Char->TryInteract();
+}
+
+void URSHeroComponent::Input_InventoryToggle(const FInputActionValue& Value)
+{
+	if (APawn* Pawn = Cast<APawn>(GetOwner()))
+	{
+		if (ARSPlayerController* RSPC = Cast<ARSPlayerController>(Pawn->GetController()))
+		{
+			RSPC->ToggleInventoryUI();
+		}
+	}
+
+}
+

@@ -42,11 +42,13 @@ public:
 	FGameplayTag GameplayCue_Attack_Hit;
 	FGameplayTag GameplayCue_Box_Open;
 	FGameplayTag GameplayCue_Damage;
-
+	
 	// InputTag
 	FGameplayTag InputTag_Native_Move;
 	FGameplayTag InputTag_Native_Look;
-
+	FGameplayTag InputTag_Native_Interaction;
+	FGameplayTag InputTag_Native_InventoryToggle;
+	
 	FGameplayTag InputTag_Ability_Jump;
 	FGameplayTag InputTag_Ability_Attack;
 	FGameplayTag InputTag_Ability_Skill;

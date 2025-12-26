@@ -53,7 +53,7 @@ bool URSInventoryComponent::AddItem(URSItemData* ItemData, int32 Count)
 			TEXT("[Inventory] Stack increased -> %d"),
 			Existing->Count
 		);
-		DebugPrintInventory();
+		
 	}
 	else
 	{
@@ -65,6 +65,8 @@ bool URSInventoryComponent::AddItem(URSItemData* ItemData, int32 Count)
 			TEXT("[Inventory] New item added"));
 	}
 
+	OnInventoryChanged.Broadcast();
+	DebugPrintInventory();
 	return true;
 }
 
@@ -100,7 +102,14 @@ bool URSInventoryComponent::RemoveItem(URSItemData* ItemData, int32 Count)
 	{
 		Items.RemoveAtSwap(Index); // 순서 중요하면 RemoveAt
 	}
+	
+	OnInventoryChanged.Broadcast();
+	return true;
+}
 
+bool URSInventoryComponent::UseItem(int32 SlotIndex, AActor* User)
+{
+	OnInventoryChanged.Broadcast();
 	return true;
 }
 
@@ -114,3 +123,5 @@ void URSInventoryComponent::DebugPrintInventory() const
 		UE_LOG(LogTemp, Log, TEXT("- %s x %d"), *Name, Item.Count);
 	}
 }
+
+
