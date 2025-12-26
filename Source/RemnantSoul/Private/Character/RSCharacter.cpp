@@ -26,13 +26,14 @@
 
 
 
-//[추가]
+//추가
 #include "TimerManager.h"
 #include "Interface/Interactable.h"
 #include "DrawDebugHelpers.h"
 #include "Component/Inventory/RSInventoryComponent.h"
 #include "Interface/InventoryOwner.h"
 #include "ItemDataAsset/RSItemData.h"
+#include "Character/RSHeroData.h"
 
 ARSCharacter::ARSCharacter()
 {
@@ -135,21 +136,17 @@ void ARSCharacter::BeginPlay()
 
 	// 정영기 팀원 Ability Input매핑 방식
 		// PawnData 기반 기본 AbilitySets 부여
-	if (PawnData)
+	if (const URSPawnData* PD = GetPawnData())
 	{
 		PawnGrantedAbilitySetHandles.Reset();
-		PawnGrantedAbilitySetHandles.SetNum(PawnData->AbilitySets.Num());
+		PawnGrantedAbilitySetHandles.SetNum(PD->AbilitySets.Num());
 
-		for (int32 i = 0; i < PawnData->AbilitySets.Num(); ++i)
+		for (int32 i = 0; i < PD->AbilitySets.Num(); ++i)
 		{
-			const URSAbilitySet* Set = PawnData->AbilitySets[i];
+			const URSAbilitySet* Set = PD->AbilitySets[i];
 			if (!Set) continue;
 
-			Set->GiveToAbilitySystem(
-				ASC,
-				&PawnGrantedAbilitySetHandles[i],
-				this // SourceObject: 캐릭터 기본 세트는 this 추천
-			);
+			Set->GiveToAbilitySystem(ASC, &PawnGrantedAbilitySetHandles[i], this);
 		}
 	}
 
@@ -178,11 +175,8 @@ void ARSCharacter::BeginPlay()
 		InteractTraceInterval,
 		true
 	);
-}
 
-const URSInputConfig* ARSCharacter::GetInputConfig() const
-{
-	return PawnData ? PawnData->InputConfig : nullptr;
+
 }
 
 void ARSCharacter::OnOutOfHealth()
@@ -404,4 +398,22 @@ bool ARSCharacter::TryRemoveItem_Implementation(URSItemData* ItemData, int32 Cou
 	}
 
 	return Inv->RemoveItem(ItemData, Count);
+}
+
+const URSPawnData* ARSCharacter::GetPawnData() const
+{
+	if (HeroData && HeroData->PawnData)
+	{
+		return HeroData->PawnData;
+	}
+	return PawnData;
+}
+
+const URSInputConfig* ARSCharacter::GetInputConfig() const
+{
+	if (const URSPawnData* PD = GetPawnData())
+	{
+		return PD->InputConfig;
+	}
+	return nullptr;
 }

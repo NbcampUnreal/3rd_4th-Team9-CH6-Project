@@ -37,7 +37,6 @@ void URSCosmeticManagerComponent::CacheOwnerCharacter()
 		return;
 	}
 
-	// RSCharacter가 아닌 다른 Pawn에 붙일 계획이 없다면 ARSCharacter로 고정 캐스팅
 	if (ARSCharacter* RSChar = Cast<ARSCharacter>(Owner))
 	{
 		CachedCharacter = RSChar;
@@ -68,7 +67,6 @@ void URSCosmeticManagerComponent::ApplyWeaponFromItem(URSItemInstance* ItemInsta
 		return;
 	}
 
-	// 템플릿 확보
 	const URSItemTemplate* ItemTemplate = ItemInstance->GetTemplate();
 	if (!ItemTemplate)
 	{

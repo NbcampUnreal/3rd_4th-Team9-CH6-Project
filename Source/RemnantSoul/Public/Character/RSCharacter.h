@@ -20,6 +20,8 @@ class URSAttributeSet_Character;
 class URSWidgetComponent;
 class URSAttributeSet_Skill;
 class URSPawnData;
+class URSHeroData;
+class URSItemData;
 class URSInputConfig;
 // Item 관련 매니저 컴포넌트들
 class URSCosmeticManagerComponent;
@@ -29,7 +31,6 @@ class URSInventoryManagerComponent;
 
 
 
-class URSItemData;
 class URSInventoryComponent;
 struct FTimerHandle;
 
@@ -48,7 +49,7 @@ public:
 	virtual void BeginPlay() override;
 
 public:
-	const URSPawnData* GetPawnData() const { return PawnData; }
+	const URSPawnData* GetPawnData() const;
 
 	const URSInputConfig* GetInputConfig() const;
 
@@ -265,6 +266,19 @@ public:
 	) override;
 	
 	
+#pragma endregion
+
+#pragma region Data
+protected:
+	// 기존 PawnData 유지 : 위쪽에 선언해놨음.
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|PawnData")
+	//TObjectPtr<const URSPawnData> PawnData;
+
+	// HeroData 추가
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Hero")
+	TObjectPtr<const URSHeroData> HeroData;
+
+
 #pragma endregion
 	
 };

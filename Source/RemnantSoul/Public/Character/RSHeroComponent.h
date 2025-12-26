@@ -30,4 +30,15 @@ protected:
 	void Input_Look(const FInputActionValue& Value);
 
 	ARSCharacter* GetOwnerCharacter() const;
+
+private:
+	UPROPERTY()
+	TObjectPtr<const URSInputConfig> CurrentOverlayConfig = nullptr;
+
+	UPROPERTY()
+	TArray<uint32> OverlayBindHandles;
+
+public:
+	void ApplyOverlayInputConfig(const URSInputConfig* Overlay);
+	void ClearOverlayInputConfig();
 };

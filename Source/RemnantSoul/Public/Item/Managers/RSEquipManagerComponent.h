@@ -17,6 +17,9 @@ class URSItemFragment_EquipStats;
 class URSItemFragment_AbilitySet;
 class URSItemFragment_WeaponCosmetic;
 class URSAbilitySet;
+class URSCombatStyleData;
+class URSHeroComponent;
+
 
 /**
  * RSEquipManagerComponent
@@ -31,18 +34,10 @@ class URSAbilitySet;
  *
  * - 이 컴포넌트는 오직 ASC/Attribute/Tag/Ability 쪽만 책임진다.
  */
+
 UCLASS(ClassGroup = (RS), meta = (BlueprintSpawnableComponent))
 class REMNANTSOUL_API URSEquipManagerComponent : public UActorComponent
 {
-	/**
-	 * 장비 슬롯 변경 이벤트 처리.
-	 *
-	 * - SlotTag: 어떤 슬롯인지 (예: Slot.Weapon.Main)
-	 * - OldItem: 기존에 장착되어 있던 아이템 (없으면 nullptr)
-	 * - NewItem: 새로 장착되는 아이템 (없으면 nullptr)
-	 *
-	 * RSEquipmentManager에서 이 함수를 호출하게 만들면 된다.
-	 */
 	GENERATED_BODY()
 
 public:
@@ -51,6 +46,10 @@ public:
 	/** 장비 매니저(RSEquipmentManagerComponent)에서 호출할 진입점 */
 	void HandleEquipmentChanged(const FGameplayTag& SlotTag, URSItemInstance* OldItem, URSItemInstance* NewItem);
 
+	/** 전투 스타일(Overlay) 적용/해제 */
+	void ApplyCombatStyle(URSCombatStyleData* NewStyle);
+	void ClearCombatStyle();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -58,17 +57,19 @@ protected:
 	void CacheOwnerAndASC();
 
 	/** 장착/해제 공통 처리 */
-
 	void ApplyEquip(URSItemInstance* ItemInstance, const FGameplayTag& SlotTag);
 	void ApplyUnequip(URSItemInstance* ItemInstance, const FGameplayTag& SlotTag);
 
 	/** Fragment 단위 처리 */
-
 	void ApplyEquipStats(const URSItemFragment_EquipStats* EquipStatsFrag, bool bApply);
 	void ApplyAbilitySet(URSItemInstance* ItemInstance, const URSItemFragment_AbilitySet* AbilityFrag, bool bApply);
 	void ApplyWeaponTypeTag(const URSItemFragment_WeaponCosmetic* WeaponCosFrag, bool bApply);
 
-protected:
+private:
+	UAbilitySystemComponent* GetASC() const;
+	URSHeroComponent* GetHero() const;
+
+private:
 	/** Owner 캐릭터 캐시 */
 	TWeakObjectPtr<ARSCharacter> CachedCharacter;
 
@@ -78,9 +79,17 @@ protected:
 	/** 캐릭터 AttributeSet 캐시 */
 	TWeakObjectPtr<URSAttributeSet_Character> CachedCharAttributes;
 
-	/**
-	 * 아이템별로 부여된 AbilitySpecHandle 목록
-	 * - UPROPERTY 필요 없는 순수 런타임 캐시
-	 */
+	/** Hero 캐시(선택) */
+	TWeakObjectPtr<URSHeroComponent> CachedHero;
+
+	/** 아이템별로 부여된 AbilitySet 핸들 캐시 */
 	TMap<TWeakObjectPtr<URSItemInstance>, FRSAbilitySet_GrantedHandles> ItemToGrantedAbilityHandles;
+
+	/** 현재 전투 스타일(Overlay) */
+	UPROPERTY()
+	TObjectPtr<URSCombatStyleData> CurrentStyle = nullptr;
+
+	/** 현재 스타일이 부여한 AbilitySet 핸들들 */
+	UPROPERTY()
+	TArray<FRSAbilitySet_GrantedHandles> StyleGrantedHandles;
 };

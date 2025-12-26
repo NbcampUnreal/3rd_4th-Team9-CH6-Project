@@ -12,6 +12,8 @@
 #include "Item/Fragments/RSItemFragment_WeaponCosmetic.h"
 #include "GAS/AS/RSAbilitySet.h"   // URSAbilitySet
 #include "Abilities/GameplayAbilityTypes.h"
+#include "Character/RSCombatStyleData.h"
+#include "Character/RSHeroComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RSEquipManagerComponent)
 
@@ -29,20 +31,18 @@ void URSEquipManagerComponent::BeginPlay()
 
 void URSEquipManagerComponent::CacheOwnerAndASC()
 {
-	if (CachedCharacter.IsValid() && CachedASC.IsValid() && CachedCharAttributes.IsValid())
+	if (CachedCharacter.IsValid() && CachedASC.IsValid() && CachedCharAttributes.IsValid() && CachedHero.IsValid())
 	{
 		return;
 	}
 
 	AActor* Owner = GetOwner();
-	if (!Owner)
-	{
-		return;
-	}
+	if (!Owner) return;
 
 	if (ARSCharacter* RSChar = Cast<ARSCharacter>(Owner))
 	{
 		CachedCharacter = RSChar;
+		CachedHero = RSChar->FindComponentByClass<URSHeroComponent>();
 
 		if (UAbilitySystemComponent* ASC = RSChar->GetAbilitySystemComponent())
 		{
@@ -241,3 +241,96 @@ void URSEquipManagerComponent::ApplyWeaponTypeTag(const URSItemFragment_WeaponCo
 		ASC->RemoveLooseGameplayTag(WeaponCosFrag->WeaponTypeTag);
 	}
 }
+
+// RSEquipManagerComponent.cpp (개념 구현)
+void URSEquipManagerComponent::ClearCombatStyle()
+{
+	UAbilitySystemComponent* ASC = GetASC();
+	if (ASC)
+	{
+		for (FRSAbilitySet_GrantedHandles& H : StyleGrantedHandles)
+		{
+			H.TakeFromAbilitySystem(ASC);
+		}
+	}
+	StyleGrantedHandles.Reset();
+
+	if (URSHeroComponent* Hero = GetHero())
+	{
+		Hero->ClearOverlayInputConfig();
+	}
+
+	CurrentStyle = nullptr;
+}
+
+void URSEquipManagerComponent::ApplyCombatStyle(URSCombatStyleData* NewStyle)
+{
+	if (CurrentStyle.Get() == NewStyle)
+	{
+		return;
+	}
+
+	ClearCombatStyle();
+	if (!NewStyle)
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* ASC = GetASC();
+	if (!ASC)
+	{
+		return;
+	}
+
+	StyleGrantedHandles.Reset();
+	StyleGrantedHandles.SetNum(NewStyle->AbilitySets.Num());
+
+	for (int32 i = 0; i < NewStyle->AbilitySets.Num(); ++i)
+	{
+		const URSAbilitySet* Set = NewStyle->AbilitySets[i];
+		if (!Set)
+		{
+			continue;
+		}
+
+		Set->GiveToAbilitySystem(
+			ASC,
+			&StyleGrantedHandles[i],
+			GetOwner()
+		);
+	}
+
+	if (URSHeroComponent* Hero = GetHero())
+	{
+		Hero->ApplyOverlayInputConfig(NewStyle->OverlayInputConfig);
+	}
+
+	CurrentStyle = NewStyle;
+}
+
+
+UAbilitySystemComponent* URSEquipManagerComponent::GetASC() const
+{
+	if (CachedASC.IsValid())
+	{
+		return CachedASC.Get();
+	}
+
+	if (ARSCharacter* Char = Cast<ARSCharacter>(GetOwner()))
+	{
+		return Char->GetAbilitySystemComponent();
+	}
+
+	return nullptr;
+}
+
+URSHeroComponent* URSEquipManagerComponent::GetHero() const
+{
+	if (ARSCharacter* Char = Cast<ARSCharacter>(GetOwner()))
+	{
+		return Char->FindComponentByClass<URSHeroComponent>();
+		// 또는 C->HeroComponent가 public getter로 노출되어 있으면 그걸 사용
+	}
+	return nullptr;
+}
+
