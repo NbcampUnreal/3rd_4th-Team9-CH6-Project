@@ -15,6 +15,10 @@ URSAttributeSet::URSAttributeSet()
 
 	InitRollCooldown(0.f);
 	InitMaxRollCooldown(1.0f); //GE에서 값을 덮어쓸 수 있음.
+	
+	InitBaseMoveSpeed(140.f);
+	InitRunSpeedBonus(0.f);
+	InitFinalMoveSpeed(140.f);	
 }
 
 void URSAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
@@ -40,11 +44,9 @@ void URSAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 			OldHealth,
 			NewHealth
 		);
-
-
+		
 	}
-
-
+	
 	// Stamina 보정
 	if (Data.EvaluatedData.Attribute == GetStaminaAttribute())
 	{
@@ -56,4 +58,25 @@ void URSAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 
 		SetStamina(NewStamina);
 	}
+
+
+	
+	if (Data.EvaluatedData.Attribute == GetRunSpeedBonusAttribute())
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("[AttributeSet] RunSpeedBonus Changed: %.1f"),
+			GetRunSpeedBonus()
+		);
+	}
+
+	if (Data.EvaluatedData.Attribute == GetBaseMoveSpeedAttribute())
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("[AttributeSet] BaseMoveSpeed Changed: %.1f"),
+			GetBaseMoveSpeed()
+		);
+	}
+
+	
 }
+

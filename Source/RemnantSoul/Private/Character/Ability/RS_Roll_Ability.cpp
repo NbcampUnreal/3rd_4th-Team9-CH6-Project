@@ -17,6 +17,8 @@ URS_Roll_Ability::URS_Roll_Ability()
 
 	//어빌리티를 실행할 태그 설정.
 	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Ability.Roll")));
+	
+	ActivationOwnedTags.AddTag(FGameplayTag::RequestGameplayTag(TEXT("State.Rolling")));
 
 	//이 태그가 있을 시 어빌리티를 실행하지 않음.
 	ActivationBlockedTags.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Roll.CoolDown")));
@@ -40,20 +42,26 @@ void URS_Roll_Ability::ActivateAbility(
 	const FGameplayEventData* TriggerEventData
 )
 {
-	
+	UE_LOG(LogTemp, Warning, TEXT("[RollAbility] ActivateAbility ENTER"));
+
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
+		UE_LOG(LogTemp, Error, TEXT("[RollAbility] CommitAbility FAILED"));
 		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
 		return;
 	}
+	UE_LOG(LogTemp, Warning, TEXT("[RollAbility] CommitAbility SUCCESS"));
 
 	ACharacter* Character =
 		Cast<ACharacter>(ActorInfo->AvatarActor.Get());
 	if (!Character)
 	{
+		UE_LOG(LogTemp, Error, TEXT("[RollAbility] AvatarActor is NOT ACharacter"));
+
 		EndAbility(Handle, ActorInfo, ActivationInfo, false, true);
 		return;
 	}
+	UE_LOG(LogTemp, Warning, TEXT("[RollAbility] Character CAST SUCCESS"));
 
 	// 이동 차단
 	if (UCharacterMovementComponent* MoveComp =
