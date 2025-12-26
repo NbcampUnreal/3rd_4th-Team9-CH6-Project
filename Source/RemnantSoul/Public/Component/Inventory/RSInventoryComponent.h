@@ -8,7 +8,7 @@
 #include "RSInventoryType.h"
 #include "RSInventoryComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryChanged);
+DECLARE_MULTICAST_DELEGATE(FOnInventoryChanged);
 UCLASS( ClassGroup=(Inventory), meta=(BlueprintSpawnableComponent) )
 class REMNANTSOUL_API URSInventoryComponent : public UActorComponent
 {
@@ -18,11 +18,11 @@ public:
 	// Sets default values for this component's properties
 	URSInventoryComponent();
 	
-	UPROPERTY(BlueprintAssignable, Category="Inventory")
 	FOnInventoryChanged OnInventoryChanged;
 	
 	UFUNCTION(BlueprintCallable, Category="Inventory")
-	const TArray<FInventoryItem>& GetItems() const;
+	const TArray<FInventoryItem>& GetItems() const { return Items; }
+;
 
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	bool HasItem(const URSItemData* ItemData) const;

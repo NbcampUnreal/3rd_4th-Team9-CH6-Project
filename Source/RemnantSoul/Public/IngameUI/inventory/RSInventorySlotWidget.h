@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Component//Inventory/RSInventoryType.h"
 #include "RSInventorySlotWidget.generated.h"
 
 class UImage;
 class UTextBlock;
 class URSItemData;
+class URSInventoryComponent;
 
 /**
  * 
@@ -18,22 +20,25 @@ class REMNANTSOUL_API URSInventorySlotWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintCallable)
-	void SetData(URSItemData* InItemData, int32 InCount);
+	void Setup(URSInventoryComponent* InInv, int32 InIndex);
+	void SetItem(const FInventoryItem& InItem);
+	UFUNCTION()
+	void ClearSlot();
 
 protected:
-	UPROPERTY(meta=(BindWidget))
-	TObjectPtr<UImage> IconImage;
+	//virtual void NativeConstruct() override;
+
+	//UFUNCTION()
+	//void OnClicked();
 
 	UPROPERTY(meta=(BindWidget))
-	TObjectPtr<UTextBlock> NameText;
+	class UImage* ItemIcon;
 
 	UPROPERTY(meta=(BindWidget))
-	TObjectPtr<UTextBlock> CountText;
+	class UTextBlock* CountText;
 
 private:
-	UPROPERTY()
-	TObjectPtr<URSItemData> ItemData;
-
-	int32 Count = 0;
+	URSInventoryComponent* InventoryComp;
+	int32 SlotIndex = INDEX_NONE;
+	FInventoryItem Item;
 };

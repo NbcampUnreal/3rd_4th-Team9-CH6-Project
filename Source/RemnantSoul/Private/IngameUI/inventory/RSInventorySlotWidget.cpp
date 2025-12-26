@@ -4,37 +4,53 @@
 #include "IngameUI/inventory/RSInventorySlotWidget.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Engine/Texture2D.h"
+#include "UObject/SoftObjectPtr.h"
 #include "ItemDataAsset/RSItemdata.h"
 
 
-void URSInventorySlotWidget::SetData(URSItemData* InItemData, int32 InCount)
+void URSInventorySlotWidget::Setup(URSInventoryComponent* InInv, int32 InIndex)
 {
-	ItemData = InItemData;
-	Count = InCount;
+	InventoryComp = InInv;
+	SlotIndex = InIndex;
+}
 
-	if (!ItemData) return;
+void URSInventorySlotWidget::SetItem(const FInventoryItem& InItem)
+{
+	Item = InItem;
 
-	// Icon
-	if (IconImage) // Icon 타입이 UTexture2D*라고 가정
+	UTexture2D* Tex = Item.ItemData ? Item.ItemData->Icon.Get() : nullptr;
+	if (!Tex && Item.ItemData)
 	{
-		UTexture2D* Tex = ItemData->Icon.Get(); // 로드 안 됐으면 nullptr
-		if (Tex)
-		{
-			IconImage->SetBrushFromTexture(Tex);
-		}
-		
+		Tex = Item.ItemData->Icon.LoadSynchronous();
 	}
 
-	// Name
-	if (NameText)
+	if (ItemIcon)
 	{
-		NameText->SetText(ItemData->DisplayName); // DisplayName 타입이 FText라고 가정
+		ItemIcon->SetBrushFromTexture(Tex, true);
+		ItemIcon->SetVisibility(Tex ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
 	}
-
-	// Count
+	// 2) 수량
 	if (CountText)
 	{
+		const int32 Count = Item.Count;
 		CountText->SetText(FText::AsNumber(Count));
-		CountText->SetVisibility(Count > 1 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		CountText->SetVisibility(Count > 1 ? ESlateVisibility::HitTestInvisible
+										   : ESlateVisibility::Collapsed);
+	}
+}
+
+void URSInventorySlotWidget::ClearSlot()
+{ 
+	Item = FInventoryItem{}; // 또는 bHasItem=false 같은 플래그
+
+	if (ItemIcon)
+	{
+		ItemIcon->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	if (CountText)
+	{
+		CountText->SetVisibility(ESlateVisibility::Collapsed);
+		CountText->SetText(FText::GetEmpty());
 	}
 }

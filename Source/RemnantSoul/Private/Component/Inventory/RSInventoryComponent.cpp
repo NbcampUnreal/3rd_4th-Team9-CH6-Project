@@ -53,7 +53,7 @@ bool URSInventoryComponent::AddItem(URSItemData* ItemData, int32 Count)
 			TEXT("[Inventory] Stack increased -> %d"),
 			Existing->Count
 		);
-		DebugPrintInventory();
+		
 	}
 	else
 	{
@@ -66,6 +66,7 @@ bool URSInventoryComponent::AddItem(URSItemData* ItemData, int32 Count)
 	}
 
 	OnInventoryChanged.Broadcast();
+	DebugPrintInventory();
 	return true;
 }
 
@@ -110,11 +111,6 @@ bool URSInventoryComponent::UseItem(int32 SlotIndex, AActor* User)
 {
 	OnInventoryChanged.Broadcast();
 	return true;
-}
-
-const TArray<FInventoryItem>& URSInventoryComponent::GetItems() const
-{
-	return Items;
 }
 
 void URSInventoryComponent::DebugPrintInventory() const
