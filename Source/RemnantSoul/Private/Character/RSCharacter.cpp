@@ -119,17 +119,38 @@ void ARSCharacter::BeginPlay()
 	
 	ASC->InitAbilityActorInfo(this, this);
 
-	for (const auto& GrantedAbility : GrantedAbilities)
-	{
-		FGameplayAbilitySpec GrantedAbilitySpec(GrantedAbility);
-		ASC->GiveAbility(GrantedAbilitySpec);
-	}
+	// 경호튜터님 Ability Input매핑 방식
+	//for (const auto& GrantedAbility : GrantedAbilities)
+	//{
+	//	FGameplayAbilitySpec GrantedAbilitySpec(GrantedAbility);
+	//	ASC->GiveAbility(GrantedAbilitySpec);
+	//}
 
-	for (const auto& GrantedInputAbility : GrantedInputAbilities)
+	//for (const auto& GrantedInputAbility : GrantedInputAbilities)
+	//{
+	//	FGameplayAbilitySpec GrantedAbilitySpec(GrantedInputAbility.Value);
+	//	GrantedAbilitySpec.InputID = GrantedInputAbility.Key;
+	//	ASC->GiveAbility(GrantedAbilitySpec);
+	//}
+
+	// 정영기 팀원 Ability Input매핑 방식
+		// PawnData 기반 기본 AbilitySets 부여
+	if (PawnData)
 	{
-		FGameplayAbilitySpec GrantedAbilitySpec(GrantedInputAbility.Value);
-		GrantedAbilitySpec.InputID = GrantedInputAbility.Key;
-		ASC->GiveAbility(GrantedAbilitySpec);
+		PawnGrantedAbilitySetHandles.Reset();
+		PawnGrantedAbilitySetHandles.SetNum(PawnData->AbilitySets.Num());
+
+		for (int32 i = 0; i < PawnData->AbilitySets.Num(); ++i)
+		{
+			const URSAbilitySet* Set = PawnData->AbilitySets[i];
+			if (!Set) continue;
+
+			Set->GiveToAbilitySystem(
+				ASC,
+				&PawnGrantedAbilitySetHandles[i],
+				this // SourceObject: 캐릭터 기본 세트는 this 추천
+			);
+		}
 	}
 
 	if (IsValid(GetController()) == true)

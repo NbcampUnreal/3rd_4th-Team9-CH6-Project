@@ -3,6 +3,7 @@
 #include "Item/RSItemTemplate.h"
 #include "Item/RSItemInstance.h"
 #include "Item/RSWeaponActor.h"
+#include "Input/RSInputConfig.h"
 // 무기 액터가 따로 있다면 여기에 include
 // #include "Gimmick/RSWeaponActor.h" 또는 "Item/RSWeaponActor.h" 등 실제 경로로 교체
 
@@ -55,5 +56,10 @@ EDataValidationResult URSItemFragment_WeaponCosmetic::IsDataValid(FDataValidatio
 	}
 
 	return Result;
+
+	// if (!WeaponInputConfig)
+	// {
+	//     Context.AddWarning(FText::FromString(TEXT("WeaponInputConfig is null. Weapon-specific input won't change.")));
+	// }
 }
 #endif

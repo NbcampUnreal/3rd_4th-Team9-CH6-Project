@@ -164,7 +164,7 @@ bool URSEquipmentManagerComponent::UnequipItemFromSlot(const FGameplayTag& SlotT
 
 void URSEquipmentManagerComponent::InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem)
 {
-	// 기존 아이템
+	// 기존 아이템 : 정영기 팀원이 만든내용, 기인님이 만든 내용아님. 
 	URSItemInstance* OldItem = GetItemInSlot(SlotTag);
 
 	// 맵 갱신

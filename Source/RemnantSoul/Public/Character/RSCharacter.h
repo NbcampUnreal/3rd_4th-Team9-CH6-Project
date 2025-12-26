@@ -7,6 +7,7 @@
 #include "AbilitySystemInterface.h"
 #include  "Interface/InventoryOwner.h"
 #include "Abilities/GameplayAbilityTypes.h"
+#include "GAS/AS/RSAbilitySet.h"
 #include "RSCharacter.generated.h"
 
 class UCameraComponent;
@@ -170,6 +171,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|GameplayAbilitySystem")
 	TObjectPtr<URSAttributeSet_Skill> SkillAttributeSet;
+	// PawnData 기반 기본 AbilitySet 부여 핸들들
+	UPROPERTY(Transient)
+	TArray<FRSAbilitySet_GrantedHandles> PawnGrantedAbilitySetHandles;
 
 #pragma endregion
 
