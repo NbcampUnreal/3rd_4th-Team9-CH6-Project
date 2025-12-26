@@ -1,9 +1,10 @@
 ﻿#pragma once
 
-#include "Engine/DataAsset.h"
+#include "GAS/AS/RSAbilitySet.h"
 #include "RSPawnData.generated.h"
 
 class URSInputConfig;
+class URSAbilitySet;
 
 class UDataAsset;
 
@@ -19,5 +20,5 @@ public:
 
 	// Pawn에 기본으로 깔릴 AbilitySet들
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PawnData|Abilities")
-	TArray<TObjectPtr<UDataAsset>> AbilitySets;
+	TArray<TObjectPtr<URSAbilitySet>> AbilitySets;
 };
