@@ -82,8 +82,7 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	//TArray<uint32> Handles;
 	//IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityTagPressed, &ThisClass::Input_AbilityTagReleased, Handles);
 
-		// Ability 태그 바인딩
-
+	// Ability 태그 바인딩
 	BaseAbilityBindHandles.Reset();
 	IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityTagPressed, &ThisClass::Input_AbilityTagReleased, BaseAbilityBindHandles);
 
@@ -98,29 +97,60 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Interaction,ETriggerEvent::Triggered, this, &ThisClass::Input_Interaction);
 	
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Triggered, this, &ThisClass::Input_InventoryToggle);
+
 }
 
 void URSHeroComponent::Input_AbilityTagPressed(FGameplayTag InputTag)
 {
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] Ability Press Tag=%s"), *InputTag.ToString());
+
 	ARSCharacter* Char = GetOwnerCharacter();
 	if (!Char) return;
 
-	FGameplayEventData Payload;
-	Payload.EventTag = InputTag;
-	Payload.EventMagnitude = 1.f; // Pressed일때.
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+	// Lyra/RS : 입력형 GA 발동
+	Char->AbilityInputTagPressed(InputTag);
+
+	// (선택사항임.) 이벤트형 GA도 같이 쓰고 싶으면 유지
+	// FGameplayEventData Payload;
+	// Payload.EventTag = InputTag;
+	// Payload.EventMagnitude = 1.f;
+	// UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
 }
 
 void URSHeroComponent::Input_AbilityTagReleased(FGameplayTag InputTag)
 {
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] Ability Release Tag=%s"), *InputTag.ToString());
+
 	ARSCharacter* Char = GetOwnerCharacter();
 	if (!Char) return;
 
-	FGameplayEventData Payload;
-	Payload.EventTag = InputTag;
-	Payload.EventMagnitude = 0.f; // Released일떄.
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+	Char->AbilityInputTagReleased(InputTag);
+
+	// (선택사항임) 이벤트형 유지
+	// ...
 }
+
+//void URSHeroComponent::Input_AbilityTagPressed(FGameplayTag InputTag)
+//{
+//	ARSCharacter* Char = GetOwnerCharacter();
+//	if (!Char) return;
+//
+//	FGameplayEventData Payload;
+//	Payload.EventTag = InputTag;
+//	Payload.EventMagnitude = 1.f; // Pressed일때.
+//	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+//}
+//
+//void URSHeroComponent::Input_AbilityTagReleased(FGameplayTag InputTag)
+//{
+//	ARSCharacter* Char = GetOwnerCharacter();
+//	if (!Char) return;
+//
+//	FGameplayEventData Payload;
+//	Payload.EventTag = InputTag;
+//	Payload.EventMagnitude = 0.f; // Released일떄.
+//	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+//}
 
 ARSCharacter* URSHeroComponent::GetOwnerCharacter() const
 {

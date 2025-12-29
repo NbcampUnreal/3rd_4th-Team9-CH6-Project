@@ -167,6 +167,10 @@ protected:
 	UPROPERTY(Transient)
 	TArray<FRSAbilitySet_GrantedHandles> PawnGrantedAbilitySetHandles;
 
+public:
+	void AbilityInputTagPressed(const FGameplayTag& InputTag);
+	void AbilityInputTagReleased(const FGameplayTag& InputTag);
+
 #pragma endregion
 
 

@@ -18,10 +18,14 @@ public:
 	static const FRSGameplayTags& Get() { return GameplayTags; }
 	static void InitializeNativeTags();
 
-	// Ability
+	// =========================================================
+	// Ability (기존)
+	// =========================================================
 	FGameplayTag Ability_Cosmetic_SteamParticle;
 
-	// State
+	// =========================================================
+	// State (기존)
+	// =========================================================
 	FGameplayTag State_Activated_SteamParticle;
 	FGameplayTag State_IsJumping;
 	FGameplayTag State_IsAttacking;
@@ -30,28 +34,77 @@ public:
 	FGameplayTag State_IsSkilling;
 	FGameplayTag State_Skill_Cooldown;
 
-	// Data
+	// =========================================================
+	// Data (기존)
+	// =========================================================
 	FGameplayTag Data_Damage;
 
-	// Event
+	// =========================================================
+	// Event (기존)
+	// =========================================================
 	FGameplayTag Event_Equip_Weapon;
 	FGameplayTag Event_Unequip_Weapon;
 	FGameplayTag Event_Skill_CheckHit;
 
-	// GameplayCue
+	// =========================================================
+	// GameplayCue (기존)
+	// =========================================================
 	FGameplayTag GameplayCue_Attack_Hit;
 	FGameplayTag GameplayCue_Box_Open;
 	FGameplayTag GameplayCue_Damage;
-	
-	// InputTag
+
+	// =========================================================
+	// InputTag (기존: InputTag.* 네임스페이스)
+	// =========================================================
 	FGameplayTag InputTag_Native_Move;
 	FGameplayTag InputTag_Native_Look;
 	FGameplayTag InputTag_Native_Interaction;
 	FGameplayTag InputTag_Native_InventoryToggle;
-	
+
 	FGameplayTag InputTag_Ability_Jump;
+	FGameplayTag InputTag_Ability_SuperJump;
 	FGameplayTag InputTag_Ability_Attack;
 	FGameplayTag InputTag_Ability_Skill;
+
+	// =========================================================
+	// 추가: Slot.* (장착 슬롯)
+	// =========================================================
+	FGameplayTag Slot_Weapon_Main;   // "Slot.Weapon.Main"
+	FGameplayTag Slot_Weapon_Sub;    // "Slot.Weapon.Sub" (선택)
+	FGameplayTag Slot_Armor_Head;    // "Slot.Armor.Head" (선택)
+	FGameplayTag Slot_Armor_Chest;   // "Slot.Armor.Chest" (선택)
+
+	// =========================================================
+	// 추가: Item.* (아이템 분류/인벤 필터/드랍)
+	// =========================================================
+	FGameplayTag Item_Weapon_Sword;  // "Item.Weapon.Sword"
+	FGameplayTag Item_Weapon_Staff;  // "Item.Weapon.Staff"
+	FGameplayTag Item_Consumable;    // "Item.Consumable" (선택)
+
+	// =========================================================
+	// 추가: Weapon.* (무기 타입/애니 분기 기준)
+	// =========================================================
+	FGameplayTag Weapon_Sword_OneHand; // "Weapon.Sword.OneHand"
+	FGameplayTag Weapon_Staff_OneHand; // "Weapon.Staff.OneHand"
+	FGameplayTag Weapon_Staff_TwoHand; // "Weapon.Staff.TwoHand"
+	
+	// =========================================================
+	// 추가: State.AnimStyle.* (ASC LooseTags로 ABP가 읽게 할 스타일)
+	// =========================================================
+	FGameplayTag State_AnimStyle_Unarmed; // "State.AnimStyle.Unarmed"
+	FGameplayTag State_AnimStyle_Sword1H; // "State.AnimStyle.Sword1H"
+	FGameplayTag State_AnimStyle_Staff2H; // "State.AnimStyle.Staff2H"
+
+	// =========================================================
+	// 추가: Input.* (EnhancedInput → AbilityTag 매핑 키)
+	//  - 기존 InputTag.* 과 "공존"한다. (목적 분리)
+	// =========================================================
+	FGameplayTag Input_Attack_Light;     // "Input.Attack.Light"
+	FGameplayTag Input_Attack_Heavy;     // "Input.Attack.Heavy"
+	FGameplayTag Input_Skill_Primary;    // "Input.Skill.Primary"
+	FGameplayTag Input_Skill_Secondary;  // "Input.Skill.Secondary"
+	FGameplayTag Input_Dodge;            // "Input.Dodge"
+	FGameplayTag Input_Block;            // "Input.Block"
 
 private:
 	FRSGameplayTags() = default;
@@ -62,9 +115,9 @@ private:
 
 
 /**
- * 
+ *
  * // (권장) 기존 코드와 호환되는 브릿지 매크로
- * 
+ *
  * 경호튜터님 GAS 프레임워크에서는 기존에 STATE_ISJUMPING 같은 매크로를 많이 써놨다.
  * 아래처럼 Get() 멤버를 참조하게 하면 "호출부 수정 없이" 새 구조로 이행 가능. - 지금 매크로 GameplayTag바꿀 내용이 너무 많아서 아래 내용을 임시로 둠.
  * 완전히 안정화되면 매크로는 제거하고 FRSGameplayTags::Get().XXX로 직접 쓸것임. 이미 HeroComponent쪽은 팀장 정영기가 바꿔놓음.

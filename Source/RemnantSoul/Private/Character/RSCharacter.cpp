@@ -13,6 +13,7 @@
 #include "Character/RSHeroComponent.h"
 #include "Input/RSEnhancedInputComponent.h"
 #include "GAS/AS/RSAttributeSet_Skill.h"
+#include "AbilitySystemComponent.h"
 #include "RSGameplayTags.h"
 #include "Character/RSPawnData.h"
 #include "Input/RSInputConfig.h"
@@ -86,17 +87,17 @@ ARSCharacter::ARSCharacter()
 		HPBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 
-	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
-	Weapon->SetupAttachment(GetMesh(), FName(TEXT("hand_rSocket")));
+	//Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
+	//Weapon->SetupAttachment(GetMesh(), FName(TEXT("hand_rSocket")));
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> WeaponMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Fab/Medieval_Weapons_VOL2/Meshes/VOL2/SkeletalMesh/SK_Sword_2.SK_Sword_2'")); // /Script/Engine.SkeletalMesh'/Game/LyraResource/Weapons/Rifle/Mesh/SK_Rifle.SK_Rifle'
-	if (WeaponMeshRef.Object)
-	{
-		WeaponMesh = WeaponMeshRef.Object;
-	}
+	//static ConstructorHelpers::FObjectFinder<USkeletalMesh> WeaponMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Fab/Medieval_Weapons_VOL2/Meshes/VOL2/SkeletalMesh/SK_Sword_2.SK_Sword_2'")); // /Script/Engine.SkeletalMesh'/Game/LyraResource/Weapons/Rifle/Mesh/SK_Rifle.SK_Rifle'
+	//if (WeaponMeshRef.Object)
+	//{
+	//	WeaponMesh = WeaponMeshRef.Object;
+	//}
 
-	WeaponRange = 75.f;
-	WeaponAttackDamage = 100.0f;
+	//WeaponRange = 75.f;
+	//WeaponAttackDamage = 100.0f;
 
 	
 	Inventory = CreateDefaultSubobject<URSInventoryComponent>(TEXT("Inventory"));
@@ -156,6 +157,21 @@ void ARSCharacter::BeginPlay()
 		}
 	}
 
+	UE_LOG(LogTemp, Warning, TEXT("[ASC] Activatable=%d"),
+		ASC ? ASC->GetActivatableAbilities().Num() : -1);
+
+	if (ASC)
+	{
+		for (const FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[ASC] Spec=%s Tags=%s"),
+				*GetNameSafe(Spec.Ability),
+				*Spec.DynamicAbilityTags.ToString());
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[ASC] Activatable=%d"), ASC ? ASC->GetActivatableAbilities().Num() : -1);
+
 	if (IsValid(GetController()) == true)
 	{
 		APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
@@ -182,6 +198,10 @@ void ARSCharacter::BeginPlay()
 		true
 	);
 
+	if (HeroData && HeroData->DefaultUnarmedStyle && EquipManager)
+	{
+		EquipManager->ApplyCombatStyle(HeroData->DefaultUnarmedStyle);
+	}
 
 }
 
@@ -415,5 +435,47 @@ void ARSCharacter::OnCombatStyleChanged(const URSCombatStyleData* NewStyle)
 		// 스타일 없으면 기본 레이어로 복구하고 싶다면,
 		// "기본 레이어 클래스"를 PawnData/기본 AnimBP에서 가져오는 정책을 추가하면 됨.
 		// v1은 일단 아무것도 안 하거나, 베이스 레이어로 Link 하도록 처리.
+	}
+}
+
+void ARSCharacter::AbilityInputTagPressed(const FGameplayTag& InputTag)
+{
+	if (!InputTag.IsValid()) return;
+
+	UAbilitySystemComponent* ASCComp = GetAbilitySystemComponent();
+	if (!ASCComp) return;
+
+	FScopedAbilityListLock Lock(*ASCComp);
+
+	for (FGameplayAbilitySpec& Spec : ASCComp->GetActivatableAbilities())
+	{
+		// 핵심: AbilitySet이 Spec.DynamicAbilityTags에 InputTag를 넣어주는 구조여야 함(Lyra 방식)
+		if (Spec.DynamicAbilityTags.HasTagExact(InputTag))
+		{
+			ASCComp->AbilitySpecInputPressed(Spec);
+
+			if (!Spec.IsActive())
+			{
+				ASCComp->TryActivateAbility(Spec.Handle);
+			}
+		}
+	}
+}
+
+void ARSCharacter::AbilityInputTagReleased(const FGameplayTag& InputTag)
+{
+	if (!InputTag.IsValid()) return;
+
+	UAbilitySystemComponent* ASCComp = GetAbilitySystemComponent();
+	if (!ASCComp) return;
+
+	FScopedAbilityListLock Lock(*ASCComp);
+
+	for (FGameplayAbilitySpec& Spec : ASCComp->GetActivatableAbilities())
+	{
+		if (Spec.DynamicAbilityTags.HasTagExact(InputTag))
+		{
+			ASCComp->AbilitySpecInputReleased(Spec);
+		}
 	}
 }
