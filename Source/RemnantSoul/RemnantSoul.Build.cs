@@ -20,8 +20,9 @@ public class RemnantSoul : ModuleRules
 			"UMG",
 			"Slate",
 			"DLSSBlueprint",
-			"DLSS"
-		});
+			"DLSS",
+            "MoviePlayer"
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayAbilities", "GameplayTags", "GameplayTasks" });
 
