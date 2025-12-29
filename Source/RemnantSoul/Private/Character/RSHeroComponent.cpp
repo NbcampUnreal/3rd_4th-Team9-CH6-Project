@@ -5,6 +5,13 @@
 #include "Input/RSInputConfig.h"
 #include "AbilitySystemBlueprintLibrary.h" // 래퍼함수안 쓸 때 - 안쓰고서 그냥 HeroComponent와 InputConfig클래스를 이용할 예정임.
 #include "RSGameplayTags.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/Pawn.h"
+
+void URSHeroComponent::BeginPlay()
+{
+	Super::BeginPlay();
+}
 
 void URSHeroComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -70,8 +77,15 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	UE_LOG(LogTemp, Warning, TEXT("[Hero] Cast URSEnhancedInputComponent = %s"), IC ? TEXT("OK") : TEXT("FAIL"));
 
 	// Ability 태그 바인딩
-	TArray<uint32> Handles;
-	IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityTagPressed, &ThisClass::Input_AbilityTagReleased, Handles);
+	//TArray<uint32> Handles;
+	//IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityTagPressed, &ThisClass::Input_AbilityTagReleased, Handles);
+
+		// Ability 태그 바인딩
+
+	BaseAbilityBindHandles.Reset();
+	IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityTagPressed, &ThisClass::Input_AbilityTagReleased, BaseAbilityBindHandles);
+
+	LogAbilityBindings(InputConfig, TEXT("Base"));
 
 	const FRSGameplayTags& RSGameplayTag = FRSGameplayTags::Get();
 	// Native 태그 바인딩
@@ -142,94 +156,167 @@ void URSHeroComponent::Input_Look(const FInputActionValue& InputActionValue)
 		Character->AddControllerPitchInput(Value.Y);
 }
 
-// RSHeroComponent.cpp (추가)
 void URSHeroComponent::ApplyOverlayInputConfig(const URSInputConfig* Overlay)
 {
-	if (!Overlay) { ClearOverlayInputConfig(); return; }
-
-	// 동일 오버레이면 무시
-	if (CurrentOverlayConfig == Overlay) return;
-
-	ClearOverlayInputConfig();
-
-	ARSCharacter* Char = GetOwnerCharacter();
-	if (!Char) return;
-
-	APlayerController* PC = Char->GetController<APlayerController>();
-	if (!PC) return;
-
-	UInputComponent* ICBase = Char->InputComponent;
-	URSEnhancedInputComponent* IC = Cast<URSEnhancedInputComponent>(ICBase);
-	if (!IC) return;
-
-	// IMC 오버레이 적용 (우선순위는 Base보다 높게)
-	ULocalPlayer* LP = PC->GetLocalPlayer();
-	if (!LP) return;
-
-	auto* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	if (!Subsystem) return;
-
-	for (const auto& Mapping : Overlay->DefaultMappings)
+	// 0) Overlay가 없으면 Clear로 수렴
+	if (!Overlay)
 	{
-		if (UInputMappingContext* IMCObj = Mapping.InputMapping)
-		{
-			FModifyContextOptions Options;
-			Options.bIgnoreAllPressedKeysUntilRelease = false;
-
-			// Base보다 높은 Priority로 올리려면, Overlay 데이터에서 Priority를 크게 주면 됨.
-			Subsystem->AddMappingContext(IMCObj, Mapping.Priority, Options);
-		}
+		ClearOverlayInputConfig();
+		return;
 	}
 
-	// Ability 입력 태그 바인딩(핸들 저장)
+	// 1) 동일 Overlay면 스킵
+	if (CurrentOverlayConfig == Overlay)
+	{
+		return;
+	}
+
+	//  (추가) Subsystem / InputComp 먼저 획득 (실패하면 기존 상태 유지)
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = GetInputSubsystem();
+	URSEnhancedInputComponent* EIC = GetRSEnhancedInputComponent();
+	if (!Subsystem || !EIC)
+	{
+		return;
+	}
+
+	//  (이 위치로 이동) 기존 Overlay 정리(바인딩/IMC 모두)
+	ClearOverlayInputConfig();
+
+	// 4) Overlay IMC 추가 + “추적”
+	OverlayAddedIMCs.Reset();
+
+	for (const FRSInputMappingContextAndPriority& Mapping : Overlay->DefaultMappings)
+	{
+		if (!Mapping.InputMapping) continue;
+
+		FModifyContextOptions Options;
+		Options.bIgnoreAllPressedKeysUntilRelease = true; // ✅ 입력 꼬임 방지
+		Options.bForceImmediately = true;
+
+		Subsystem->AddMappingContext(Mapping.InputMapping, Mapping.Priority, Options);
+		OverlayAddedIMCs.Add(Mapping.InputMapping);
+	}
+
+	//  (여기) Base Ability 바인딩 제거(중복 이벤트 방지)
+	if (BaseAbilityBindHandles.Num() > 0)
+	{
+		for (uint32 Handle : BaseAbilityBindHandles)
+		{
+			EIC->RemoveBindingByHandle(Handle);
+		}
+		BaseAbilityBindHandles.Reset();
+	}
+
+	// 6) Overlay Ability 바인딩(핸들 추적)
 	OverlayBindHandles.Reset();
-	IC->BindAbilityActions(Overlay, this,
+	EIC->BindAbilityActions(
+		Overlay,
+		this,
 		&ThisClass::Input_AbilityTagPressed,
 		&ThisClass::Input_AbilityTagReleased,
 		OverlayBindHandles
 	);
 
 	CurrentOverlayConfig = Overlay;
+
+	// 7) 디버그 로그
+	LogAbilityBindings(Overlay, TEXT("Overlay Applied"));
 }
+
+
 
 void URSHeroComponent::ClearOverlayInputConfig()
 {
-	ARSCharacter* Char = GetOwnerCharacter();
-	if (!Char) return;
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = GetInputSubsystem();
+	URSEnhancedInputComponent* EIC = GetRSEnhancedInputComponent();
 
-	APlayerController* PC = Char->GetController<APlayerController>();
-	if (!PC) return;
-
-	ULocalPlayer* LP = PC->GetLocalPlayer();
-	if (!LP) return;
-
-	auto* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	if (!Subsystem) return;
-
-	URSEnhancedInputComponent* IC = Cast<URSEnhancedInputComponent>(Char->InputComponent);
-
-	// 1. 바인딩 제거
-	if (IC)
+	// 1) Overlay 바인딩 제거
+	if (EIC)
 	{
 		for (uint32 Handle : OverlayBindHandles)
 		{
-			IC->RemoveBindingByHandle(Handle);
+			EIC->RemoveBindingByHandle(Handle);
 		}
 	}
 	OverlayBindHandles.Reset();
 
-	// 2. Overlay IMC 제거
-	if (CurrentOverlayConfig)
+	// 2) Overlay IMC 제거(“추적 배열” 기준)
+	if (Subsystem)
 	{
-		for (const auto& Mapping : CurrentOverlayConfig->DefaultMappings)
+		for (const TWeakObjectPtr<UInputMappingContext>& IMCWeak : OverlayAddedIMCs)
 		{
-			if (UInputMappingContext* IMCObj = Mapping.InputMapping)
+			if (UInputMappingContext* IMC = IMCWeak.Get())
 			{
-				Subsystem->RemoveMappingContext(IMCObj);
+				Subsystem->RemoveMappingContext(IMC);
 			}
 		}
 	}
+	OverlayAddedIMCs.Reset();
 
 	CurrentOverlayConfig = nullptr;
+
+	// 3) Base Ability 바인딩 복구
+	//    (BaseConfig는 Char->GetInputConfig()로 가져옴)
+	ARSCharacter* Char = GetOwnerCharacter();
+	if (!Char) return;
+
+	const URSInputConfig* BaseConfig = Char->GetInputConfig();
+	if (!BaseConfig) return;
+
+	if (!EIC)
+	{
+		// InputComp가 없으면 복구 불가 (SetupPlayerInputComponent 호출 타이밍 문제)
+		return;
+	}
+
+	BaseAbilityBindHandles.Reset();
+	EIC->BindAbilityActions(
+		BaseConfig,
+		this,
+		&ThisClass::Input_AbilityTagPressed,
+		&ThisClass::Input_AbilityTagReleased,
+		BaseAbilityBindHandles
+	);
+
+	// 4) 디버그 로그
+	LogAbilityBindings(BaseConfig, TEXT("Overlay Cleared -> Base Restored"));
 }
 
+UEnhancedInputLocalPlayerSubsystem* URSHeroComponent::GetInputSubsystem() const
+{
+	const APawn* Pawn = Cast<APawn>(GetOwner());
+	const APlayerController* PC = Pawn ? Cast<APlayerController>(Pawn->GetController()) : nullptr;
+	if (!PC) return nullptr;
+
+	ULocalPlayer* LP = PC->GetLocalPlayer();
+	if (!LP) return nullptr;
+
+	return LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+}
+
+URSEnhancedInputComponent* URSHeroComponent::GetRSEnhancedInputComponent() const
+{
+	const APawn* Pawn = Cast<APawn>(GetOwner());
+	if (!Pawn) return nullptr;
+
+	return Cast<URSEnhancedInputComponent>(Pawn->InputComponent);
+}
+
+void URSHeroComponent::LogAbilityBindings(const URSInputConfig* Config, const TCHAR* Label) const
+{
+	if (!Config) return;
+
+	FString Lines;
+	for (const FRSInputAction& A : Config->AbilityInputActions)
+	{
+		if (!A.InputAction || !A.InputTag.IsValid()) continue;
+
+		Lines += FString::Printf(TEXT("  IA=%s  Tag=%s\n"),
+			*GetNameSafe(A.InputAction.Get()),
+			*A.InputTag.ToString());
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[Hero][%s] AbilityInputActions:\n%s"),
+		Label ? Label : TEXT("Unknown"),
+		*Lines);
+}

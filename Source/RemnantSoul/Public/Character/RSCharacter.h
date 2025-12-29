@@ -29,7 +29,7 @@ class URSEquipManagerComponent;
 class URSEquipmentManagerComponent;
 class URSInventoryManagerComponent;
 
-
+class URSCombatStyleData;
 
 class URSInventoryComponent;
 struct FTimerHandle;
@@ -277,6 +277,13 @@ protected:
 	// HeroData 추가
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Hero")
 	TObjectPtr<const URSHeroData> HeroData;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "RS|CombatStyle")
+	void OnCombatStyleChanged(const URSCombatStyleData* NewStyle);
+
+public:
+	const URSHeroData* GetHeroData() const { return HeroData; }
 
 
 #pragma endregion

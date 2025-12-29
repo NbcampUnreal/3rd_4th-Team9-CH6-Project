@@ -1,21 +1,25 @@
 ﻿#include "Item/Managers/RSEquipManagerComponent.h"
 
-#include "Character/RSCharacter.h"
 #include "AbilitySystemComponent.h"
+#include "GameFramework/Actor.h"
 
-#include "GAS/AS/RSAttributeSet_Character.h"
+#include "Character/RSCharacter.h"
+#include "Character/RSHeroComponent.h"
+#include "Character/RSHeroData.h"
+#include "Character/RSCombatStyleData.h"
+
+#include "Input/RSInputConfig.h"
 
 #include "Item/RSItemInstance.h"
 #include "Item/RSItemTemplate.h"
-#include "Item/Fragments/RSItemFragment_EquipStats.h"
 #include "Item/Fragments/RSItemFragment_AbilitySet.h"
-#include "Item/Fragments/RSItemFragment_WeaponCosmetic.h"
-#include "GAS/AS/RSAbilitySet.h"   // URSAbilitySet
-#include "Abilities/GameplayAbilityTypes.h"
-#include "Character/RSCombatStyleData.h"
-#include "Character/RSHeroComponent.h"
+#include "Item/Fragments/RSItemFragment_CombatStyle.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RSEquipManagerComponent)
+
+// YKJ Annotation : v1은 ASC LooseTags 사용. "이 스타일이 넣은 태그"만 정확히 빼기 위해 캐시를 둔다.
+UPROPERTY(Transient)
+FGameplayTagContainer CachedAppliedAnimTags;
 
 URSEquipManagerComponent::URSEquipManagerComponent()
 {
@@ -26,311 +30,292 @@ void URSEquipManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CacheOwnerAndASC();
-}
-
-void URSEquipManagerComponent::CacheOwnerAndASC()
-{
-	if (CachedCharacter.IsValid() && CachedASC.IsValid() && CachedCharAttributes.IsValid() && CachedHero.IsValid())
-	{
-		return;
-	}
-
+	// 필요 시 ASC 캐시
 	AActor* Owner = GetOwner();
-	if (!Owner) return;
-
-	if (ARSCharacter* RSChar = Cast<ARSCharacter>(Owner))
+	if (Owner)
 	{
-		CachedCharacter = RSChar;
-		CachedHero = RSChar->FindComponentByClass<URSHeroComponent>();
-
-		if (UAbilitySystemComponent* ASC = RSChar->GetAbilitySystemComponent())
-		{
-			CachedASC = ASC;
-
-			if (const URSAttributeSet_Character* CharAttrConst = ASC->GetSet<URSAttributeSet_Character>())
-			{
-				CachedCharAttributes = const_cast<URSAttributeSet_Character*>(CharAttrConst);
-			}
-		}
+		CachedASC = Owner->FindComponentByClass<UAbilitySystemComponent>();
 	}
+
+	// 시작 스타일(무기 없음 : EssentialAnimation-Unarmed(정영기 팀원이 구매한 무기 미착용 애니메이션)) 적용: DefaultUnarmed
+	ApplyCombatStyle(GetDefaultUnarmedStyle());
 }
 
-void URSEquipManagerComponent::HandleEquipmentChanged(const FGameplayTag& SlotTag, URSItemInstance* OldItem, URSItemInstance* NewItem)
+UAbilitySystemComponent* URSEquipManagerComponent::GetASC() const
 {
-	if (!CachedASC.IsValid())
-	{
-		CacheOwnerAndASC();
-	}
-
-	// 1) 기존 아이템 효과 제거
-	if (OldItem)
-	{
-		ApplyUnequip(OldItem, SlotTag);
-	}
-
-	// 2) 새 아이템 효과 적용
-	if (NewItem)
-	{
-		ApplyEquip(NewItem, SlotTag);
-	}
+	return CachedASC.Get();
 }
 
-void URSEquipManagerComponent::ApplyEquip(URSItemInstance* ItemInstance, const FGameplayTag& SlotTag)
+URSCombatStyleData* URSEquipManagerComponent::GetDefaultUnarmedStyle() const
 {
-	if (!ItemInstance || !CachedASC.IsValid())
+	const ARSCharacter* Char = Cast<ARSCharacter>(GetOwner());
+	if (!Char) return nullptr;
+
+	const URSHeroData* HD = Char->GetHeroData();
+	if (!HD) return nullptr;
+
+	return HD->DefaultUnarmedStyle;
+}
+
+URSCombatStyleData* URSEquipManagerComponent::ResolveCombatStyleForWeapon(URSItemInstance* WeaponItem) const
+{
+	if (!WeaponItem)
 	{
-		return;
+		return GetDefaultUnarmedStyle();
 	}
 
-	const URSItemTemplate* Template = ItemInstance->GetTemplate();
+	const URSItemTemplate* Template = WeaponItem->GetTemplate();
 	if (!Template)
 	{
-		return;
+		return GetDefaultUnarmedStyle();
 	}
 
-	// 1) EquipStats Fragment
-	if (const URSItemFragment_EquipStats* EquipStatsFrag = Template->FindFragment<URSItemFragment_EquipStats>())
+	// Fragment_CombatStyle 우선적그로 처리하자.
+	if (const URSItemFragment_CombatStyle* StyleFrag = Template->FindFragment<URSItemFragment_CombatStyle>())
 	{
-		ApplyEquipStats(EquipStatsFrag, /*bApply=*/true);
-	}
-
-	// 2) AbilitySet Fragment
-	if (const URSItemFragment_AbilitySet* AbilityFrag = Template->FindFragment<URSItemFragment_AbilitySet>())
-	{
-		ApplyAbilitySet(ItemInstance, AbilityFrag, /*bApply=*/true);
-	}
-
-	// 3) WeaponCosmetic Fragment의 WeaponTypeTag를 ASC에 Loose Tag로 부여
-	if (const URSItemFragment_WeaponCosmetic* WeaponCosFrag = Template->FindFragment<URSItemFragment_WeaponCosmetic>())
-	{
-		ApplyWeaponTypeTag(WeaponCosFrag, /*bApply=*/true);
-	}
-
-	// SlotTag는 나중에 "MainHand/OffHand/Head" 등으로 정책 분기할 때 사용 가능
-}
-
-void URSEquipManagerComponent::ApplyUnequip(URSItemInstance* ItemInstance, const FGameplayTag& SlotTag)
-{
-	if (!ItemInstance || !CachedASC.IsValid())
-	{
-		return;
-	}
-
-	const URSItemTemplate* Template = ItemInstance->GetTemplate();
-	if (!Template)
-	{
-		return;
-	}
-
-	// 1) EquipStats Fragment 역적용 (보정치 제거)
-	if (const URSItemFragment_EquipStats* EquipStatsFrag = Template->FindFragment<URSItemFragment_EquipStats>())
-	{
-		ApplyEquipStats(EquipStatsFrag, /*bApply=*/false);
-	}
-
-	// 2) AbilitySet Fragment 제거
-	if (const URSItemFragment_AbilitySet* AbilityFrag = Template->FindFragment<URSItemFragment_AbilitySet>())
-	{
-		ApplyAbilitySet(ItemInstance, AbilityFrag, /*bApply=*/false);
-	}
-
-	// 3) WeaponTypeTag 제거
-	if (const URSItemFragment_WeaponCosmetic* WeaponCosFrag = Template->FindFragment<URSItemFragment_WeaponCosmetic>())
-	{
-		ApplyWeaponTypeTag(WeaponCosFrag, /*bApply=*/false);
-	}
-}
-
-void URSEquipManagerComponent::ApplyEquipStats(const URSItemFragment_EquipStats* EquipStatsFrag, bool bApply)
-{
-	if (!EquipStatsFrag || !CachedASC.IsValid() || !CachedCharAttributes.IsValid())
-	{
-		return;
-	}
-
-	UAbilitySystemComponent* ASC = CachedASC.Get();
-
-	const float Sign = bApply ? 1.f : -1.f;
-
-	// AttackRange
-	{
-		const float CurrentRange = ASC->GetNumericAttributeBase(URSAttributeSet_Character::GetAttackRangeAttribute());
-		const float NewRange = CurrentRange + EquipStatsFrag->AttackRangeBonus * Sign;
-		ASC->SetNumericAttributeBase(URSAttributeSet_Character::GetAttackRangeAttribute(), NewRange);
-	}
-
-	// AttackDamage
-	{
-		const float CurrentDamage = ASC->GetNumericAttributeBase(URSAttributeSet_Character::GetAttackDamageAttribute());
-		const float NewDamage = CurrentDamage + EquipStatsFrag->AttackDamageBonus * Sign;
-		ASC->SetNumericAttributeBase(URSAttributeSet_Character::GetAttackDamageAttribute(), NewDamage);
-	}
-
-	// 나중에 Defense / Poise / SkillPower 등 추가되면 동일 패턴으로 확장
-}
-
-void URSEquipManagerComponent::ApplyAbilitySet(
-	URSItemInstance* ItemInstance,
-	const URSItemFragment_AbilitySet* AbilityFrag,
-	bool bApply)
-{
-	if (!ItemInstance || !AbilityFrag || !CachedASC.IsValid())
-	{
-		return;
-	}
-
-	UAbilitySystemComponent* ASC = CachedASC.Get();
-
-	if (bApply)
-	{
-		// 아이템별 Handles 구조체 생성/캐시
-		FRSAbilitySet_GrantedHandles& GrantedHandles =
-			ItemToGrantedAbilityHandles.FindOrAdd(ItemInstance);
-
-		const TArray<FRSItemAbilitySetEntry>& Entries = AbilityFrag->GetAbilitySets();
-
-		for (const FRSItemAbilitySetEntry& Entry : Entries)
+		// 보강한 형태에 맞춰서 직접 반환하거나 Resolve 함수를 쓰면 됨.
+		if (StyleFrag->CombatStyle)
 		{
-			if (!Entry.AbilitySet)
-			{
-				continue;
-			}
-
-			// Lyra 스타일 호출
-			Entry.AbilitySet->GiveToAbilitySystem(
-				ASC,
-				&GrantedHandles,
-				ItemInstance    // SourceObject: 보통 무기/아이템 인스턴스 or 캐릭터
-			);
+			return StyleFrag->CombatStyle;
 		}
 	}
-	else
-	{
-		if (FRSAbilitySet_GrantedHandles* FoundHandles =
-			ItemToGrantedAbilityHandles.Find(ItemInstance))
-		{
-			// Lyra 패턴이라면 이런 함수가 있음(이름은 프로젝트에서 확인 필요)
-			FoundHandles->TakeFromAbilitySystem(ASC);
 
-			ItemToGrantedAbilityHandles.Remove(ItemInstance);
-		}
-	}
+	return GetDefaultUnarmedStyle();
 }
 
-void URSEquipManagerComponent::ApplyWeaponTypeTag(const URSItemFragment_WeaponCosmetic* WeaponCosFrag, bool bApply)
+void URSEquipManagerComponent::OnMainWeaponChanged(URSItemInstance* OldWeapon, URSItemInstance* NewWeapon)
 {
-	if (!WeaponCosFrag || !CachedASC.IsValid())
-	{
-		return;
-	}
+	// 1. 무기 패시브 AbilitySet (아이템 자체 AbilitySet) 정리/적용
+	ClearItemPassiveAbilitySets();
+	ApplyItemPassiveAbilitySets(NewWeapon);
 
-	UAbilitySystemComponent* ASC = CachedASC.Get();
+	// 2. CombatStyle (InputOverlay + StyleAbilitySets + AnimLayer 등) 결정/적용
+	URSCombatStyleData* NewStyle = ResolveCombatStyleForWeapon(NewWeapon);
+	ApplyCombatStyle(NewStyle);
+}
 
-	if (!WeaponCosFrag->WeaponTypeTag.IsValid())
-	{
-		return;
-	}
+void URSEquipManagerComponent::ApplyItemPassiveAbilitySets(URSItemInstance* Item)
+{
+	if (!Item) return;
 
-	if (bApply)
+	UAbilitySystemComponent* ASC = GetASC();
+	if (!ASC) return;
+
+	const URSItemTemplate* Template = Item->GetTemplate();
+	if (!Template) return;
+
+	const URSItemFragment_AbilitySet* AbilityFrag = Template->FindFragment<URSItemFragment_AbilitySet>();
+	if (!AbilityFrag) return;
+
+	// 여러 AbilitySet 부여 (핸들 저장해서 나중에 Clear)
+	ItemPassiveHandles.Reset();
+	for (const FRSItemAbilitySetEntry& Entry : AbilityFrag->AbilitySets)
 	{
-		ASC->AddLooseGameplayTag(WeaponCosFrag->WeaponTypeTag);
-	}
-	else
-	{
-		ASC->RemoveLooseGameplayTag(WeaponCosFrag->WeaponTypeTag);
+		if (!Entry.AbilitySet) continue;
+
+		FRSAbilitySet_GrantedHandles Handles;
+		Entry.AbilitySet->GiveToAbilitySystem(ASC, &Handles, Item);
+		ItemPassiveHandles.Add(Handles);
 	}
 }
 
-// RSEquipManagerComponent.cpp (개념 구현)
-void URSEquipManagerComponent::ClearCombatStyle()
+void URSEquipManagerComponent::ClearItemPassiveAbilitySets()
 {
 	UAbilitySystemComponent* ASC = GetASC();
-	if (ASC)
-	{
-		for (FRSAbilitySet_GrantedHandles& H : StyleGrantedHandles)
-		{
-			H.TakeFromAbilitySystem(ASC);
-		}
-	}
-	StyleGrantedHandles.Reset();
+	if (!ASC) { ItemPassiveHandles.Reset(); return; }
 
-	if (URSHeroComponent* Hero = GetHero())
+	for (FRSAbilitySet_GrantedHandles& H : ItemPassiveHandles)
 	{
-		Hero->ClearOverlayInputConfig();
+		H.TakeFromAbilitySystem(ASC);
 	}
-
-	CurrentStyle = nullptr;
+	ItemPassiveHandles.Reset();
 }
 
 void URSEquipManagerComponent::ApplyCombatStyle(URSCombatStyleData* NewStyle)
 {
-	if (CurrentStyle.Get() == NewStyle)
-	{
-		return;
-	}
-
-	ClearCombatStyle();
 	if (!NewStyle)
 	{
+		NewStyle = GetDefaultUnarmedStyle();
+	}
+
+	if (CurrentStyle == NewStyle)
+	{
 		return;
 	}
 
+	// 1) 이전 스타일 정리
+	ClearCurrentCombatStyle();
+
+	// 2) 교체
+	CurrentStyle = NewStyle;
+
+	// 3) 새 스타일 적용
+	if (UAbilitySystemComponent* ASC = GetASC())
+	{
+		if (CurrentStyle)
+		{
+			GiveAbilitySetList(CurrentStyle->AbilitySets, CurrentStyleGrantedHandles);
+		}
+	}
+
+	ApplyStyleInputOverlay(CurrentStyle);
+	ApplyAnimStyleLayers(CurrentStyle);
+	ApplyAnimStyleTags(CurrentStyle);
+
+	// 4) 통지(AnimBP/UI/CameraMode 등에서 구독)
+	if (ARSCharacter* Char = Cast<ARSCharacter>(GetOwner()))
+	{
+		Char->OnCombatStyleChanged(CurrentStyle);
+	}
+}
+
+URSHeroComponent* URSEquipManagerComponent::GetHeroComponent() const
+{
+	AActor* Owner = GetOwner();
+	ARSCharacter* Char = Cast<ARSCharacter>(Owner);
+	if (!Char) return nullptr;
+
+	// HeroComponent는 CreateDefaultSubobject로 붙어있음
+	// (접근 함수 없으면 FindComponentByClass로 찾아도 됨)
+	return Char->FindComponentByClass<URSHeroComponent>();
+}
+
+void URSEquipManagerComponent::ApplyStyleInputOverlay(const URSCombatStyleData* Style)
+{
+	URSHeroComponent* HeroComp = GetHeroComponent();
+	if (!HeroComp)
+	{
+		return;
+	}
+
+	if (!Style || !Style->OverlayInputConfig)
+	{
+		// 스타일이 없거나 오버레이가 없으면 클리어
+		HeroComp->ClearOverlayInputConfig();
+		return;
+	}
+
+	// 중요한점 : 입력 오버레이는 HeroComponent가 실제 적용/바인딩 핸들 관리해줘야함.
+	HeroComp->ApplyOverlayInputConfig(Style->OverlayInputConfig);
+}
+
+void URSEquipManagerComponent::ClearStyleInputOverlay()
+{
+	URSHeroComponent* HeroComp = GetHeroComponent();
+	if (!HeroComp)
+	{
+		return;
+	}
+	HeroComp->ClearOverlayInputConfig();
+}
+
+void URSEquipManagerComponent::HandleEquipmentChanged(
+	const FGameplayTag& SlotTag,
+	URSItemInstance* OldItem,
+	URSItemInstance* NewItem
+)
+{
+	// TODO : 장비 변경 처리(아이템 패시브, 스타일 교체 등)
+}
+
+void URSEquipManagerComponent::ApplyAnimStyleLayers(const URSCombatStyleData* Style)
+{
+	const ARSCharacter* Char = Cast<ARSCharacter>(GetOwner());
+	if (!Char) return;
+
+	USkeletalMeshComponent* Mesh = Char->GetMesh();
+	if (!Mesh) return;
+
+	UAnimInstance* AnimInst = Mesh->GetAnimInstance();
+	if (!AnimInst) return;
+
+	// YKJ Annotation : Style이 들고 있는 LinkedAnimLayerClass를 링크한다.
+	if (Style && Style->LinkedAnimLayerClass)
+	{
+		AnimInst->LinkAnimClassLayers(Style->LinkedAnimLayerClass);
+	}
+}
+
+
+void URSEquipManagerComponent::ClearCurrentCombatStyle()
+{
+	// YKJ Annotation : Clear는 항상 Apply보다 먼저. (서버/클라 모두 동일한 순서로 유지)
+	TakeAbilitySetList(CurrentStyleGrantedHandles);
+	ClearStyleInputOverlay();
+	ClearAnimStyleTags();
+
+	// AnimLayer 복귀 정책:
+	// - 버전 첫번쨰 : "링크 해제" 개념이 애매하니, DefaultUnarmedStyle이 기본 레이어를 갖고 있도록 설계
+	ApplyAnimStyleLayers(nullptr);
+
+	CurrentStyle = nullptr;
+}
+
+void URSEquipManagerComponent::GiveAbilitySetList(
+	const TArray<TObjectPtr<const URSAbilitySet>>& Sets,
+	TArray<FRSAbilitySet_GrantedHandles>& OutHandles)
+{
+	OutHandles.Reset();
+
+	UAbilitySystemComponent* ASC = GetASC();
+	if (!ASC) return;
+
+	for (const URSAbilitySet* Set : Sets)
+	{
+		if (!Set) continue;
+
+		FRSAbilitySet_GrantedHandles Handles;
+		Set->GiveToAbilitySystem(ASC, &Handles, GetOwner());
+		OutHandles.Add(Handles);
+	}
+}
+
+void URSEquipManagerComponent::TakeAbilitySetList(TArray<FRSAbilitySet_GrantedHandles>& InOutHandles)
+{
 	UAbilitySystemComponent* ASC = GetASC();
 	if (!ASC)
 	{
+		InOutHandles.Reset();
 		return;
 	}
 
-	StyleGrantedHandles.Reset();
-	StyleGrantedHandles.SetNum(NewStyle->AbilitySets.Num());
-
-	for (int32 i = 0; i < NewStyle->AbilitySets.Num(); ++i)
+	for (FRSAbilitySet_GrantedHandles& H : InOutHandles)
 	{
-		const URSAbilitySet* Set = NewStyle->AbilitySets[i];
-		if (!Set)
-		{
-			continue;
-		}
-
-		Set->GiveToAbilitySystem(
-			ASC,
-			&StyleGrantedHandles[i],
-			GetOwner()
-		);
+		H.TakeFromAbilitySystem(ASC);
 	}
-
-	if (URSHeroComponent* Hero = GetHero())
-	{
-		Hero->ApplyOverlayInputConfig(NewStyle->OverlayInputConfig);
-	}
-
-	CurrentStyle = NewStyle;
+	InOutHandles.Reset();
 }
 
-
-UAbilitySystemComponent* URSEquipManagerComponent::GetASC() const
+void URSEquipManagerComponent::ApplyAnimStyleTags(URSCombatStyleData* Style)
 {
-	if (CachedASC.IsValid())
-	{
-		return CachedASC.Get();
-	}
+	if (!bApplyAnimStyleTagsToASC) return;
 
-	if (ARSCharacter* Char = Cast<ARSCharacter>(GetOwner()))
-	{
-		return Char->GetAbilitySystemComponent();
-	}
+	UAbilitySystemComponent* ASC = GetASC();
+	if (!ASC) return;
 
-	return nullptr;
+	CachedAppliedAnimTags.Reset();
+
+	if (!Style) return;
+
+	for (const FGameplayTag& Tag : Style->AnimStyleTags)
+	{
+		if (!Tag.IsValid()) continue;
+		ASC->AddLooseGameplayTag(Tag);
+		CachedAppliedAnimTags.AddTag(Tag);
+	}
 }
 
-URSHeroComponent* URSEquipManagerComponent::GetHero() const
+void URSEquipManagerComponent::ClearAnimStyleTags()
 {
-	if (ARSCharacter* Char = Cast<ARSCharacter>(GetOwner()))
-	{
-		return Char->FindComponentByClass<URSHeroComponent>();
-		// 또는 C->HeroComponent가 public getter로 노출되어 있으면 그걸 사용
-	}
-	return nullptr;
-}
+	if (!bApplyAnimStyleTagsToASC) return;
 
+	UAbilitySystemComponent* ASC = GetASC();
+	if (!ASC) { CachedAppliedAnimTags.Reset(); return; }
+
+	for (const FGameplayTag& Tag : CachedAppliedAnimTags)
+	{
+		if (!Tag.IsValid()) continue;
+		ASC->RemoveLooseGameplayTag(Tag);
+	}
+	CachedAppliedAnimTags.Reset();
+}

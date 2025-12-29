@@ -24,6 +24,12 @@
 #include "Item/Managers/RSInventoryManagerComponent.h"
 #include "Item/Managers/RSItemManagerComponent.h"
 
+//Data
+#include "Character/RSCombatStyleData.h"
+
+//Animation
+#include "Animation/AnimInstance.h"
+#include "Components/SkeletalMeshComponent.h"
 
 
 //추가
@@ -416,4 +422,29 @@ const URSInputConfig* ARSCharacter::GetInputConfig() const
 		return PD->InputConfig;
 	}
 	return nullptr;
+}
+
+void ARSCharacter::OnCombatStyleChanged(const URSCombatStyleData* NewStyle)
+{
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	if (!MeshComp) return;
+
+	UAnimInstance* AnimInst = MeshComp->GetAnimInstance();
+	if (!AnimInst) return;
+
+	// 최소 정책: 현재 스타일이 가진 LinkedAnimLayerClass를 “한 곳에서” 적용
+	// 실제로 Linked Anim Layer 교체를 어떤 방식으로 할지는
+	// 네 AnimBP 구조(인터페이스/레이어 명세)에 맞춰 아래 한 줄만 바꿔 끼우면 됨.
+
+	if (NewStyle && NewStyle->LinkedAnimLayerClass)
+	{
+		// 예: AnimInst->LinkAnimClassLayers(NewStyle->LinkedAnimLayerClass);
+		AnimInst->LinkAnimClassLayers(NewStyle->LinkedAnimLayerClass);
+	}
+	else
+	{
+		// 스타일 없으면 기본 레이어로 복구하고 싶다면,
+		// "기본 레이어 클래스"를 PawnData/기본 AnimBP에서 가져오는 정책을 추가하면 됨.
+		// v1은 일단 아무것도 안 하거나, 베이스 레이어로 Link 하도록 처리.
+	}
 }

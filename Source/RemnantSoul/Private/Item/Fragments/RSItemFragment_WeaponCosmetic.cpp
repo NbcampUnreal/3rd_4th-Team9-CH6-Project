@@ -22,7 +22,7 @@ URSItemFragment_WeaponCosmetic::URSItemFragment_WeaponCosmetic(const FObjectInit
 bool URSItemFragment_WeaponCosmetic::IsValidForEquip() const
 {
 	// 최소한 WeaponActorClass 또는 WeaponMesh 둘 중 하나는 있어야
-	// 코스메틱 장착이 의미가 있다.
+	// 코스메틱 장착이 의미가 있다. (무기라는 객체가 있어야함. BP로 따로 팀장 정영기가 만들예정.)
 	return (WeaponActorClass != nullptr) || (WeaponMesh != nullptr);
 }
 

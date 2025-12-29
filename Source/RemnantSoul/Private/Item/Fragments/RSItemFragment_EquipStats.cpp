@@ -34,7 +34,7 @@ void URSItemFragment_EquipStats::GetAccumulatedForAttribute(
 ) const
 {
 	OutAdditive = 0.0f;
-	OutMultiplicative = 1.0f;   // 곱연산의 기본값은 1
+	OutMultiplicative = 1.0f;   // 곱연산의 기본값은 1임.,
 	bHasOverride = false;
 	OutOverrideValue = 0.0f;
 
@@ -43,27 +43,27 @@ void URSItemFragment_EquipStats::GetAccumulatedForAttribute(
 		return;
 	}
 
-	for (const FRSItemEquipStatModifier& M : Modifiers)
+	for (const FRSItemEquipStatModifier& Modif : Modifiers)
 	{
-		if (!M.IsValid() || M.Attribute != Attribute)
+		if (!Modif.IsValid() || Modif.Attribute != Attribute)
 		{
 			continue;
 		}
 
-		switch (M.Operation)
+		switch (Modif.Operation)
 		{
 		case ERSItemStatModifierOp::Additive:
-			OutAdditive += M.Magnitude;
+			OutAdditive += Modif.Magnitude;
 			break;
 
 		case ERSItemStatModifierOp::Multiplicative:
 			// 예: 기존 1.0에서 1.1, 1.2가 들어오면 최종 1.32
-			OutMultiplicative *= M.Magnitude;
+			OutMultiplicative *= Modif.Magnitude;
 			break;
 
 		case ERSItemStatModifierOp::Override:
 			bHasOverride = true;
-			OutOverrideValue = M.Magnitude;
+			OutOverrideValue = Modif.Magnitude;
 			break;
 
 		default:
@@ -79,9 +79,9 @@ EDataValidationResult URSItemFragment_EquipStats::IsDataValid(FDataValidationCon
 
 	for (int32 Index = 0; Index < Modifiers.Num(); ++Index)
 	{
-		const FRSItemEquipStatModifier& M = Modifiers[Index];
+		const FRSItemEquipStatModifier& Modif = Modifiers[Index];
 
-		if (!M.Attribute.IsValid())
+		if (!Modif.Attribute.IsValid())
 		{
 			Context.AddError(
 				FText::FromString(FString::Printf(TEXT("EquipStats Modifier[%d] has invalid Attribute"), Index))
@@ -89,7 +89,7 @@ EDataValidationResult URSItemFragment_EquipStats::IsDataValid(FDataValidationCon
 			Result = EDataValidationResult::Invalid;
 		}
 
-		if (M.Operation == ERSItemStatModifierOp::Multiplicative && M.Magnitude <= 0.f)
+		if (Modif.Operation == ERSItemStatModifierOp::Multiplicative && Modif.Magnitude <= 0.f)
 		{
 			Context.AddWarning(
 				FText::FromString(FString::Printf(TEXT("EquipStats Modifier[%d]: Multiplicative Magnitude <= 0 (maybe wrong?)"), Index))

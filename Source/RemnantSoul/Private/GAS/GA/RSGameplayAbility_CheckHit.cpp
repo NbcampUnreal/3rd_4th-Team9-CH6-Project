@@ -22,12 +22,7 @@ void URSGameplayAbility_CheckHit::ActivateAbility(const FGameplayAbilitySpecHand
 
 	CurrentLevel = TriggerEventData->EventMagnitude;
 
-	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("URSGameplayAbility_CheckHit::ActivateAbility()")));
-
-	//EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
-
-	//URSAbilityTask_SweepSingleCapsule* AttackTraceTask = URSAbilityTask_SweepSingleCapsule::CreateTask(this, ARSTargetActor_SweepSingleCapsule::StaticClass());
-	URSAbilityTask_SweepSingleCapsule* AttackTraceTask = URSAbilityTask_SweepSingleCapsule::CreateTask(this, TargetActorClass);
+    URSAbilityTask_SweepSingleCapsule* AttackTraceTask = URSAbilityTask_SweepSingleCapsule::CreateTask(this, TargetActorClass);
 	AttackTraceTask->OnComplete.AddDynamic(this, &ThisClass::OnSweepSingleCapsuleResultReady);
 	AttackTraceTask->ReadyForActivation();
 }
