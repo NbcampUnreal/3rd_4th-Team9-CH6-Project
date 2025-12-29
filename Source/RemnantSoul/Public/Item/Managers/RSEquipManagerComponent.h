@@ -97,6 +97,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "RS|Equip|Policy")
 	bool bApplyItemAbilitySetsAsPassive = true;
 
+	UPROPERTY(Transient)
+	FGameplayTagContainer CachedAppliedAnimTags;
+
 
 
 private:
