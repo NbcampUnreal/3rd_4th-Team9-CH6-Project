@@ -9,6 +9,8 @@ void URSGameInstance::Init()
 {
 	Super::Init();
 
+	bIsFirstLoad = true;
+
 	// 레벨 이동 시작/끝 이벤트에 내 함수를 등록
 	FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &URSGameInstance::BeginLoadingScreen);
 	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &URSGameInstance::EndLoadingScreen);
@@ -16,6 +18,13 @@ void URSGameInstance::Init()
 
 void URSGameInstance::BeginLoadingScreen(const FString& MapName)
 {
+	if (bIsFirstLoad)
+	{
+		bIsFirstLoad = false;
+
+		return;
+
+	}
 	// 로딩 화면 설정 구조체
 	FLoadingScreenAttributes LoadingScreen;
 
