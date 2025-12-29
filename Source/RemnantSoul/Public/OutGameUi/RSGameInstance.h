@@ -25,6 +25,8 @@ protected:
 	UFUNCTION()
 	void EndLoadingScreen(UWorld* InLoadedWorld);
 
+	bool bIsFirstLoad = true; //첫번째 로딩인지 확인
+
 public:
 	// 에디터에서 로딩 화면으로 쓸 위젯 블루프린트를 넣어줄 변수
 	UPROPERTY(EditDefaultsOnly, Category = "Loading")
