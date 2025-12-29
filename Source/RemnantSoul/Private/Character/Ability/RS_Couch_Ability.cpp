@@ -1,12 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "RS_Couch_Ability.h"
+#include "Character/Ability/RS_Couch_Ability.h"
 #include "AbilitySystemComponent.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
-#include "Logging/LogMacros.h"
-
-
 
 URS_Couch_Ability::URS_Couch_Ability()
 {

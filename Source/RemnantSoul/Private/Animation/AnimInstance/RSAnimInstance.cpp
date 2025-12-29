@@ -9,11 +9,14 @@
 void URSAnimInstance::SetRollAngle(float InAngle)
 {
 	RollAngle = InAngle;
+	UE_LOG(LogTemp, Warning, TEXT("[Roll][AnimInstance] RollAngle Set : %.2f"), RollAngle);
+
 }
 
 void URSAnimInstance::SetIsRolling(bool bInRolling)
 {
 	bIsRolling = bInRolling;
+	UE_LOG(LogTemp, Warning, TEXT("[Roll][AnimInstance] IsRolling Set : %s"), bIsRolling ? TEXT("true") : TEXT("false"));
 }
 
 
