@@ -24,15 +24,22 @@
 #include "Item/Managers/RSInventoryManagerComponent.h"
 #include "Item/Managers/RSItemManagerComponent.h"
 
+//Data
+#include "Character/RSCombatStyleData.h"
+
+//Animation
+#include "Animation/AnimInstance.h"
+#include "Components/SkeletalMeshComponent.h"
 
 
-//[추가]
+//추가
 #include "TimerManager.h"
 #include "Interface/Interactable.h"
 #include "DrawDebugHelpers.h"
 #include "Component/Inventory/RSInventoryComponent.h"
 #include "Interface/InventoryOwner.h"
 #include "ItemDataAsset/RSItemData.h"
+#include "Character/RSHeroData.h"
 
 ARSCharacter::ARSCharacter()
 {
@@ -119,17 +126,34 @@ void ARSCharacter::BeginPlay()
 	
 	ASC->InitAbilityActorInfo(this, this);
 
-	for (const auto& GrantedAbility : GrantedAbilities)
-	{
-		FGameplayAbilitySpec GrantedAbilitySpec(GrantedAbility);
-		ASC->GiveAbility(GrantedAbilitySpec);
-	}
+	// 경호튜터님 Ability Input매핑 방식
+	//for (const auto& GrantedAbility : GrantedAbilities)
+	//{
+	//	FGameplayAbilitySpec GrantedAbilitySpec(GrantedAbility);
+	//	ASC->GiveAbility(GrantedAbilitySpec);
+	//}
 
-	for (const auto& GrantedInputAbility : GrantedInputAbilities)
+	//for (const auto& GrantedInputAbility : GrantedInputAbilities)
+	//{
+	//	FGameplayAbilitySpec GrantedAbilitySpec(GrantedInputAbility.Value);
+	//	GrantedAbilitySpec.InputID = GrantedInputAbility.Key;
+	//	ASC->GiveAbility(GrantedAbilitySpec);
+	//}
+
+	// 정영기 팀원 Ability Input매핑 방식
+		// PawnData 기반 기본 AbilitySets 부여
+	if (const URSPawnData* PD = GetPawnData())
 	{
-		FGameplayAbilitySpec GrantedAbilitySpec(GrantedInputAbility.Value);
-		GrantedAbilitySpec.InputID = GrantedInputAbility.Key;
-		ASC->GiveAbility(GrantedAbilitySpec);
+		PawnGrantedAbilitySetHandles.Reset();
+		PawnGrantedAbilitySetHandles.SetNum(PD->AbilitySets.Num());
+
+		for (int32 i = 0; i < PD->AbilitySets.Num(); ++i)
+		{
+			const URSAbilitySet* Set = PD->AbilitySets[i];
+			if (!Set) continue;
+
+			Set->GiveToAbilitySystem(ASC, &PawnGrantedAbilitySetHandles[i], this);
+		}
 	}
 
 	if (IsValid(GetController()) == true)
@@ -157,11 +181,8 @@ void ARSCharacter::BeginPlay()
 		InteractTraceInterval,
 		true
 	);
-}
 
-const URSInputConfig* ARSCharacter::GetInputConfig() const
-{
-	return PawnData ? PawnData->InputConfig : nullptr;
+
 }
 
 void ARSCharacter::OnOutOfHealth()
@@ -349,4 +370,47 @@ bool ARSCharacter::TryRemoveItem_Implementation(URSItemData* ItemData, int32 Cou
 	}
 
 	return Inv->RemoveItem(ItemData, Count);
+}
+
+const URSPawnData* ARSCharacter::GetPawnData() const
+{
+	if (HeroData && HeroData->PawnData)
+	{
+		return HeroData->PawnData;
+	}
+	return PawnData;
+}
+
+const URSInputConfig* ARSCharacter::GetInputConfig() const
+{
+	if (const URSPawnData* PD = GetPawnData())
+	{
+		return PD->InputConfig;
+	}
+	return nullptr;
+}
+
+void ARSCharacter::OnCombatStyleChanged(const URSCombatStyleData* NewStyle)
+{
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	if (!MeshComp) return;
+
+	UAnimInstance* AnimInst = MeshComp->GetAnimInstance();
+	if (!AnimInst) return;
+
+	// 최소 정책: 현재 스타일이 가진 LinkedAnimLayerClass를 “한 곳에서” 적용
+	// 실제로 Linked Anim Layer 교체를 어떤 방식으로 할지는
+	// 네 AnimBP 구조(인터페이스/레이어 명세)에 맞춰 아래 한 줄만 바꿔 끼우면 됨.
+
+	if (NewStyle && NewStyle->LinkedAnimLayerClass)
+	{
+		// 예: AnimInst->LinkAnimClassLayers(NewStyle->LinkedAnimLayerClass);
+		AnimInst->LinkAnimClassLayers(NewStyle->LinkedAnimLayerClass);
+	}
+	else
+	{
+		// 스타일 없으면 기본 레이어로 복구하고 싶다면,
+		// "기본 레이어 클래스"를 PawnData/기본 AnimBP에서 가져오는 정책을 추가하면 됨.
+		// v1은 일단 아무것도 안 하거나, 베이스 레이어로 Link 하도록 처리.
+	}
 }

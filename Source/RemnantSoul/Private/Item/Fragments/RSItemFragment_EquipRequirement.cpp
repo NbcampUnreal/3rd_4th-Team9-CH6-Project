@@ -24,7 +24,7 @@ bool URSItemFragment_EquipRequirement::CheckRequirements(
 {
 	OutFailedReasonTags.Reset();
 
-	// 1) 레벨 체크
+	// 1. 레벨 체크
 	if (MinCharacterLevel > 0 && CharacterLevel < MinCharacterLevel)
 	{
 		// 나중에 RSGameplayTags에 Equip 실패 태그 추가해서 여기에 AddTag 해도 됨
@@ -36,7 +36,7 @@ bool URSItemFragment_EquipRequirement::CheckRequirements(
 		return false;
 	}
 
-	// 2) Owner Required Tags
+	// 2. Owner Required Tags
 	if (!RequiredOwnerTags.IsEmpty())
 	{
 		if (!OwnerTags.HasAll(RequiredOwnerTags))
@@ -46,7 +46,7 @@ bool URSItemFragment_EquipRequirement::CheckRequirements(
 		}
 	}
 
-	// 3) Owner Blocked Tags
+	// 3. Owner Blocked Tags
 	if (!BlockedOwnerTags.IsEmpty())
 	{
 		if (OwnerTags.HasAny(BlockedOwnerTags))
@@ -56,7 +56,7 @@ bool URSItemFragment_EquipRequirement::CheckRequirements(
 		}
 	}
 
-	// 4) Item Required Tags
+	// 4. Item Required Tags
 	if (!RequiredItemTags.IsEmpty())
 	{
 		if (!ItemTags.HasAll(RequiredItemTags))
@@ -66,7 +66,7 @@ bool URSItemFragment_EquipRequirement::CheckRequirements(
 		}
 	}
 
-	// 5) Item Blocked Tags
+	// 5. Item Blocked Tags
 	if (!BlockedItemTags.IsEmpty())
 	{
 		if (ItemTags.HasAny(BlockedItemTags))
@@ -84,7 +84,6 @@ EDataValidationResult URSItemFragment_EquipRequirement::IsDataValid(FDataValidat
 {
 	EDataValidationResult Result = Super::IsDataValid(Context);
 
-	// MaxLevel < MinLevel이면 경고
 	if (MaxCharacterLevel > 0 && MaxCharacterLevel < MinCharacterLevel)
 	{
 		Context.AddWarning(FText::FromString(TEXT("MaxCharacterLevel is less than MinCharacterLevel. MaxCharacterLevel will be ignored.")));

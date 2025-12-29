@@ -8,6 +8,7 @@
 class ARSWeaponActor;
 class USkeletalMesh;
 class UAnimMontage;
+class URSInputConfig;
 
 /**
  * 무기 코스메틱/장착 정보를 담는 Fragment
@@ -23,6 +24,7 @@ class UAnimMontage;
  *   - RSEquipManagerComponent
  * 쪽에서 이 Fragment를 읽어서 처리한다.
  */
+
 UCLASS(BlueprintType, EditInlineNew, DefaultToInstanced)
 class REMNANTSOUL_API URSItemFragment_WeaponCosmetic : public URSItemFragment
 {
@@ -44,14 +46,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Item|Weapon|Cosmetic")
 	TObjectPtr<USkeletalMesh> WeaponMesh;
 
-	/** 장착 시 붙일 소켓명 (예: hand_rSocket, WeaponSocket 등) */
+	/** 장착 시 붙일 소켓명 (예: hand_rSocket(실제 우리팀 프로젝트 RSCharacter오른쪽 손 소켓이다.), WeaponSocket 등) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Item|Weapon|Cosmetic")
 	FName AttachSocketName = TEXT("hand_rSocket");
 
 	/**
-	 * 휴대(홀스터) 상태 소켓명 (선택)
-	 * - 예: back_socket, waist_l_socket
-	 * - 나중에 "홀스터 상태 → 손으로 들기" 전환 연출을 할 때 사용 가능
+	 * 휴대(검집, 마법봉 집(사실 만들 생각없음.)) 상태 소켓명 (선택)
+	 * - 예: handr_Socket(실제우리 프로젝트 RSCharacter 뼈 소켓임.)
+	 * - 나중에 "홀스터 상태(홀스터는 검집이라고 생각하면 됌.) → 손으로 들기" 전환 연출을 할 때 사용 가능
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Item|Weapon|Cosmetic")
 	FName HolsterSocketName;
@@ -90,6 +92,19 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "RS|Item|Weapon|Cosmetic")
 	bool HasUnequipMontage() const { return UnequipMontage != nullptr; }
+
+
+/**
+ * 무기 전용 입력 설정(Overlay 또는 Replace용)
+ * - 방식1. Overlay: 여기의 DefaultMappings(IMC들)를 "추가"로 얹을거임.
+ * - 방식2. Replace: 여기의 InputConfig로 전체를 교환하는 방식.
+ */
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Item|Weapon|Input")
+	TObjectPtr<URSInputConfig> WeaponInputConfig = nullptr;
+
+	UFUNCTION(BlueprintPure, Category = "RS|Item|Weapon|Input")
+	bool HasWeaponInputConfig() const { return WeaponInputConfig != nullptr; }
 
 #if WITH_EDITOR
 	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;

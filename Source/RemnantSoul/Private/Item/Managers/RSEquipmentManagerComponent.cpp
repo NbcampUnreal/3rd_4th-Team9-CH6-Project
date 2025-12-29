@@ -10,6 +10,11 @@
 #include "Item/RSItemTemplate.h"
 #include "Item/Fragments/RSItemFragment_EquipRequirement.h"
 
+#include "Character/RSCharacter.h"
+#include "Character/RSHeroData.h"
+#include "Item/Fragments/RSItemFragment_CombatStyle.h"
+#include "Character/RSCombatStyleData.h"
+
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RSEquipmentManagerComponent)
 
 URSEquipmentManagerComponent::URSEquipmentManagerComponent()
@@ -47,13 +52,13 @@ void URSEquipmentManagerComponent::CacheReferences()
 		CachedASC = ASC;
 	}
 
-	// EquipManager 찾기 (GAS/스탯/Ability 담당)
+	// EquipManager 찾기 (GAS/스탯/Ability 담당을 함.)
 	if (URSEquipManagerComponent* EquipMgr = Owner->FindComponentByClass<URSEquipManagerComponent>())
 	{
 		CachedEquipManager = EquipMgr;
 	}
 
-	// CosmeticManager 찾기 (외형 담당)
+	// CosmeticManager 찾기 (외형 담당을 함.)
 	if (URSCosmeticManagerComponent* CosMgr = Owner->FindComponentByClass<URSCosmeticManagerComponent>())
 	{
 		CachedCosmeticManager = CosMgr;
@@ -67,7 +72,7 @@ bool URSEquipmentManagerComponent::HasSlot(const FGameplayTag& SlotTag) const
 		return false;
 	}
 
-	// DefaultSlots가 비어 있으면 EquippedItems 기반으로만 관리해도 됨
+	// DefaultSlots가 비어 있으면 EquippedItems 기반으로만 관리해도 됨.
 	if (DefaultSlots.Num() == 0)
 	{
 		return EquippedItems.Contains(SlotTag);
@@ -120,13 +125,13 @@ bool URSEquipmentManagerComponent::CanEquipItemToSlot(const FGameplayTag& SlotTa
 		return false;
 	}
 
-	// 1) Slot 호환성 체크
+	// 1. Slot 호환성 체크
 	if (!CheckSlotCompatibility(SlotTag, Template, OutFailReason))
 	{
 		return false;
 	}
 
-	// 2) 요구 조건 체크 (EquipRequirement Fragment)
+	// 2. 요구 조건 체크 (EquipRequirement Fragment)
 	if (!CheckEquipRequirements(Template, OutFailReason))
 	{
 		return false;
@@ -164,56 +169,45 @@ bool URSEquipmentManagerComponent::UnequipItemFromSlot(const FGameplayTag& SlotT
 
 void URSEquipmentManagerComponent::InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem)
 {
-	// 기존 아이템
 	URSItemInstance* OldItem = GetItemInSlot(SlotTag);
-
-	// 맵 갱신
 	EquippedItems.FindOrAdd(SlotTag) = NewItem;
 
-	// GAS/스탯/Ability 처리: RSEquipManager에 위임
 	if (URSEquipManagerComponent* EquipMgr = CachedEquipManager.Get())
 	{
-		EquipMgr->HandleEquipmentChanged(SlotTag, OldItem, NewItem);
-	}
-
-	// 코스메틱 처리: 무기 슬롯일 때만
-	if (IsWeaponSlot(SlotTag))
-	{
-		if (URSCosmeticManagerComponent* CosMgr = CachedCosmeticManager.Get())
+		if (IsWeaponSlot(SlotTag))
 		{
-			CosMgr->ApplyWeaponFromItem(NewItem);
+			// YKJ Annotation : 메인 무기 변경은 단일 경로로 처리한다.
+			HandleMainWeaponChanged(OldItem, NewItem);
+		}
+		else
+		{
+			EquipMgr->HandleEquipmentChanged(SlotTag, OldItem, NewItem);
 		}
 	}
 
-	// 델리게이트 브로드캐스트 (UI/로그용)
 	OnEquipmentChanged.Broadcast(SlotTag, OldItem, NewItem);
 }
 
 void URSEquipmentManagerComponent::InternalUnequip(const FGameplayTag& SlotTag)
 {
 	URSItemInstance* OldItem = GetItemInSlot(SlotTag);
-	if (!OldItem && !EquippedItems.Contains(SlotTag))
-	{
-		return;
-	}
-
 	EquippedItems.FindOrAdd(SlotTag) = nullptr;
 
 	if (URSEquipManagerComponent* EquipMgr = CachedEquipManager.Get())
 	{
-		EquipMgr->HandleEquipmentChanged(SlotTag, OldItem, nullptr);
-	}
-
-	if (IsWeaponSlot(SlotTag))
-	{
-		if (URSCosmeticManagerComponent* CosMgr = CachedCosmeticManager.Get())
+		if (IsWeaponSlot(SlotTag))
 		{
-			CosMgr->ApplyWeaponFromItem(nullptr);
+			HandleMainWeaponChanged(OldItem, nullptr);
+		}
+		else
+		{
+			EquipMgr->HandleEquipmentChanged(SlotTag, OldItem, nullptr);
 		}
 	}
 
 	OnEquipmentChanged.Broadcast(SlotTag, OldItem, nullptr);
 }
+
 
 bool URSEquipmentManagerComponent::CheckSlotCompatibility(const FGameplayTag& SlotTag, const URSItemTemplate* Template, FText& OutFailReason) const
 {
@@ -228,18 +222,18 @@ bool URSEquipmentManagerComponent::CheckSlotCompatibility(const FGameplayTag& Sl
 	// 템플릿이 선언한 SlotTag와 실제 장착 슬롯이 호환되는지 확인
 	if (!Template->SlotTag.IsValid())
 	{
-		// 정책: SlotTag가 비어 있으면 장비 불가로 본다.
+		// 정책 : SlotTag가 비어 있으면 장비 불가로 본다.
 		OutFailReason = NSLOCTEXT("RS", "Equip_TemplateNoSlotTag", "Item has no slot tag.");
 		return false;
 	}
 
-	// 1) 엄격 일치
+	// 1. 엄격 일치
 	if (Template->SlotTag == SlotTag)
 	{
 		return true;
 	}
 
-	// 2) 필요 시 계층 비교로 확장 가능
+	// 2. 필요 시 계층 비교로 확장 가능
 	// if (Template->SlotTag.MatchesTag(SlotTag) || SlotTag.MatchesTag(Template->SlotTag))
 	// {
 	//     return true;
@@ -280,7 +274,7 @@ bool URSEquipmentManagerComponent::CheckEquipRequirements(const URSItemTemplate*
 	// 템플릿에 설정된 ItemTags
 	const FGameplayTagContainer& ItemTags = Template->ItemTags;
 
-	// 레벨은 아직 Attribute가 없으므로 0으로 전달 (나중에 연동)
+	// 레벨은 아직 Attribute가 없으므로 0으로 전달 (나중에 연동할 예정임.)
 	const int32 CharacterLevel = 0;
 
 	FGameplayTagContainer FailedReasonTags;
@@ -323,3 +317,69 @@ bool URSEquipmentManagerComponent::IsWeaponSlot(const FGameplayTag& SlotTag) con
 
 	return false;
 }
+
+URSCombatStyleData* URSEquipmentManagerComponent::ResolveDefaultUnarmedStyle() const
+{
+	const AActor* Owner = GetOwner();
+	const ARSCharacter* Char = Cast<ARSCharacter>(Owner);
+	if (!Char)
+	{
+		return nullptr;
+	}
+
+	const URSHeroData* HD = Char->GetHeroData();
+	if (!HD)
+	{
+		return nullptr;
+	}
+
+	// 너가 말한 구조: HeroData가 DefaultUnarmedStyle을 소유
+	return HD->DefaultUnarmedStyle; // <- URSHeroData에 이 멤버가 있어야 함 (이름이 다르면 수정)
+}
+
+URSCombatStyleData* URSEquipmentManagerComponent::ResolveCombatStyleForWeaponItem(URSItemInstance* WeaponItem) const
+{
+	// 무기 없으면 DefaultUnarmed
+	if (!WeaponItem)
+	{
+		return ResolveDefaultUnarmedStyle();
+	}
+
+	const URSItemTemplate* Template = WeaponItem->GetTemplate();
+	if (!Template)
+	{
+		return ResolveDefaultUnarmedStyle();
+	}
+
+	// 1) WeaponItem의 CombatStyle Fragment를 우선
+	const URSItemFragment_CombatStyle* StyleFrag = Template->FindFragment<URSItemFragment_CombatStyle>();
+	if (StyleFrag)
+	{
+		if (URSCombatStyleData* Resolved = StyleFrag->ResolveCombatStyle())
+		{
+			return Resolved;
+		}
+	}
+
+	// 2) 못 찾으면 DefaultUnarmed
+	return ResolveDefaultUnarmedStyle();
+}
+
+void URSEquipmentManagerComponent::HandleMainWeaponChanged(URSItemInstance* OldWeapon, URSItemInstance* NewWeapon)
+{
+	// 1) GAS/전투 규칙
+	if (URSEquipManagerComponent* EquipMgr = CachedEquipManager.Get())
+	{
+		EquipMgr->OnMainWeaponChanged(OldWeapon, NewWeapon);
+	}
+
+	// 2) 코스메틱(외형)
+	if (URSCosmeticManagerComponent* CosMgr = CachedCosmeticManager.Get())
+	{
+		CosMgr->ApplyWeaponFromItem(NewWeapon);
+	}
+}
+
+
+
+

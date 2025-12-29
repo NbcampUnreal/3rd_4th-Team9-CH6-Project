@@ -1,21 +1,26 @@
-﻿// RSHeroComponent.h
-#pragma once
+﻿#pragma once
 
 #include "Components/ActorComponent.h"
 #include "InputActionValue.h"
 #include "GameplayTagContainer.h"
+#include "InputMappingContext.h"
 #include "RSHeroComponent.generated.h"
 
 class APlayerController;
+class UInputMappingContext;
 class UInputComponent;
 class ARSCharacter;
 class UEnhancedInputLocalPlayerSubsystem;
+class URSEnhancedInputComponent;
 class URSInputConfig;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class REMNANTSOUL_API URSHeroComponent : public UActorComponent
 {
 	GENERATED_BODY()
+
+protected:
+	virtual void BeginPlay() override;
 
 public:
 	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
@@ -32,4 +37,28 @@ protected:
 	void Input_InventoryToggle(const FInputActionValue& Value);
 	
 	ARSCharacter* GetOwnerCharacter() const;
+
+private:
+	UPROPERTY()
+	TObjectPtr<const URSInputConfig> CurrentOverlayConfig = nullptr;
+
+	UPROPERTY()
+	TArray<uint32> BaseAbilityBindHandles;
+
+	UPROPERTY()
+	TArray<uint32> OverlayBindHandles;
+
+	UPROPERTY()
+	TArray<TWeakObjectPtr<UInputMappingContext>> OverlayAddedIMCs;
+
+private:
+	UEnhancedInputLocalPlayerSubsystem* GetInputSubsystem() const;
+	URSEnhancedInputComponent* GetRSEnhancedInputComponent() const;
+
+	void LogAbilityBindings(const URSInputConfig* Config, const TCHAR* Label) const;
+
+
+public:
+	void ApplyOverlayInputConfig(const URSInputConfig* Overlay);
+	void ClearOverlayInputConfig();
 };

@@ -288,3 +288,14 @@ AActor* URSItemManagerComponent::SpawnDropActor(URSItemTemplate* ItemTemplate, i
 
 	return Pickup;
 }
+
+bool URSItemManagerComponent::RequestEquipInventorySlotToMainWeapon(int32 InventoryIndex, FText& OutFailReason)
+{
+	// YKJ Annotation : 싱글플레이 v1은 바로 실행한다.
+	return ExecuteEquipInventorySlotToMainWeapon(InventoryIndex, OutFailReason);
+}
+
+bool URSItemManagerComponent::ExecuteEquipInventorySlotToMainWeapon(int32 InventoryIndex, FText& OutFailReason)
+{
+	return EquipInventorySlotToMainWeapon(InventoryIndex, OutFailReason);
+}

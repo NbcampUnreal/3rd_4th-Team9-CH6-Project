@@ -7,6 +7,7 @@
 #include "AbilitySystemInterface.h"
 #include  "Interface/InventoryOwner.h"
 #include "Abilities/GameplayAbilityTypes.h"
+#include "GAS/AS/RSAbilitySet.h"
 #include "RSCharacter.generated.h"
 
 class UCameraComponent;
@@ -19,6 +20,8 @@ class URSAttributeSet_Character;
 class URSWidgetComponent;
 class URSAttributeSet_Skill;
 class URSPawnData;
+class URSHeroData;
+class URSItemData;
 class URSInputConfig;
 // Item 관련 매니저 컴포넌트들
 class URSCosmeticManagerComponent;
@@ -26,9 +29,8 @@ class URSEquipManagerComponent;
 class URSEquipmentManagerComponent;
 class URSInventoryManagerComponent;
 
+class URSCombatStyleData;
 
-
-class URSItemData;
 class URSInventoryComponent;
 struct FTimerHandle;
 
@@ -47,7 +49,7 @@ public:
 	virtual void BeginPlay() override;
 
 public:
-	const URSPawnData* GetPawnData() const { return PawnData; }
+	const URSPawnData* GetPawnData() const;
 
 	const URSInputConfig* GetInputConfig() const;
 
@@ -161,6 +163,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|GameplayAbilitySystem")
 	TObjectPtr<URSAttributeSet_Skill> SkillAttributeSet;
+	// PawnData 기반 기본 AbilitySet 부여 핸들들
+	UPROPERTY(Transient)
+	TArray<FRSAbilitySet_GrantedHandles> PawnGrantedAbilitySetHandles;
 
 #pragma endregion
 
@@ -259,6 +264,26 @@ public:
 	) override;
 	
 	
+#pragma endregion
+
+#pragma region Data
+protected:
+	// 기존 PawnData 유지 : 위쪽에 선언해놨음.
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|PawnData")
+	//TObjectPtr<const URSPawnData> PawnData;
+
+	// HeroData 추가
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Hero")
+	TObjectPtr<const URSHeroData> HeroData;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "RS|CombatStyle")
+	void OnCombatStyleChanged(const URSCombatStyleData* NewStyle);
+
+public:
+	const URSHeroData* GetHeroData() const { return HeroData; }
+
+
 #pragma endregion
 	
 };

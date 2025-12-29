@@ -37,7 +37,6 @@ void URSCosmeticManagerComponent::CacheOwnerCharacter()
 		return;
 	}
 
-	// RSCharacter가 아닌 다른 Pawn에 붙일 계획이 없다면 ARSCharacter로 고정 캐스팅
 	if (ARSCharacter* RSChar = Cast<ARSCharacter>(Owner))
 	{
 		CachedCharacter = RSChar;
@@ -68,7 +67,6 @@ void URSCosmeticManagerComponent::ApplyWeaponFromItem(URSItemInstance* ItemInsta
 		return;
 	}
 
-	// 템플릿 확보
 	const URSItemTemplate* ItemTemplate = ItemInstance->GetTemplate();
 	if (!ItemTemplate)
 	{
@@ -147,7 +145,7 @@ void URSCosmeticManagerComponent::SpawnAndAttachWeaponActor(
 	TSubclassOf<ARSWeaponActor> WeaponClass = CosFrag->WeaponActorClass;
 	if (!WeaponClass)
 	{
-		// WeaponActorClass가 비어 있으면 굳이 스폰하지 않는다.
+		// WeaponActorClass가 비어 있으면 굳이 스폰하지 않는다. 필요하다면 기본 무기 클래스를 지정할 수도 있움.
 		// (원한다면 여기서 RSCharacter 내부 Weapon 컴포넌트를 사용하는 fallback을 넣을 수도 있음)
 		return;
 	}
@@ -180,19 +178,18 @@ void URSCosmeticManagerComponent::SpawnAndAttachWeaponActor(
 	FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
 	NewWeapon->AttachToComponent(CharacterMesh, AttachRules, SocketName);
 
-	// (선택) WeaponMesh가 지정돼 있다면 무기 액터의 메시에 세팅
 	if (CosFrag->WeaponMesh)
 	{
-		// ARSWeaponActor에 SkeletalMeshComponent를 얻는 헬퍼가 있다고 가정
-		if (USkeletalMeshComponent* WeaponMeshComp = NewWeapon->FindComponentByClass<USkeletalMeshComponent>())
+		// YKJ Annotation : WeaponActor는 Mesh 컴포넌트를 보장한다. (정책)
+		if (USkeletalMeshComponent* WeaponMeshComp = NewWeapon->GetMesh())
 		{
 			WeaponMeshComp->SetSkeletalMesh(CosFrag->WeaponMesh);
 		}
 	}
 
-	// (선택) 무기별 AnimLayer는 AnimBP 세팅이나 Layer Interface를 통해 별도 처리
-	// - 여기서는 단순히 CosFrag->WeaponAnimLayer를 캐릭터 AnimInstance에 전달하는 방식으로 확장 가능
-	//   (예: RSChar->OnWeaponAnimLayerChanged.Broadcast(CosFrag->WeaponAnimLayer);)
+	// (선택사항임.) 무기별 AnimLayer는 AnimBP 세팅이나 Layer Interface를 통해 별도 처리 (상하체 분리도 신경써야할듯.)
+	// - 여기서는 단순히 CosFrag->WeaponAnimLayer를 캐릭터 AnimInstance에 전달하는 방식으로 확장 가능한데 고민중.
+	//   (예 : RSChar->OnWeaponAnimLayerChanged.Broadcast(CosFrag->WeaponAnimLayer);)
 
 	CurrentWeaponActor = NewWeapon;
 }

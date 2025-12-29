@@ -11,6 +11,10 @@ class URSItemFragment_EquipRequirement;
 class URSEquipManagerComponent;
 class URSCosmeticManagerComponent;
 class UAbilitySystemComponent;
+class URSCombatStyleData;
+class URSItemFragment_CombatStyle;
+class URSHeroData;
+
 
 /**
  * 슬롯별 장비 상태를 관리하는 “논리 장비 매니저”
@@ -120,4 +124,25 @@ protected:
 	/** 코스메틱 담당 매니저 (무기 외형 등) */
 	UPROPERTY(Transient)
 	TWeakObjectPtr<URSCosmeticManagerComponent> CachedCosmeticManager;
+
+
+
+protected:
+	/** 무기 슬롯 변화에 따른 “최종 CombatStyle” 결정 */
+	URSCombatStyleData* ResolveCombatStyleForWeaponItem(URSItemInstance* WeaponItem) const;
+
+	/** 무기 없을 때 돌아갈 DefaultUnarmedStyle */
+	URSCombatStyleData* ResolveDefaultUnarmedStyle() const;
+
+
+private:
+	// YKJ Annotation : 메인 무기 변경 시, 효과/외형을 재구성하는 단일 진입점.
+	void HandleMainWeaponChanged(URSItemInstance* OldWeapon, URSItemInstance* NewWeapon);
+
+private:
+	/** 중복 적용 방지용 (Old->New 교체가 정확히 1회만 일어나게) */
+	UPROPERTY(Transient)
+	TWeakObjectPtr<URSCombatStyleData> CachedAppliedStyle;
+
+
 };

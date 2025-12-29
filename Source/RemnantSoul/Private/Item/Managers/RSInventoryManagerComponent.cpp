@@ -1,4 +1,5 @@
-﻿#include "Item/Managers/RSInventoryManagerComponent.h"
+﻿
+#include "Item/Managers/RSInventoryManagerComponent.h"
 
 #include "Item/RSItemInstance.h"
 #include "Item/RSItemTemplate.h"
@@ -14,12 +15,8 @@ void URSInventoryManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 슬롯 배열 초기화
-	if (MaxSlots < 1)
-	{
-		MaxSlots = 1;
-	}
-
+	// YKJ Annotation : 슬롯 배열 초기화. 최소 1칸은 보장한다.
+	MaxSlots = FMath::Max(MaxSlots, 1);
 	Slots.SetNum(MaxSlots);
 }
 
@@ -43,11 +40,7 @@ bool URSInventoryManagerComponent::IsValidIndex(int32 Index) const
 
 URSItemInstance* URSInventoryManagerComponent::GetItemAtIndex(int32 Index) const
 {
-	if (!IsValidIndex(Index))
-	{
-		return nullptr;
-	}
-	return Slots[Index];
+	return IsValidIndex(Index) ? Slots[Index] : nullptr;
 }
 
 bool URSInventoryManagerComponent::AddItemByTemplate(URSItemTemplate* ItemTemplate, int32 Count, int32& OutAddedCount)
@@ -59,16 +52,17 @@ bool URSInventoryManagerComponent::AddItemByTemplate(URSItemTemplate* ItemTempla
 		return false;
 	}
 
-	// 1) 먼저 기존 스택에 합치기
 	int32 Remaining = Count;
-	int32 AddedFromStack = AddToExistingStacks(ItemTemplate, Remaining);
+
+	// 1) 먼저 기존 스택에 합치기
+	const int32 AddedFromStack = AddToExistingStacks(ItemTemplate, Remaining);
 	Remaining -= AddedFromStack;
 	OutAddedCount += AddedFromStack;
 
 	// 2) 남은 수량은 빈 슬롯에 새 인스턴스를 생성해서 넣기
 	if (Remaining > 0)
 	{
-		int32 AddedFromNew = AddToEmptySlots(ItemTemplate, Remaining);
+		const int32 AddedFromNew = AddToEmptySlots(ItemTemplate, Remaining);
 		Remaining -= AddedFromNew;
 		OutAddedCount += AddedFromNew;
 	}
@@ -76,7 +70,7 @@ bool URSInventoryManagerComponent::AddItemByTemplate(URSItemTemplate* ItemTempla
 	return OutAddedCount > 0;
 }
 
-bool URSInventoryManagerComponent::AddItemInstance(URSItemInstance* ItemInstance, int32& OutAddedCount)
+bool URSInventoryManagerComponent::AbsorbItemInstanceCount(URSItemInstance* ItemInstance, int32& OutAddedCount)
 {
 	OutAddedCount = 0;
 
@@ -91,7 +85,6 @@ bool URSInventoryManagerComponent::AddItemInstance(URSItemInstance* ItemInstance
 		return false;
 	}
 
-	// 인스턴스 안에 Count가 있다고 가정
 	int32 Remaining = ItemInstance->GetCount();
 	if (Remaining <= 0)
 	{
@@ -99,24 +92,26 @@ bool URSInventoryManagerComponent::AddItemInstance(URSItemInstance* ItemInstance
 	}
 
 	// 1) 기존 스택에 합치기
-	int32 AddedFromStack = AddToExistingStacks(Template, Remaining);
+	const int32 AddedFromStack = AddToExistingStacks(Template, Remaining);
 	Remaining -= AddedFromStack;
 	OutAddedCount += AddedFromStack;
 
-	// 2) 남은 수량은 Template 기반으로 새 인스턴스를 생성해서 채운다.
+	// 2) 남은 수량은 Template 기반으로 새 인스턴스를 생성해서 채운다
 	if (Remaining > 0)
 	{
 		int32 TmpAdded = 0;
 		AddItemByTemplate(Template, Remaining, TmpAdded);
 		OutAddedCount += TmpAdded;
-		Remaining -= TmpAdded;
 	}
 
-	// 현재 구현에서는 넘어온 ItemInstance 자체는 슬롯에 직접 박지 않고,
-	// Count만 내부 구조에 맞게 재분배하는 방식.
-	// 필요하면 "외부 인스턴스를 그대로 슬롯에 넣는" Insert API를 별도로 추가 가능.
-
+	// YKJ Annotation : ItemInstance 자체는 Slots에 들어가지 않는다. "Count 흡수" 전용.
 	return OutAddedCount > 0;
+}
+
+bool URSInventoryManagerComponent::AddItemInstance(URSItemInstance* ItemInstance, int32& OutAddedCount)
+{
+	// YKJ Annotation : 기존 호출부 호환용. 앞으로는 AbsorbItemInstanceCount를 사용한다.
+	return AbsorbItemInstanceCount(ItemInstance, OutAddedCount);
 }
 
 bool URSInventoryManagerComponent::RemoveItemByTemplate(URSItemTemplate* ItemTemplate, int32 CountToRemove, int32& OutRemovedCount)
@@ -185,7 +180,7 @@ void URSInventoryManagerComponent::FindItemsWithTag(FGameplayTag Tag, TArray<URS
 			continue;
 		}
 
-		// 템플릿에 정의된 ItemTags에서 태그를 검색
+		// YKJ Annotation : 템플릿에 정의된 ItemTags에서 태그를 검색한다.
 		if (Template->ItemTags.HasTag(Tag))
 		{
 			OutItems.Add(Instance);
@@ -203,7 +198,7 @@ int32 URSInventoryManagerComponent::AddToExistingStacks(URSItemTemplate* Templat
 	int32 Remaining = Count;
 	const int32 MaxStack = Template->GetMaxStackCount();
 
-	// 동일 템플릿을 가진 스택에 우선 채워넣기
+	// YKJ Annotation : 동일 템플릿 스택이 이미 존재하면, 우선 채워넣는다.
 	for (URSItemInstance* Instance : Slots)
 	{
 		if (!Instance)
@@ -248,6 +243,7 @@ int32 URSInventoryManagerComponent::AddToEmptySlots(URSItemTemplate* Template, i
 	const int32 MaxStack = Template->GetMaxStackCount();
 	int32 TotalAdded = 0;
 
+	// YKJ Annotation : 빈 슬롯에 새 인스턴스를 생성해서 꽂는다.
 	for (int32 i = 0; i < Slots.Num() && Remaining > 0; ++i)
 	{
 		if (Slots[i])
@@ -257,11 +253,10 @@ int32 URSInventoryManagerComponent::AddToEmptySlots(URSItemTemplate* Template, i
 
 		const int32 ToCreateCount = FMath::Min(MaxStack, Remaining);
 
-		// Template에서 새 인스턴스 생성
 		URSItemInstance* NewInstance = Template->CreateItemInstance(GetOwner(), ToCreateCount);
 		if (!NewInstance)
 		{
-			// 생성 실패 시 더 이상 진행하지 않음
+			// YKJ Annotation : 생성 실패면 더 진행해도 의미가 없다.
 			break;
 		}
 
@@ -326,8 +321,6 @@ int32 URSInventoryManagerComponent::RemoveFromInstance(URSItemInstance* Instance
 		return 0;
 	}
 
-	int32 TotalRemoved = 0;
-
 	const int32 CurrentCount = Instance->GetCount();
 	if (CurrentCount <= 0)
 	{
@@ -336,9 +329,8 @@ int32 URSInventoryManagerComponent::RemoveFromInstance(URSItemInstance* Instance
 
 	const int32 ToRemove = FMath::Min(CurrentCount, CountToRemove);
 	Instance->SetCount(CurrentCount - ToRemove);
-	TotalRemoved += ToRemove;
 
-	// 0이 되면 Slots에서 제거
+	// YKJ Annotation : 0이 되면 Slots에서 제거한다.
 	if (Instance->GetCount() <= 0)
 	{
 		for (int32 i = 0; i < Slots.Num(); ++i)
@@ -351,5 +343,5 @@ int32 URSInventoryManagerComponent::RemoveFromInstance(URSItemInstance* Instance
 		}
 	}
 
-	return TotalRemoved;
+	return ToRemove;
 }

@@ -23,7 +23,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Object.h"
+//#include "UObject/Object.h"
+#include "Engine/DataAsset.h"
 #include "GameplayTagContainer.h"
 #include "GameplayAbilitySpec.h"     
 #include "GameplayEffectTypes.h"     
@@ -130,7 +131,7 @@ public:
  *   - Boss Phase / 클래스 전환 시 AbilitySet 교체에도 재사용 가능
  */
 UCLASS(BlueprintType, Const)
-class REMNANTSOUL_API URSAbilitySet : public UObject
+class REMNANTSOUL_API URSAbilitySet : public UDataAsset
 {
 	GENERATED_BODY()
 
