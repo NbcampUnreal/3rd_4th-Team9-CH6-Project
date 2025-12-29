@@ -58,8 +58,23 @@ public:
 	FGameplayAttributeData MaxRollCooldown;
 	RS_ATTRIBUTE_ACCESSORS(URSAttributeSet, MaxRollCooldown)
 
+	UPROPERTY(BlueprintReadOnly, Category="Movement")
+	FGameplayAttributeData BaseMoveSpeed;
+	RS_ATTRIBUTE_ACCESSORS(URSAttributeSet, BaseMoveSpeed);
+
+	UPROPERTY(BlueprintReadOnly, Category="Movement")
+	FGameplayAttributeData RunSpeedBonus;
+	RS_ATTRIBUTE_ACCESSORS(URSAttributeSet, RunSpeedBonus);
+
+	UPROPERTY(BlueprintReadOnly, Category="Movement")
+	FGameplayAttributeData FinalMoveSpeed;
+	RS_ATTRIBUTE_ACCESSORS(URSAttributeSet, FinalMoveSpeed);
+
+	
 protected:
 	// GameplayEffect 적용 후 Attribute 값 보정을 위해 GAS가 자동 호출하는 콜백
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+
+
 	
 };

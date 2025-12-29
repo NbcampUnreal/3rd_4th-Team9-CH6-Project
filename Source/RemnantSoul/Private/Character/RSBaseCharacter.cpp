@@ -58,6 +58,27 @@ void ARSBaseCharacter::BeginPlay()
 	InitializeAbilities();
 
 
+	//FinalMoveSpeed 감시
+	AbilitySystem->GetGameplayAttributeValueChangeDelegate(URSAttributeSet::GetFinalMoveSpeedAttribute()).AddUObject(this, &ARSBaseCharacter::OnFinalMoveSpeedChanged);
+
+	AbilitySystem->GetGameplayAttributeValueChangeDelegate(URSAttributeSet::GetRunSpeedBonusAttribute()).AddUObject(this, &ARSBaseCharacter::OnRunSpeedBonusChanged);
+
+	if (const URSAttributeSet* AS =
+		AbilitySystem->GetSet<URSAttributeSet>())
+	{
+		if (UCharacterMovementComponent* MoveComp =
+			GetCharacterMovement())
+		{
+			MoveComp->MaxWalkSpeed = AS->GetFinalMoveSpeed();
+
+			UE_LOG(LogTemp, Log,
+				TEXT("[Character] Initial MaxWalkSpeed = %.1f"),
+				AS->GetFinalMoveSpeed()
+			);
+		}
+	}
+
+	
 }
 
 
@@ -254,3 +275,68 @@ void ARSBaseCharacter::InitializeAbilities()
 	bAbilitiesInitialized = true;
 }
 
+void ARSBaseCharacter::RunInput_Pressed()
+{
+	if (!AbilitySystem || bIsDead)
+	{
+		return;
+	}
+
+	const FGameplayTag RunTag =
+		FGameplayTag::RequestGameplayTag(TEXT("Ability.Run"));
+
+	AbilitySystem->TryActivateAbilitiesByTag(FGameplayTagContainer(RunTag));
+}
+
+void ARSBaseCharacter::RunInput_Released()
+{
+	if (!AbilitySystem)
+	{
+		return;
+	}
+
+	const FGameplayTag EndEventTag =
+		FGameplayTag::RequestGameplayTag(TEXT("Event.Run.EndRequested"));
+
+	FGameplayEventData Payload;
+	Payload.EventTag = EndEventTag;
+	Payload.Instigator = this;
+
+	AbilitySystem->HandleGameplayEvent(EndEventTag, &Payload);
+}
+
+void ARSBaseCharacter::OnFinalMoveSpeedChanged(const FOnAttributeChangeData& Data)
+{
+	if (UCharacterMovementComponent* MoveComp =
+		GetCharacterMovement())
+	{
+		MoveComp->MaxWalkSpeed = Data.NewValue;
+
+		UE_LOG(LogTemp, Log,
+			TEXT("[Character] MaxWalkSpeed = %.1f"),
+			Data.NewValue
+		);
+	}
+}
+
+void ARSBaseCharacter::OnRunSpeedBonusChanged(
+	const FOnAttributeChangeData& Data)
+{
+	const URSAttributeSet* AS = AbilitySystem->GetSet<URSAttributeSet>();
+	if (!AS) return;
+
+	const float Final =
+		AS->GetBaseMoveSpeed() + AS->GetRunSpeedBonus();
+
+	AbilitySystem->SetNumericAttributeBase(
+		URSAttributeSet::GetFinalMoveSpeedAttribute(),
+		Final
+	);
+
+	UE_LOG(LogTemp, Warning,
+		TEXT("[MoveSpeed] Delegate | Base=%.1f Bonus=%.1f Final=%.1f"),
+		AS->GetBaseMoveSpeed(),
+		AS->GetRunSpeedBonus(),
+		Final
+	);
+}
