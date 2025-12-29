@@ -11,7 +11,7 @@ URS_Run_Ability::URS_Run_Ability()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 
-	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Ability.Run")));
+	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag(TEXT("InputTag.Ability.Run")));
 	ActivationOwnedTags.AddTag(FGameplayTag::RequestGameplayTag(TEXT("State.Run")));
 }
 

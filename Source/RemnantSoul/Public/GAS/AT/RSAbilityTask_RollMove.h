@@ -34,7 +34,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FRollMoveFinished OnFinished;
 
-	virtual void Activate() override;
+	virtual void Activate();
 	virtual void TickTask(float DeltaTime) override;
 	virtual void OnDestroy(bool AbilityEnded) override;
 
