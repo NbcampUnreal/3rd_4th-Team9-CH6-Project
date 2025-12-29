@@ -117,16 +117,7 @@ protected:
 #pragma region Input
 
 private:
-	void HandleMoveInput(const FInputActionValue& InValue);
-
-	void HandleLookInput(const FInputActionValue& InValue);
 	
-	// [추가] E 키 상호작용
-	void HandleInteractInput(const FInputActionValue& InValue);
-	
-	void HandleGameplayAbilityInputPressed(int32 InInputID);
-
-	void HandleGameplayAbilityInputReleased(int32 InInputID);
 	
 	
 
@@ -224,18 +215,24 @@ protected:
 
 	//[추가]
 #pragma region Interaction
-
+public:
+	void TryInteract();
 private:
 	//void HandleInteractInput(const FInputActionValue& InValue);
 	void UpdateInteractFocus();
+	
 	bool TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) const;
 
-private:
-	UPROPERTY(EditDefaultsOnly, Category="ARSCharacter|Interaction")
-	float InteractTraceDistance = 500.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="ARSCharacter|Interaction")
-	float InteractDistance = 300.f;
+	float InteractTraceDistance = 500.0f;
+	
+	UPROPERTY(VisibleInstanceOnly, Category="ARSCharacter|Interaction")
+	FHitResult CurrentInteractHit;
+
+	UPROPERTY(EditDefaultsOnly, Category="ARSCharacter|Interaction")
+	float InteractDistance = 500.f; // 실제 픽업 거리
+	
 	UPROPERTY(EditDefaultsOnly, Category="ARSCharacter|Interaction")
 	float InteractTraceInterval = 0.1f;
 
@@ -247,6 +244,7 @@ private:
 
 	FTimerHandle InteractTraceTimer;
 
+	
 #pragma endregion
 	
 #pragma region Inventory

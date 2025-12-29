@@ -48,6 +48,10 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(GameplayTags.InputTag_Native_Move, "InputTag.Native.Move", "Native move input");
 	AddTag(GameplayTags.InputTag_Native_Look, "InputTag.Native.Look", "Native look input");
 
+	AddTag(GameplayTags.InputTag_Native_Interaction, "InputTag.Native.Interaction", "Native interaction input");
+	AddTag(GameplayTags.InputTag_Native_InventoryToggle,"InputTag.Native.InventoryToggle", "Inventory Toggle input");
+	
+	// Ability Input Tags
 	AddTag(GameplayTags.InputTag_Ability_Jump, "InputTag.Ability.Jump", "Ability input: Jump");
 	AddTag(GameplayTags.InputTag_Ability_Attack, "InputTag.Ability.Attack", "Ability input: Attack");
 	AddTag(GameplayTags.InputTag_Ability_Skill, "InputTag.Ability.Skill", "Ability input: Skill");

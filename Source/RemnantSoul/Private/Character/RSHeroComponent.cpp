@@ -5,8 +5,10 @@
 #include "Input/RSInputConfig.h"
 #include "AbilitySystemBlueprintLibrary.h" // 래퍼함수안 쓸 때 - 안쓰고서 그냥 HeroComponent와 InputConfig클래스를 이용할 예정임.
 #include "RSGameplayTags.h"
-#include "GameFramework/PlayerController.h"
+
+#include "GameFramework/PlayerController.h" // PRMerge할때 Conflict생긴 부분 주석처리해도 잘 작동하면 삭제해도될듯.
 #include "GameFramework/Pawn.h"
+#include "Character/PlayerController/RSPlayerController.h"
 
 void URSHeroComponent::BeginPlay()
 {
@@ -92,6 +94,10 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
+	
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Interaction,ETriggerEvent::Triggered, this, &ThisClass::Input_Interaction);
+	
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Triggered, this, &ThisClass::Input_InventoryToggle);
 }
 
 void URSHeroComponent::Input_AbilityTagPressed(FGameplayTag InputTag)
@@ -320,3 +326,24 @@ void URSHeroComponent::LogAbilityBindings(const URSInputConfig* Config, const TC
 		Label ? Label : TEXT("Unknown"),
 		*Lines);
 }
+
+void URSHeroComponent::Input_Interaction(const FInputActionValue& Value)
+{
+	ARSCharacter* Char = GetOwnerCharacter();
+	if (!Char) return;
+
+	Char->TryInteract();
+}
+
+void URSHeroComponent::Input_InventoryToggle(const FInputActionValue& Value)
+{
+	if (APawn* Pawn = Cast<APawn>(GetOwner()))
+	{
+		if (ARSPlayerController* RSPC = Cast<ARSPlayerController>(Pawn->GetController()))
+		{
+			RSPC->ToggleInventoryUI();
+		}
+	}
+
+}
+

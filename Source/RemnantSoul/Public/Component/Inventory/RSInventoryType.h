@@ -16,7 +16,7 @@
  	GENERATED_BODY()
  
  	UPROPERTY(EditAnywhere, BlueprintReadOnly)
- 	TObjectPtr<URSItemData> ItemData = nullptr;
+ 	TObjectPtr<URSItemData> ItemData;
  
  	UPROPERTY(EditAnywhere, BlueprintReadOnly)
  	int32 Count = 0;

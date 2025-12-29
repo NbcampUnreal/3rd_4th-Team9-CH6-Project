@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "InputActionValue.h"
+#include "Component/Inventory/RSInventoryComponent.h"
 #include "RSPlayerController.generated.h"
 
-class UInputMappingContext;
-class UInputAction; 
+class URSInventoryWidget;
+class URSInventoryComponent;
 
 UCLASS()
 class REMNANTSOUL_API ARSPlayerController : public APlayerController
@@ -17,34 +17,40 @@ class REMNANTSOUL_API ARSPlayerController : public APlayerController
 
 public:
 	ARSPlayerController();
+	// 인벤 UI
+	UFUNCTION(BlueprintCallable)
+	void ToggleInventoryUI();
 
+	UFUNCTION(BlueprintCallable)
+	void OpenInventoryUI();
+
+	UFUNCTION(BlueprintCallable)
+	void CloseInventoryUI();
+
+	bool IsInventoryOpen() const { return bInventoryOpen; }
+	
 	void OnPlayerDeath();
 
 protected:
 	virtual void BeginPlay() override;
-	//virtual void SetupInputComponent() override;
+	void OnPossess(APawn* InPawn);
 
-	/* Enhanced Input */
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputMappingContext* DefaultMappingContext;
+	// 인벤 위젯 클래스(에디터에서 WBP_Inventory 지정)
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	TSubclassOf<URSInventoryWidget> InventoryWidgetClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputAction* MoveAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputAction* LookAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputAction* AttackAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputAction* RollAction;
+	UPROPERTY()
+	TObjectPtr<URSInventoryWidget> InventoryWidget;
 	
-	/* Input Callbacks */
-	void Input_Move(const FInputActionValue& Value);
-	void Input_Look(const FInputActionValue& Value);
-	void Input_Attack();
-	void Input_Roll();
+	UPROPERTY()
+	TObjectPtr<URSInventoryComponent> InventoryComp;
+	bool bInventoryWidgetInited;
 
+private:
+	bool bInventoryOpen = false;
+
+	void EnsureInventoryWidgetCreated();
+	void ApplyInventoryInputMode(bool bOpen);
+	
 	
 };

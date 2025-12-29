@@ -258,53 +258,57 @@ void ARSCharacter::UpdateInteractFocus()
 	{
 		CurrentInteractTarget = nullptr;
 		CurrentInteractItemData = nullptr;
+		CurrentInteractHit = FHitResult();
 		return;
 	}
 
-	const float Distance = FVector::Distance(
-		Camera->GetComponentLocation(),
-		HitActor->GetActorLocation()
-	);
-
-	if (Distance > InteractDistance)
+	// 같은 대상이면 Hit만 갱신하고 끝 (떨림/깜빡임 줄이기)
+	if (CurrentInteractTarget == HitActor)
 	{
-		CurrentInteractTarget = nullptr;
-		CurrentInteractItemData = nullptr;
+		CurrentInteractHit = Hit;
 		return;
 	}
 
 	CurrentInteractTarget = HitActor;
-
-	if (HitActor->Implements<UInteractable>())
-	{
-		CurrentInteractItemData =
-			IInteractable::Execute_GetItemData(HitActor);
-	}
-
-	CurrentInteractTarget = HitActor;
+	CurrentInteractHit = Hit;
 	CurrentInteractItemData = nullptr;
 
-	// Interactable이면 ItemData도 같이 캐싱
-	if (CurrentInteractTarget && CurrentInteractTarget->Implements<UInteractable>())
+	if (CurrentInteractTarget->Implements<UInteractable>())
 	{
 		CurrentInteractItemData = IInteractable::Execute_GetItemData(CurrentInteractTarget);
-
-		if (CurrentInteractItemData)
-		{
-			UE_LOG(LogTemp, Log, TEXT("[Focus] %s (ItemData OK)"), *GetNameSafe(CurrentInteractTarget));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[Focus] %s (No ItemData)"), *GetNameSafe(CurrentInteractTarget));
-		}
 	}
 }
 
+void ARSCharacter::TryInteract()
+{if (!CurrentInteractTarget) return;
+	if (!CurrentInteractTarget->Implements<UInteractable>()) return;
+
+	// 캐시된 Hit 지점 기준 거리 체크
+	const float Distance = FVector::Distance(Camera->GetComponentLocation(), CurrentInteractHit.ImpactPoint);
+
+	// 디버그
+	DrawDebugString(
+		GetWorld(),
+		CurrentInteractTarget->GetActorLocation() + FVector(0,0,40),
+		FString::Printf(TEXT("%.0f cm"), Distance),
+		nullptr,
+		FColor::White,
+		0.1f
+	);
+
+	if (Distance > InteractDistance) return;
+
+	if (IInteractable::Execute_CanInteract(CurrentInteractTarget, this))
+	{
+		IInteractable::Execute_Interact(CurrentInteractTarget, this);
+	}
+}
 
 
 bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) const
 {
 	OutActor = nullptr;
+	OutHit = FHitResult();
 
 	if (!Camera) return false;
 	UWorld* World = GetWorld();
@@ -313,64 +317,26 @@ bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) co
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(InteractTrace), false);
 	Params.AddIgnoredActor(this);
 
-	// 1) 카메라 기준 트레이스 (시선 방향)
+	// 1) 카메라 시선 트레이스
 	const FVector CamStart = Camera->GetComponentLocation();
-	const FVector CamDir = Camera->GetForwardVector();
-	const FVector CamEnd = CamStart + CamDir * InteractTraceDistance;
+	const FVector CamDir   = Camera->GetForwardVector();
+	const FVector CamEnd   = CamStart + CamDir * InteractTraceDistance;
 
 	FHitResult CamHit;
-	const bool bCamHit = World->LineTraceSingleByChannel(
-		CamHit, CamStart, CamEnd, ECC_Visibility, Params
-	);
+	const bool bCamHit = World->LineTraceSingleByChannel(CamHit, CamStart, CamEnd, ECC_Visibility, Params);
 
 	const FVector AimPoint = bCamHit ? CamHit.ImpactPoint : CamEnd;
-	
-	DrawDebugLine(
-		World,
-		CamStart,
-		AimPoint,
-		bCamHit ? FColor::Green : FColor::Red,
-		false,
-		0.1f,
-		0,
-		1.5f
-	);
 
-	if (bCamHit)
-	{
-		DrawDebugSphere(
-			World,
-			AimPoint,
-			8.f,
-			12,
-			FColor::Green,
-			false,
-			0.1f
-		);
-	}
-	// 2) 캐릭터 기준 트레이스 (실제로 닿는지)
+	// 2) 캐릭터(눈높이)에서 AimPoint로 트레이스
 	const FVector CharStart = GetActorLocation() + FVector(0.f, 0.f, BaseEyeHeight);
-	const FVector CharEnd = AimPoint;
+	const FVector CharEnd   = AimPoint;
 
 	FHitResult CharHit;
-	const bool bCharHit = World->LineTraceSingleByChannel(
-		CharHit, CharStart, CharEnd, ECC_Visibility, Params
-	);
-
-	DrawDebugLine(
-		World,
-		CharStart,
-		CharEnd,
-		bCharHit ? FColor::Blue : FColor::Red,
-		false,
-		0.1f,
-		0,
-		1.5f
-	);	
+	const bool bCharHit = World->LineTraceSingleByChannel(CharHit, CharStart, CharEnd, ECC_Visibility, Params);
 	if (!bCharHit) return false;
 
 	OutActor = CharHit.GetActor();
-	OutHit = CharHit;   
+	OutHit   = CharHit;
 	return OutActor != nullptr;
 }
 

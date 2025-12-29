@@ -2,12 +2,13 @@
 
 #pragma once
 
+
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "RSInventoryType.h"
 #include "RSInventoryComponent.generated.h"
 
-
+DECLARE_MULTICAST_DELEGATE(FOnInventoryChanged);
 UCLASS( ClassGroup=(Inventory), meta=(BlueprintSpawnableComponent) )
 class REMNANTSOUL_API URSInventoryComponent : public UActorComponent
 {
@@ -17,8 +18,11 @@ public:
 	// Sets default values for this component's properties
 	URSInventoryComponent();
 	
+	FOnInventoryChanged OnInventoryChanged;
+	
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	const TArray<FInventoryItem>& GetItems() const { return Items; }
+;
 
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	bool HasItem(const URSItemData* ItemData) const;
@@ -30,6 +34,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	bool RemoveItem(URSItemData* ItemData, int32 Count = 1);
 
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	bool UseItem(int32 SlotIndex, AActor* User);
+	
+	
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Inventory")
 	TArray<FInventoryItem> Items;
