@@ -16,11 +16,6 @@
 #include "Item/Fragments/RSItemFragment_CombatStyle.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RSEquipManagerComponent)
-
-// YKJ Annotation : v1은 ASC LooseTags 사용. "이 스타일이 넣은 태그"만 정확히 빼기 위해 캐시를 둔다.
-UPROPERTY(Transient)
-FGameplayTagContainer CachedAppliedAnimTags;
-
 URSEquipManagerComponent::URSEquipManagerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -73,12 +68,12 @@ URSCombatStyleData* URSEquipManagerComponent::ResolveCombatStyleForWeapon(URSIte
 	// Fragment_CombatStyle 우선적그로 처리하자.
 	if (const URSItemFragment_CombatStyle* StyleFrag = Template->FindFragment<URSItemFragment_CombatStyle>())
 	{
-		// 보강한 형태에 맞춰서 직접 반환하거나 Resolve 함수를 쓰면 됨.
-		if (StyleFrag->CombatStyle)
+		if (URSCombatStyleData* Resolved = StyleFrag->ResolveCombatStyle())
 		{
-			return StyleFrag->CombatStyle;
+			return Resolved;
 		}
 	}
+
 
 	return GetDefaultUnarmedStyle();
 }
@@ -229,13 +224,24 @@ void URSEquipManagerComponent::ApplyAnimStyleLayers(const URSCombatStyleData* St
 	UAnimInstance* AnimInst = Mesh->GetAnimInstance();
 	if (!AnimInst) return;
 
-	// YKJ Annotation : Style이 들고 있는 LinkedAnimLayerClass를 링크한다.
+	// YKJ Annotation : 레이어 복귀 정책은 "DefaultUnarmedStyle이 기본 레이어를 가진다"로 고정.
+	const URSCombatStyleData* Fallback = GetDefaultUnarmedStyle();
+	TSubclassOf<UAnimInstance> LayerClass = nullptr;
+
 	if (Style && Style->LinkedAnimLayerClass)
 	{
-		AnimInst->LinkAnimClassLayers(Style->LinkedAnimLayerClass);
+		LayerClass = Style->LinkedAnimLayerClass;
+	}
+	else if (Fallback && Fallback->LinkedAnimLayerClass)
+	{
+		LayerClass = Fallback->LinkedAnimLayerClass;
+	}
+
+	if (LayerClass)
+	{
+		AnimInst->LinkAnimClassLayers(LayerClass);
 	}
 }
-
 
 void URSEquipManagerComponent::ClearCurrentCombatStyle()
 {

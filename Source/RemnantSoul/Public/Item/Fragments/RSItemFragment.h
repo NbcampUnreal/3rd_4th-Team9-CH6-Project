@@ -22,7 +22,7 @@ class URSItemInstance;
  *   - Template->CreateItemInstance(...) 호출 시 OnInstanceCreated(...)가 호출되어
  *     인스턴스 초기화에 관여할 수 있다.
  */
-UCLASS(Abstract, BlueprintType, EditInlineNew, DefaultToInstanced)
+UCLASS(Abstract, BlueprintType, EditInlineNew, DefaultToInstanced, CollapseCategories)
 class REMNANTSOUL_API URSItemFragment : public UObject
 {
 	GENERATED_BODY()

@@ -392,6 +392,9 @@ const URSInputConfig* ARSCharacter::GetInputConfig() const
 
 void ARSCharacter::OnCombatStyleChanged(const URSCombatStyleData* NewStyle)
 {
+	CurrentAnimLayerTag = NewStyle ? NewStyle->AnimLayerTag : FGameplayTag();
+	CurrentAnimStyleTags = NewStyle ? NewStyle->AnimStyleTags : FGameplayTagContainer();
+
 	USkeletalMeshComponent* MeshComp = GetMesh();
 	if (!MeshComp) return;
 

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
+//#include "Engine/DataAsset.h"
 #include "GameplayTagContainer.h"
 #include "RSItemTemplate.generated.h"
 
@@ -40,7 +41,7 @@ enum class ERSItemType : uint8
  *         - RSItemFragment_WeaponCosmetic
  *         - RSItemFragment_EquipRequirement
  */
-UCLASS(Blueprintable, Const, Abstract)
+UCLASS(Blueprintable, Abstract)
 class REMNANTSOUL_API URSItemTemplate : public UObject
 {
 	GENERATED_BODY()
@@ -110,7 +111,7 @@ public:
 	FGameplayTagContainer ItemTags;
 
 	/** 이 템플릿에 붙은 Fragment들 (EquipStats/AbilitySet/WeaponCosmetic/EquipRequirement 등) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Instanced, Category = "RS|Item")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Instanced, Category = "RS|Item", meta = (TitleProperty = "Class"))
 	TArray<TObjectPtr<URSItemFragment>> Fragments;
 };
 

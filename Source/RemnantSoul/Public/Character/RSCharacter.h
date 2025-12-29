@@ -266,6 +266,16 @@ public:
 	
 #pragma endregion
 
+#pragma region Animation
+public : 
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "RS|CombatStyle")
+	FGameplayTag CurrentAnimLayerTag;
+
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "RS|CombatStyle")
+	FGameplayTagContainer CurrentAnimStyleTags;
+
+#pragma endregion
+
 #pragma region Data
 protected:
 	// 기존 PawnData 유지 : 위쪽에 선언해놨음.
