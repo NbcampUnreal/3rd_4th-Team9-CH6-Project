@@ -17,27 +17,30 @@ class REMNANTSOUL_API ARSPlayerState : public APlayerState
 public:
 	ARSPlayerState();
 
-	// 서버에서 설정
-	void ServerSetHeroDataId(const FPrimaryAssetId& InHeroDataId);
+	// 싱글: 이 값만 세팅하면 됨 (BP/디폴트에서 지정)
+	UPROPERTY(EditDefaultsOnly, Category = "RS|Hero")
+	FPrimaryAssetId DefaultHeroDataId;
 
-	// 클라/서버 공통: 로드 완료된 HeroData 얻기
+	// 로드 완료된 HeroData 얻기
 	const URSHeroData* GetHeroData() const { return LoadedHeroData; }
 
 	FRSOnHeroDataReady OnHeroDataReady;
 
 protected:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	UFUNCTION()
-	void OnRep_HeroDataId();
-
-	// Asset 로드
-	void ResolveHeroData();
+	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(ReplicatedUsing = OnRep_HeroDataId)
+	// 싱글: 굳이 Replicated 필요 없음
 	FPrimaryAssetId HeroDataId;
+
+	UPROPERTY(EditDefaultsOnly, Category = "RS|Hero")
+	TSoftObjectPtr<URSHeroData> DefaultHeroDataAsset;
 
 	UPROPERTY(Transient)
 	TObjectPtr<const URSHeroData> LoadedHeroData = nullptr;
+
+	bool bHeroDataReadyBroadcasted = false;
+
+	void SetHeroDataId_Single(const FPrimaryAssetId& InHeroDataId);
+	void ResolveHeroData();
 };

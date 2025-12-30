@@ -80,6 +80,8 @@ public:
 	// Skill
 	UAnimMontage* GetSkillActionMontage() const { return SkillActionMontage; }
 
+	void SetHeroData(const URSHeroData* InHeroData);
+
 protected:
 	// replication/possession
 	virtual void PossessedBy(AController* NewController) override;
@@ -101,6 +103,12 @@ protected:
 	// IInventoryOwner interface implementation
 	virtual bool TryAddItem_Implementation(URSItemData* ItemData, int32 Count) override;
 	virtual bool TryRemoveItem_Implementation(URSItemData* ItemData, int32 Count) override;
+
+	// Input
+	virtual UInputComponent* CreatePlayerInputComponent() override;
+
+private:
+	bool HasValidPlayerHeroData() const;
 
 protected:
 	// Components

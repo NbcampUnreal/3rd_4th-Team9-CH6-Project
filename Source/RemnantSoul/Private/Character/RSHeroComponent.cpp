@@ -21,34 +21,82 @@ void URSHeroComponent::BeginPlay()
 
 void URSHeroComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	if (bSetupPICAcknowledged)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero] SetupPIC already called. Skip."));
+		return;
+	}
+	bSetupPICAcknowledged = true;
+
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] SetupPIC ENTER Owner=%s InputComp=%s"),
+		*GetNameSafe(GetOwner()),
+		*GetNameSafe(PlayerInputComponent));
+
 	APawn* Pawn = Cast<APawn>(GetOwner());
-	if (!Pawn) return;
+	if (!Pawn)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Hero] SetupPIC FAIL: Owner is not Pawn. Owner=%s"), *GetNameSafe(GetOwner()));
+		return;
+	}
 
 	APlayerController* PC = Pawn->GetController<APlayerController>();
-	if (!PC) return;
+	if (!PC)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Hero] SetupPIC FAIL: PC is null. Pawn=%s"), *GetNameSafe(Pawn));
+		return;
+	}
 
 	ARSPlayerState* PS = Pawn->GetPlayerState<ARSPlayerState>();
 	if (!PS)
 	{
+		UE_LOG(LogTemp, Error, TEXT("[Hero] SetupPIC FAIL: PlayerState is null. Pawn=%s"), *GetNameSafe(Pawn));
 		return;
 	}
 
-	// 이미 로드돼 있으면 바로 진행
-	if (const URSHeroData* HD = PS->GetHeroData())
-	{
-		InitializePlayerInput(PlayerInputComponent, PC);
-		return;
-	}
+	const URSHeroData* HDNow = PS->GetHeroData();
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] SetupPIC OK: PC=%s PS=%s HeroDataNow=%s"),
+		*GetNameSafe(PC),
+		*GetNameSafe(PS),
+		*GetNameSafe(HDNow));
 
-	// 아직이면 준비 이벤트를 기다렸다가 진행
-	PS->OnHeroDataReady.AddLambda([this, PlayerInputComponent, PC](const URSHeroData* InHD)
+	// ---- 기존 Apply 로직 ----
+	auto Apply = [this, PlayerInputComponent, PC](const URSHeroData* InHD)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("[Hero] Apply HeroData=%s"), *GetNameSafe(InHD));
+
+			ARSCharacter* Char = GetOwnerCharacter();
+			if (!Char || !InHD)
+			{
+				UE_LOG(LogTemp, Error, TEXT("[Hero] Apply FAIL: Char=%s InHD=%s"),
+					*GetNameSafe(Char), *GetNameSafe(InHD));
+				return;
+			}
+
+			Char->SetHeroData(InHD);
 			InitializePlayerInput(PlayerInputComponent, PC);
+		};
+
+	if (HDNow)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero] HeroData already ready -> Apply now"));
+		Apply(HDNow);
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] HeroData not ready -> bind OnHeroDataReady"));
+	PS->OnHeroDataReady.AddLambda([Apply](const URSHeroData* InHD)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Hero] OnHeroDataReady fired InHD=%s"), *GetNameSafe(InHD));
+			Apply(InHD);
 		});
 }
 
 void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent, APlayerController* PlayerController)
 {
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] PlayerInputComponent=%s CastRS=%s"),
+		*GetNameSafe(PlayerInputComponent),
+		Cast<URSEnhancedInputComponent>(PlayerInputComponent) ? TEXT("OK") : TEXT("FAIL"));
+
 	UE_LOG(LogTemp, Warning, TEXT("[Hero] InputCompClass=%s"),
 		*GetNameSafe(PlayerInputComponent ? PlayerInputComponent->GetClass() : nullptr));
 
@@ -132,27 +180,23 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 
 void URSHeroComponent::Input_AbilityTagPressed(FGameplayTag InputTag)
 {
-	ARSCharacter* Char = GetOwnerCharacter();
-	if (!Char) return;
-
-	FGameplayEventData Payload;
-	Payload.EventTag = InputTag;
-	Payload.EventMagnitude = 1.f;
-
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+	if (ARSCharacter* Char = GetOwnerCharacter())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero][Input] Pressed Tag=%s"), *InputTag.ToString());
+		Char->AbilityInputTagPressed(InputTag);
+	}
 }
 
 void URSHeroComponent::Input_AbilityTagReleased(FGameplayTag InputTag)
 {
-	ARSCharacter* Char = GetOwnerCharacter();
-	if (!Char) return;
-
-	FGameplayEventData Payload;
-	Payload.EventTag = InputTag;
-	Payload.EventMagnitude = 0.f;
-
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+	if (ARSCharacter* Char = GetOwnerCharacter())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero][Input] Released Tag=%s"), *InputTag.ToString());
+		Char->AbilityInputTagReleased(InputTag);
+	}
 }
+
+
 
 //void URSHeroComponent::Input_AbilityTagPressed(FGameplayTag InputTag)
 //{

@@ -71,6 +71,7 @@ public:
 
 private:
 	bool bInputInitialized = false;
+	bool bSetupPICAcknowledged = false;
 #pragma endregion
 
 

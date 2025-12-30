@@ -101,11 +101,31 @@ ARSCharacter::ARSCharacter()
 	// Weapon->SetupAttachment(GetMesh(), FName(TEXT("hand_rSocket")));
 
 	Inventory = CreateDefaultSubobject<URSInventoryComponent>(TEXT("Inventory"));
+
+	UE_LOG(LogTemp, Warning, TEXT("[Char] BeginPlay Pawn=%s Controlled=%d Controller=%s"),
+		*GetNameSafe(this),
+		IsPlayerControlledPawn() ? 1 : 0,
+		*GetNameSafe(GetController()));
 }
 
 void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	UE_LOG(LogTemp, Warning, TEXT("[Char] SetupPIC Pawn=%s HeroComp=%s Valid=%d"),
+		*GetNameSafe(this),
+		*GetNameSafe(HeroComponent),
+		IsValid(HeroComponent) ? 1 : 0);
+
+	if (IsValid(HeroComponent))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Char] Calling HeroComp->SetupPIC"));
+		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Char] HeroComponent is NULL/Invalid. Check CreateDefaultSubobject name/UPROPERTY."));
+	}
 
 	if (IsValid(HeroComponent))
 	{
@@ -116,6 +136,10 @@ void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void ARSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UE_LOG(LogTemp, Warning, TEXT("[Char] BeginPlay HeroComp=%s ASC=%s"),
+		*GetNameSafe(HeroComponent),
+		*GetNameSafe(ASC));
 
 	// Player 전용 체크(기존 코드가 Player가 아닐 때 크래시 낼 수 있어서 최소 방어)
 	if (IsPlayerControlledPawn())
@@ -396,24 +420,64 @@ void ARSCharacter::OnCombatStyleChanged(const URSCombatStyleData* NewStyle)
 
 void ARSCharacter::AbilityInputTagPressed(const FGameplayTag& InputTag)
 {
-	if (!InputTag.IsValid()) return;
-	if (!ASC) return;
+	if (!InputTag.IsValid())
+	{
+		UE_LOG(LogTemp, Error,
+			TEXT("[Char][Ability] Invalid InputTag"));
+		return;
+	}
+
+	if (!ASC)
+	{
+		UE_LOG(LogTemp, Error,
+			TEXT("[Char][Ability] ASC is NULL"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning,
+		TEXT("[Char][Ability] Pressed Tag=%s | Activatable=%d"),
+		*InputTag.ToString(),
+		ASC->GetActivatableAbilities().Num());
 
 	FScopedAbilityListLock Lock(*ASC);
 
+	bool bFound = false;
+
 	for (FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
 	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("  [Spec] %s | Tags=%s"),
+			*GetNameSafe(Spec.Ability),
+			*Spec.DynamicAbilityTags.ToString());
+
 		if (Spec.DynamicAbilityTags.HasTagExact(InputTag))
 		{
+			bFound = true;
+
+			UE_LOG(LogTemp, Warning,
+				TEXT("  [Match] Activating %s"),
+				*GetNameSafe(Spec.Ability));
+
 			ASC->AbilitySpecInputPressed(Spec);
 
 			if (!Spec.IsActive())
 			{
-				ASC->TryActivateAbility(Spec.Handle);
+				const bool bActivated = ASC->TryActivateAbility(Spec.Handle);
+				UE_LOG(LogTemp, Warning,
+					TEXT("  [TryActivate] Result=%s"),
+					bActivated ? TEXT("SUCCESS") : TEXT("FAIL"));
 			}
 		}
 	}
+
+	if (!bFound)
+	{
+		UE_LOG(LogTemp, Error,
+			TEXT("[Char][Ability] No matching AbilitySpec for Tag=%s"),
+			*InputTag.ToString());
+	}
 }
+
 
 void ARSCharacter::AbilityInputTagReleased(const FGameplayTag& InputTag)
 {
@@ -463,12 +527,19 @@ const URSInputConfig* ARSCharacter::GetInputConfig() const
 void ARSCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
+
+	UE_LOG(LogTemp, Warning, TEXT("[Char] PossessedBy Pawn=%s NewController=%s IsPlayer=%d"),
+		*GetNameSafe(this),
+		*GetNameSafe(NewController),
+		(NewController && NewController->IsPlayerController()) ? 1 : 0);
+
 	InitializeAbilitySystemAndPawnData();
 }
 
 void ARSCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
+
 	InitializeAbilitySystemAndPawnData();
 }
 
@@ -476,13 +547,18 @@ void ARSCharacter::InitializeAbilitySystemAndPawnData()
 {
 	if (!ASC) return;
 
-	// ActorInfo 보장(여러 군데서 호출돼도 안전)
 	ASC->InitAbilityActorInfo(this, this);
+
+	// Player는 HeroData SSOT 강제
+	if (!HasValidPlayerHeroData())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[RS] Player HeroData/PawnData not ready. Skip Init. Pawn=%s"), *GetNameSafe(this));
+		return;
+	}
 
 	const URSPawnData* PD = GetPawnData();
 	if (!PD) return;
 
-	// 중복 부여 최소 차단 (BeginPlay + PossessedBy + OnRep 에서 여러 번 들어와도 안전)
 	if (PawnGrantedAbilitySetHandles.Num() > 0)
 	{
 		return;
@@ -498,4 +574,56 @@ void ARSCharacter::InitializeAbilitySystemAndPawnData()
 
 		Set->GiveToAbilitySystem(ASC, &PawnGrantedAbilitySetHandles[i], this);
 	}
+
+	UE_LOG(LogTemp, Warning,
+		TEXT("[ASC][Init] Activatable=%d"),
+		ASC->GetActivatableAbilities().Num());
+
+	for (const FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("[ASC][Init] Spec=%s | Tags=%s"),
+			*GetNameSafe(Spec.Ability),
+			*Spec.DynamicAbilityTags.ToString());
+	}
+}
+
+void ARSCharacter::SetHeroData(const URSHeroData* InHeroData)
+{
+	HeroData = const_cast<URSHeroData*>(InHeroData);
+
+	// Player라면, HeroData 주입 시점이 "SSOT 고정점"이므로
+	// 여기서 한번 더 초기화를 시도해도 안전하게 만들면 좋다.
+	InitializeAbilitySystemAndPawnData();
+}
+
+bool ARSCharacter::HasValidPlayerHeroData() const
+{
+	if (!IsPlayerControlledPawn())
+	{
+		return true;
+	}
+
+	return (HeroData && HeroData->PawnData);
+}
+
+UInputComponent* ARSCharacter::CreatePlayerInputComponent()
+{
+	// URSEnhancedInputComponent를 Pawn의 InputComponent로 생성
+	URSEnhancedInputComponent* NewIC = NewObject<URSEnhancedInputComponent>(
+		this,
+		URSEnhancedInputComponent::StaticClass(),
+		TEXT("RSInputComponent")
+	);
+
+	// APawn::SetupPlayerInputComponent 흐름에서 사용할 수 있도록 등록
+	NewIC->RegisterComponent();
+
+	// Pawn의 InputComponent 포인터도 갱신(안전)
+	InputComponent = NewIC;
+
+	UE_LOG(LogTemp, Warning, TEXT("[Input] CreatePlayerInputComponent -> %s"),
+		*GetNameSafe(InputComponent));
+
+	return NewIC;
 }
