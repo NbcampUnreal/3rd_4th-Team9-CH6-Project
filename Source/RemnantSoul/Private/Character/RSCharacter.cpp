@@ -137,6 +137,13 @@ void ARSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// GAS 디버그
+	//if (IsValid(GetController()) == true)
+	//{
+	//	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	//	PlayerController->ConsoleCommand(TEXT("ShowDebug AbilitySystem"));
+	//}
+
 	UE_LOG(LogTemp, Warning, TEXT("[Char] BeginPlay HeroComp=%s ASC=%s"),
 		*GetNameSafe(HeroComponent),
 		*GetNameSafe(ASC));
@@ -250,7 +257,7 @@ void ARSCharacter::EquipWeapon(const FGameplayEventData* EventData)
 			CurrentAttackDamage + WeaponAttackDamage
 		);
 
-		// 기존 InputID 방식 유지(네 코드 그대로)
+		// 기존 InputID 방식 유지(내 코드 그대로)
 		FGameplayAbilitySpec NewSkillSpec(SkillAbilityClass);
 		NewSkillSpec.InputID = 3;
 

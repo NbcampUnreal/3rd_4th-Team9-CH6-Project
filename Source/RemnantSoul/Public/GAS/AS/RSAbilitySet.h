@@ -120,6 +120,9 @@ public:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|AbilitySet", meta = (Categories = "InputTag"))
 	FGameplayTag InputTag;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Ability", meta = (Categories = "Event"))
+	FGameplayTag EventTag;
 };
 
 /**
