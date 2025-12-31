@@ -4,6 +4,11 @@
 #include "Character/PlayerController/RSPlayerController.h"
 #include "IngameUI/inventory/RSInventoryWidget.h"
 //#include "Input/RSEnhancedInputComponent.h"
+#include "Component/Inventory/RSInventoryComponent.h"
+#include "GameFramework/Pawn.h"
+
+static const float PickupRange = 250.0f;
+
 
 ARSPlayerController::ARSPlayerController()
 {
@@ -34,12 +39,18 @@ void ARSPlayerController::EnsureInventoryWidgetCreated()
 
 	InventoryWidget->AddToViewport(10);
 	InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
+	
 
 	
 	if (InventoryComp)
 	{
 		InventoryWidget->Init(InventoryComp);
+		UE_LOG(LogTemp, Warning, TEXT("[PC] Binding InventoryWidget->OnUseRequested"));
+
+		InventoryWidget->OnUseRequested.AddUObject(this, &ThisClass::UseItemFromSlot);
+		UE_LOG(LogTemp, Warning, TEXT("[PC] Bound OK. InventoryWidget=%s"), *GetNameSafe(InventoryWidget));
 		bInventoryWidgetInited = true;
+		
 	}
 }
 
@@ -114,4 +125,11 @@ void ARSPlayerController::OnPlayerDeath()
 	FInputModeUIOnly InputMode;
 	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	SetInputMode(InputMode);
+}
+
+void ARSPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	
+	
 }

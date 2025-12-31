@@ -14,12 +14,23 @@
  struct FInventoryItem
  {
  	GENERATED_BODY()
- 
+
  	UPROPERTY(EditAnywhere, BlueprintReadOnly)
  	TObjectPtr<URSItemData> ItemData;
- 
+
  	UPROPERTY(EditAnywhere, BlueprintReadOnly)
  	int32 Count = 0;
+
+ 	bool IsEmpty() const
+ 	{
+ 		return ItemData == nullptr || Count <= 0;
+ 	}
+
+ 	void Clear()
+ 	{
+ 		ItemData = nullptr;
+ 		Count = 0;
+ 	}
  };
  
 class REMNANTSOUL_API RSInventoryType

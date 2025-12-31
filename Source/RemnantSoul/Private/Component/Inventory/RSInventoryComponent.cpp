@@ -2,71 +2,130 @@
 
 
 #include "Component/Inventory/RSInventoryComponent.h"
-#include "ItemDataAsset//RSItemData.h"
+#include "ItemDataAsset/RSItemData.h"
 
-// Sets default values for this component's properties
 URSInventoryComponent::URSInventoryComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
+}
 
-	// ...
+void URSInventoryComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Slots.SetNum(MaxSlots);
+
+	for (FInventoryItem& Slot : Slots)
+	{
+		if (Slot.ItemData == nullptr || Slot.Count <= 0)
+		{
+			Slot.Clear();
+			continue;
+		}
+
+		const int32 MaxStack = FMath::Max(1, Slot.ItemData->MaxStack);
+		Slot.Count = FMath::Clamp(Slot.Count, 1, MaxStack);
+	}
 }
 
 bool URSInventoryComponent::HasItem(const URSItemData* ItemData) const
 {
-	return Items.ContainsByPredicate(
-		[ItemData](const FInventoryItem& Item)
-		{
-			return Item.ItemData == ItemData;
-		}
-	);
-}
-
-
-FInventoryItem* URSInventoryComponent::FindItem(URSItemData* ItemData)
-{
-	return Items.FindByPredicate(
-		[ItemData](const FInventoryItem& Item)
-		{
-			return Item.ItemData == ItemData;
-		}
-	);
-}
-
-
-bool URSInventoryComponent::AddItem(URSItemData* ItemData, int32 Count)
-{
-	
-	if (!ItemData || Count <= 0)
+	if (!ItemData)
 	{
-		UE_LOG(LogTemp, Warning,
-			TEXT("[Inventory] Invalid AddItem params"));
 		return false;
 	}
 
-	if (FInventoryItem* Existing = FindItem(ItemData))
+	return Slots.ContainsByPredicate(
+		[ItemData](const FInventoryItem& Slot)
+		{
+			return Slot.ItemData == ItemData && Slot.Count > 0;
+		}
+	);
+}
+
+int32 URSInventoryComponent::FindFirstStackableSlot(const URSItemData* ItemData) const
+{
+	if (!ItemData)
 	{
-		Existing->Count += Count;
-		UE_LOG(LogTemp, Log,
-			TEXT("[Inventory] Stack increased -> %d"),
-			Existing->Count
-		);
-		
+		return INDEX_NONE;
 	}
-	else
+
+	const int32 MaxStack = FMath::Max(1, ItemData->MaxStack);
+	if (MaxStack <= 1)
 	{
-		FInventoryItem NewItem;
-		NewItem.ItemData = ItemData;
-		NewItem.Count = Count;
-		Items.Add(NewItem);
-		UE_LOG(LogTemp, Log,
-			TEXT("[Inventory] New item added"));
+		return INDEX_NONE;
+	}
+
+	for (int32 i = 0; i < Slots.Num(); ++i)
+	{
+		const FInventoryItem& Slot = Slots[i];
+		if (Slot.ItemData == ItemData && Slot.Count > 0 && Slot.Count < MaxStack)
+		{
+			return i;
+		}
+	}
+
+	return INDEX_NONE;
+}
+
+int32 URSInventoryComponent::FindFirstEmptySlot() const
+{
+	for (int32 i = 0; i < Slots.Num(); ++i)
+	{
+		if (Slots[i].IsEmpty())
+		{
+			return i;
+		}
+	}
+	return INDEX_NONE;
+}
+
+bool URSInventoryComponent::AddItem(URSItemData* ItemData, int32 Count)
+{
+	if (!ItemData || Count <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Inventory] AddItem: invalid params"));
+		return false;
+	}
+
+	int32 Remaining = Count;
+	const int32 MaxStack = FMath::Max(1, ItemData->MaxStack);
+
+	// 1) 기존 스택 채우기
+	while (Remaining > 0)
+	{
+		const int32 StackIndex = FindFirstStackableSlot(ItemData);
+		if (StackIndex == INDEX_NONE)
+		{
+			break;
+		}
+
+		FInventoryItem& Slot = Slots[StackIndex];
+		const int32 Space = MaxStack - Slot.Count;
+		const int32 ToAdd = FMath::Min(Space, Remaining);
+		Slot.Count += ToAdd;
+		Remaining -= ToAdd;
+	}
+
+	// 2) 새 슬롯 생성
+	while (Remaining > 0)
+	{
+		const int32 EmptyIndex = FindFirstEmptySlot();
+		if (EmptyIndex == INDEX_NONE)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Inventory] AddItem: inventory full (Item=%s, Remaining=%d)"),
+				*GetNameSafe(ItemData), Remaining);
+			OnInventoryChanged.Broadcast();
+			return false;
+		}
+
+		FInventoryItem& Slot = Slots[EmptyIndex];
+		Slot.ItemData = ItemData;
+		Slot.Count = FMath::Min(MaxStack, Remaining);
+		Remaining -= Slot.Count;
 	}
 
 	OnInventoryChanged.Broadcast();
-	DebugPrintInventory();
 	return true;
 }
 
@@ -77,51 +136,92 @@ bool URSInventoryComponent::RemoveItem(URSItemData* ItemData, int32 Count)
 		return false;
 	}
 
-	const int32 Index = Items.IndexOfByPredicate(
-		[ItemData](const FInventoryItem& Item)
+	int32 Remaining = Count;
+
+	for (FInventoryItem& Slot : Slots)
+	{
+		if (Remaining <= 0)
 		{
-			return Item.ItemData == ItemData;
+			break;
 		}
-	);
 
-	if (Index == INDEX_NONE)
+		if (Slot.ItemData != ItemData || Slot.Count <= 0)
+		{
+			continue;
+		}
+
+		const int32 ToRemove = FMath::Min(Slot.Count, Remaining);
+		Slot.Count -= ToRemove;
+		Remaining -= ToRemove;
+
+		if (Slot.Count <= 0)
+		{
+			Slot.Clear();
+		}
+	}
+
+	if (Remaining > 0)
 	{
 		return false;
 	}
 
-	FInventoryItem& Slot = Items[Index];
-
-	if (Slot.Count < Count)
-	{
-		return false;
-	}
-
-	Slot.Count -= Count;
-
-	if (Slot.Count <= 0)
-	{
-		Items.RemoveAtSwap(Index); // 순서 중요하면 RemoveAt
-	}
-	
 	OnInventoryChanged.Broadcast();
 	return true;
 }
 
 bool URSInventoryComponent::UseItem(int32 SlotIndex, AActor* User)
 {
+	if (!User)
+	{
+		return false;
+	}
+
+	if (!Slots.IsValidIndex(SlotIndex))
+	{
+		return false;
+	}
+
+	FInventoryItem& Slot = Slots[SlotIndex];
+	if (Slot.IsEmpty() || !Slot.ItemData)
+	{
+		return false;
+	}
+
+	// 1) 실제 사용 시도 (포션 효과 적용)
+	const bool bUsed = Slot.ItemData->TryUse(User);
+	if (!bUsed)
+	{
+		return false;
+	}
+
+	// 2) 사용 성공 시 소비
+	if (Slot.ItemData->bConsumeOnUse)
+	{
+		Slot.Count -= 1;
+		if (Slot.Count <= 0)
+		{
+			Slot.Clear();
+		}
+	}
+
 	OnInventoryChanged.Broadcast();
 	return true;
 }
 
 void URSInventoryComponent::DebugPrintInventory() const
 {
-	UE_LOG(LogTemp, Log, TEXT("=== Inventory Dump ==="));
+	UE_LOG(LogTemp, Log, TEXT("=== Inventory Dump (Slots=%d) ==="), Slots.Num());
 
-	for (const FInventoryItem& Item : Items)
+	for (int32 i = 0; i < Slots.Num(); ++i)
 	{
-		const FString Name = Item.ItemData ? Item.ItemData->DisplayName.ToString() : TEXT("NULL");
-		UE_LOG(LogTemp, Log, TEXT("- %s x %d"), *Name, Item.Count);
+		const FInventoryItem& Slot = Slots[i];
+		if (Slot.IsEmpty())
+		{
+			continue;
+		}
+
+		const FString Name = Slot.ItemData ? Slot.ItemData->DisplayName.ToString() : TEXT("NULL");
+		UE_LOG(LogTemp, Log, TEXT("[%d] %s x %d"), i, *Name, Slot.Count);
 	}
 }
-
 
