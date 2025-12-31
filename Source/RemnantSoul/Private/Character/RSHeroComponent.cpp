@@ -1,9 +1,13 @@
 ﻿#include "Character/RSHeroComponent.h"
 #include "Character/RSCharacter.h"
+#include "PlayerState/RSPlayerState.h"
 #include "EnhancedInputSubsystems.h"
 #include "Input/RSEnhancedInputComponent.h"
 #include "Input/RSInputConfig.h"
 #include "AbilitySystemBlueprintLibrary.h" // 래퍼함수안 쓸 때 - 안쓰고서 그냥 HeroComponent와 InputConfig클래스를 이용할 예정임.
+#include "AbilitySystemComponent.h"
+#include "Character/RSHeroData.h"
+#include "Character/RSPawnData.h"
 #include "RSGameplayTags.h"
 
 #include "GameFramework/PlayerController.h" // PRMerge할때 Conflict생긴 부분 주석처리해도 잘 작동하면 삭제해도될듯.
@@ -17,17 +21,82 @@ void URSHeroComponent::BeginPlay()
 
 void URSHeroComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	if (bSetupPICAcknowledged)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero] SetupPIC already called. Skip."));
+		return;
+	}
+	bSetupPICAcknowledged = true;
+
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] SetupPIC ENTER Owner=%s InputComp=%s"),
+		*GetNameSafe(GetOwner()),
+		*GetNameSafe(PlayerInputComponent));
+
 	APawn* Pawn = Cast<APawn>(GetOwner());
-	if (!Pawn) return;
+	if (!Pawn)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Hero] SetupPIC FAIL: Owner is not Pawn. Owner=%s"), *GetNameSafe(GetOwner()));
+		return;
+	}
 
 	APlayerController* PC = Pawn->GetController<APlayerController>();
-	if (!PC) return;
+	if (!PC)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Hero] SetupPIC FAIL: PC is null. Pawn=%s"), *GetNameSafe(Pawn));
+		return;
+	}
 
-	InitializePlayerInput(PlayerInputComponent, PC);
+	ARSPlayerState* PS = Pawn->GetPlayerState<ARSPlayerState>();
+	if (!PS)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Hero] SetupPIC FAIL: PlayerState is null. Pawn=%s"), *GetNameSafe(Pawn));
+		return;
+	}
+
+	const URSHeroData* HDNow = PS->GetHeroData();
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] SetupPIC OK: PC=%s PS=%s HeroDataNow=%s"),
+		*GetNameSafe(PC),
+		*GetNameSafe(PS),
+		*GetNameSafe(HDNow));
+
+	// ---- 기존 Apply 로직 ----
+	auto Apply = [this, PlayerInputComponent, PC](const URSHeroData* InHD)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Hero] Apply HeroData=%s"), *GetNameSafe(InHD));
+
+			ARSCharacter* Char = GetOwnerCharacter();
+			if (!Char || !InHD)
+			{
+				UE_LOG(LogTemp, Error, TEXT("[Hero] Apply FAIL: Char=%s InHD=%s"),
+					*GetNameSafe(Char), *GetNameSafe(InHD));
+				return;
+			}
+
+			Char->SetHeroData(InHD);
+			InitializePlayerInput(PlayerInputComponent, PC);
+		};
+
+	if (HDNow)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero] HeroData already ready -> Apply now"));
+		Apply(HDNow);
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] HeroData not ready -> bind OnHeroDataReady"));
+	PS->OnHeroDataReady.AddLambda([Apply](const URSHeroData* InHD)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Hero] OnHeroDataReady fired InHD=%s"), *GetNameSafe(InHD));
+			Apply(InHD);
+		});
 }
 
 void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent, APlayerController* PlayerController)
 {
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] PlayerInputComponent=%s CastRS=%s"),
+		*GetNameSafe(PlayerInputComponent),
+		Cast<URSEnhancedInputComponent>(PlayerInputComponent) ? TEXT("OK") : TEXT("FAIL"));
+
 	UE_LOG(LogTemp, Warning, TEXT("[Hero] InputCompClass=%s"),
 		*GetNameSafe(PlayerInputComponent ? PlayerInputComponent->GetClass() : nullptr));
 
@@ -47,15 +116,21 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	auto* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	if (!Subsystem) return;
 
+	// NOTE: 현재는 단순화를 위해 ClearAllMappings 사용.
+	// 추후 UI/공용 IMC 추가 시 "추적 기반 RemoveMappingContext"로 전환 권장.
 	Subsystem->ClearAllMappings();
 
 	const URSInputConfig* InputConfig = Char->GetInputConfig(); 
 	if (!InputConfig) return;
 
-	if (!Char->GetPawnData())
+	if (Char->IsPlayerControlledPawn())
 	{
-		UE_LOG(LogTemp, Error, TEXT("[Hero] PawnData is null on %s"), *GetNameSafe(Char));
-		return;
+		const URSHeroData* HD = Char->GetHeroData();
+		if (!HD || !HD->PawnData)
+		{
+			UE_LOG(LogTemp, Error, TEXT("[Hero] Missing HeroData/PawnData on Player %s"), *GetNameSafe(Char));
+			return;
+		}
 	}
 
 	for (const auto& Mapping : InputConfig->DefaultMappings)
@@ -82,8 +157,7 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	//TArray<uint32> Handles;
 	//IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityTagPressed, &ThisClass::Input_AbilityTagReleased, Handles);
 
-		// Ability 태그 바인딩
-
+	// Ability 태그 바인딩
 	BaseAbilityBindHandles.Reset();
 	IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityTagPressed, &ThisClass::Input_AbilityTagReleased, BaseAbilityBindHandles);
 
@@ -98,29 +172,53 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Interaction,ETriggerEvent::Triggered, this, &ThisClass::Input_Interaction);
 	
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Triggered, this, &ThisClass::Input_InventoryToggle);
+
+	bInputInitialized = true;
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] InputReady Broadcast"));
+	OnInputReady.Broadcast();
 }
 
 void URSHeroComponent::Input_AbilityTagPressed(FGameplayTag InputTag)
 {
-	ARSCharacter* Char = GetOwnerCharacter();
-	if (!Char) return;
-
-	FGameplayEventData Payload;
-	Payload.EventTag = InputTag;
-	Payload.EventMagnitude = 1.f; // Pressed일때.
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+	if (ARSCharacter* Char = GetOwnerCharacter())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero][Input] Pressed Tag=%s"), *InputTag.ToString());
+		Char->AbilityInputTagPressed(InputTag);
+	}
 }
 
 void URSHeroComponent::Input_AbilityTagReleased(FGameplayTag InputTag)
 {
-	ARSCharacter* Char = GetOwnerCharacter();
-	if (!Char) return;
-
-	FGameplayEventData Payload;
-	Payload.EventTag = InputTag;
-	Payload.EventMagnitude = 0.f; // Released일떄.
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+	if (ARSCharacter* Char = GetOwnerCharacter())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero][Input] Released Tag=%s"), *InputTag.ToString());
+		Char->AbilityInputTagReleased(InputTag);
+	}
 }
+
+
+
+//void URSHeroComponent::Input_AbilityTagPressed(FGameplayTag InputTag)
+//{
+//	ARSCharacter* Char = GetOwnerCharacter();
+//	if (!Char) return;
+//
+//	FGameplayEventData Payload;
+//	Payload.EventTag = InputTag;
+//	Payload.EventMagnitude = 1.f; // Pressed일때.
+//	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+//}
+//
+//void URSHeroComponent::Input_AbilityTagReleased(FGameplayTag InputTag)
+//{
+//	ARSCharacter* Char = GetOwnerCharacter();
+//	if (!Char) return;
+//
+//	FGameplayEventData Payload;
+//	Payload.EventTag = InputTag;
+//	Payload.EventMagnitude = 0.f; // Released일떄.
+//	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+//}
 
 ARSCharacter* URSHeroComponent::GetOwnerCharacter() const
 {
@@ -347,3 +445,45 @@ void URSHeroComponent::Input_InventoryToggle(const FInputActionValue& Value)
 
 }
 
+//bool ARSCharacter::IsPlayerControlledPawn() const
+//{
+//	const AController* C = GetController();
+//	return C && C->IsPlayerController();
+//}
+//
+//void ARSCharacter::PossessedBy(AController* NewController)
+//{
+//	Super::PossessedBy(NewController);
+//	InitializeAbilitySystemAndPawnData();
+//}
+//
+//void ARSCharacter::OnRep_PlayerState()
+//{
+//	Super::OnRep_PlayerState();
+//	InitializeAbilitySystemAndPawnData();
+//}
+//
+//void ARSCharacter::InitializeAbilitySystemAndPawnData()
+//{
+//	if (!ASC) return;
+//
+//	// ASC ActorInfo는 여기서 확정
+//	ASC->InitAbilityActorInfo(this, this);
+//
+//	const URSPawnData* PD = GetPawnData();
+//	if (!PD) return;
+//
+//	// (선택) 중복 부여 방지: 이미 부여했다면 스킵
+//	// if (PawnGrantedAbilitySetHandles.Num() > 0) return;
+//
+//	PawnGrantedAbilitySetHandles.Reset();
+//	PawnGrantedAbilitySetHandles.SetNum(PD->AbilitySets.Num());
+//
+//	for (int32 i = 0; i < PD->AbilitySets.Num(); ++i)
+//	{
+//		const URSAbilitySet* Set = PD->AbilitySets[i];
+//		if (!Set) continue;
+//
+//		Set->GiveToAbilitySystem(ASC, &PawnGrantedAbilitySetHandles[i], this);
+//	}
+//}

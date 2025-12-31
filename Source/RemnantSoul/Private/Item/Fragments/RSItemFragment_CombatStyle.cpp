@@ -61,3 +61,4 @@ EDataValidationResult URSItemFragment_CombatStyle::IsDataValid(FDataValidationCo
 	return Result;
 }
 #endif
+

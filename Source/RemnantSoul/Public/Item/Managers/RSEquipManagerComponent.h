@@ -52,6 +52,12 @@ private:
 	URSHeroComponent* GetHeroComponent() const;
 	UAbilitySystemComponent* GetASC() const;
 
+	// ===== Default Style 적용 여부 =====
+	bool bDefaultStyleApplied = false;
+
+	void HandleInputReady();
+	void ApplyDefaultStyleIfNeeded();
+
 	// ===== Item passive ability set (선택) =====
 	void ApplyItemPassiveAbilitySets(URSItemInstance* NewWeapon);
 	void ClearItemPassiveAbilitySets();

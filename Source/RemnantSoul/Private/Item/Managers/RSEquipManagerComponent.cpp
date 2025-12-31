@@ -25,15 +25,18 @@ void URSEquipManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 필요 시 ASC 캐시
-	AActor* Owner = GetOwner();
-	if (Owner)
-	{
-		CachedASC = Owner->FindComponentByClass<UAbilitySystemComponent>();
-	}
+	ARSCharacter* Char = Cast<ARSCharacter>(GetOwner());
+	if (!Char) return;
 
-	// 시작 스타일(무기 없음 : EssentialAnimation-Unarmed(정영기 팀원이 구매한 무기 미착용 애니메이션)) 적용: DefaultUnarmed
-	ApplyCombatStyle(GetDefaultUnarmedStyle());
+	CachedASC = Char->GetAbilitySystemComponent(); // 필수
+
+	URSHeroComponent* HeroComp = Char->FindComponentByClass<URSHeroComponent>();
+	if (!HeroComp) return;
+
+	HeroComp->OnInputReady.AddLambda([this]()
+		{
+			HandleInputReady();
+		});
 }
 
 UAbilitySystemComponent* URSEquipManagerComponent::GetASC() const
@@ -324,4 +327,36 @@ void URSEquipManagerComponent::ClearAnimStyleTags()
 		ASC->RemoveLooseGameplayTag(Tag);
 	}
 	CachedAppliedAnimTags.Reset();
+}
+
+void URSEquipManagerComponent::HandleInputReady()
+{
+	ApplyDefaultStyleIfNeeded();
+}
+
+void URSEquipManagerComponent::ApplyDefaultStyleIfNeeded()
+{
+	if (bDefaultStyleApplied)
+	{
+		return;
+	}
+
+	ARSCharacter* Char = Cast<ARSCharacter>(GetOwner());
+	if (!Char) return;
+
+	const URSHeroData* HD = Char->GetHeroData();
+	if (!HD || !HD->DefaultUnarmedStyle)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Equip] Missing HeroData/DefaultUnarmedStyle. Pawn=%s"), *GetNameSafe(Char));
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning,
+		TEXT("[Equip] Apply DefaultUnarmedStyle: %s"),
+		*GetNameSafe(HD->DefaultUnarmedStyle));
+
+	// 여기서 네 EquipManager의 기존 ApplyCombatStyle을 호출해야 함
+	ApplyCombatStyle(HD->DefaultUnarmedStyle);
+
+	bDefaultStyleApplied = true;
 }

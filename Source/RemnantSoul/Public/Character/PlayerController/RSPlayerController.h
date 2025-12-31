@@ -9,6 +9,7 @@
 
 class URSInventoryWidget;
 class URSInventoryComponent;
+class URSEnhancedInputComponent;
 
 UCLASS()
 class REMNANTSOUL_API ARSPlayerController : public APlayerController

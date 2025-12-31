@@ -10,9 +10,12 @@ class APlayerController;
 class UInputMappingContext;
 class UInputComponent;
 class ARSCharacter;
+class ARSPlayerState;
 class UEnhancedInputLocalPlayerSubsystem;
 class URSEnhancedInputComponent;
 class URSInputConfig;
+
+DECLARE_MULTICAST_DELEGATE(FRSOnInputReady);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class REMNANTSOUL_API URSHeroComponent : public UActorComponent
@@ -61,4 +64,15 @@ private:
 public:
 	void ApplyOverlayInputConfig(const URSInputConfig* Overlay);
 	void ClearOverlayInputConfig();
+
+#pragma region Delegate
+public:
+	FRSOnInputReady OnInputReady;
+
+private:
+	bool bInputInitialized = false;
+	bool bSetupPICAcknowledged = false;
+#pragma endregion
+
+
 };

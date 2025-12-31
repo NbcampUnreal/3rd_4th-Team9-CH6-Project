@@ -23,7 +23,7 @@ void URSGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle
 	AvatarCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
 	//UAbilityTask_PlayMontageAndWait* PlayAttackTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("PlayAttack"), AvatarCharacter->AttackMontage);
-	UAbilityTask_PlayMontageAndWait* PlayAttackTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("PlayAttack"), AvatarCharacter->AttackMontage, 1.f, GetNextAnimMontageSection());
+	UAbilityTask_PlayMontageAndWait* PlayAttackTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("PlayAttack"), AvatarCharacter->GetAttackMontage(), 1.f, GetNextAnimMontageSection());
 	PlayAttackTask->OnCompleted.AddDynamic(this, &ThisClass::OnCompleted);
 	PlayAttackTask->OnInterrupted.AddDynamic(this, &ThisClass::OnCanceled);
 	PlayAttackTask->ReadyForActivation();
