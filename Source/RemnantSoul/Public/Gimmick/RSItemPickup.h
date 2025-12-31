@@ -3,15 +3,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interface/Interactable.h"
 #include "RSItemPickup.generated.h"
 
-// 기존 RSPotion.h에서 사용하던 인터페이스/부모(Interactable 등) 그대로 유지해야 함.
-class USceneComponent;
-class UStaticMeshComponent;
-class URSItemData;
+
 
 UCLASS()
-class REMNANTSOUL_API ARSItemPickup : public AActor
+class REMNANTSOUL_API ARSItemPickup : public AActor,public IInteractable
 {
 	GENERATED_BODY()
 
@@ -19,9 +17,9 @@ public:
 	ARSItemPickup();
 
 	// 너 기존 헤더에 있던 인터페이스 함수 시그니처 그대로 유지
-	virtual bool CanInteract_Implementation(AActor* Interactor) const;
-	virtual void Interact_Implementation(AActor* Interactor);
-	virtual URSItemData* GetItemData_Implementation() const;
+	virtual bool CanInteract_Implementation(AActor* Interactor) const override;
+	virtual void Interact_Implementation(AActor* Interactor) override;
+	virtual URSItemData* GetItemData_Implementation() const override;
 	
 	void SetHighlight(bool bEnable);
 

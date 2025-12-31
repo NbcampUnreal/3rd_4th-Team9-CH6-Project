@@ -29,6 +29,18 @@ void ARSPlayerController::OnPossess(APawn* InPawn)
 	InventoryComp = InPawn ? InPawn->FindComponentByClass<URSInventoryComponent>() : nullptr;
 }
 
+void ARSPlayerController::UseItemFromSlot(int32 SlotIndex)
+{
+	APawn* Pawnd = GetPawn();
+	if (!Pawnd)
+	{
+		return;
+	}
+	
+
+	InventoryComp->UseItem(SlotIndex, Pawnd);
+}
+
 void ARSPlayerController::EnsureInventoryWidgetCreated()
 {
 	if (InventoryWidget) return;

@@ -100,7 +100,7 @@ ARSCharacter::ARSCharacter()
 	// Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
 	// Weapon->SetupAttachment(GetMesh(), FName(TEXT("hand_rSocket")));
 
-	Inventory = CreateDefaultSubobject<URSInventoryComponent>(TEXT("Inventory"));
+	Inventory = CreateDefaultSubobject<URSInventoryComponent>(TEXT("InventoryComponent"));
 
 	UE_LOG(LogTemp, Warning, TEXT("[Char] BeginPlay Pawn=%s Controlled=%d Controller=%s"),
 		*GetNameSafe(this),
