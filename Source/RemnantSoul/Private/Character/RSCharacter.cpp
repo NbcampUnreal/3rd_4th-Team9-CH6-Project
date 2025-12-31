@@ -194,8 +194,9 @@ void ARSCharacter::BeginPlay()
 	// Equip/Unequip 이벤트 콜백(기존 유지)
 	if (ASC)
 	{
-		ASC->GenericGameplayEventCallbacks.FindOrAdd(EVENT_EQUIP_WEAPON).AddUObject(this, &ThisClass::EquipWeapon);
-		ASC->GenericGameplayEventCallbacks.FindOrAdd(EVENT_UNEQUIP_WEAPON).AddUObject(this, &ThisClass::UnequipWeapon);
+		const FRSGameplayTags& RSTags = FRSGameplayTags::Get();
+		ASC->GenericGameplayEventCallbacks.FindOrAdd(RSTags.Event_Equip_Weapon).AddUObject(this, &ThisClass::EquipWeapon);
+		ASC->GenericGameplayEventCallbacks.FindOrAdd(RSTags.Event_Unequip_Weapon).AddUObject(this, &ThisClass::UnequipWeapon);
 	}
 
 	// Interaction 타이머(기존 유지)

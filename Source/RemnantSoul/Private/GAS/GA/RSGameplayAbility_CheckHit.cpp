@@ -88,11 +88,16 @@ void URSGameplayAbility_CheckHit::OnSweepSingleCapsuleResultReady(const FGamepla
             FGameplayCueParameters CueParam;
             CueParam.EffectContext = CueContextHandle;
 
+            const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+
             // Cue 실행은 TargetASC가 있는 경우에만
             if (IsValid(TargetASC))
             {
-                TargetASC->ExecuteGameplayCue(GAMEPLAYCUE_ATTACK_HIT, CueParam);
+                TargetASC->ExecuteGameplayCue(Tags.GameplayCue_Attack_Hit, CueParam);
             }
+
+            // SourceASC는 위에서 유효성 확보
+            SourceASC->ExecuteGameplayCue(Tags.GameplayCue_Attack_Hit, CueParam);
         }
 
         // 버프는 Source에게 - 여기서 말한 Source는 우리 RSCharacter를 말하는것임.
@@ -124,6 +129,26 @@ void URSGameplayAbility_CheckHit::OnSweepSingleCapsuleResultReady(const FGamepla
             return;
         }
 
+        // ==========================
+        // [FIX] Actor 경로에서는 TargetASC가 스코프에 없으므로,
+        //       TargetData의 Actor 목록에서 ASC를 계산한다.
+        //       (여러 타겟이면 "첫 유효 ASC"만 사용. 단일 히트 연출에 현실적)
+        // ==========================
+        UAbilitySystemComponent* TargetASC = nullptr;
+        for (const TWeakObjectPtr<AActor>& A : Actors)
+        {
+            if (!A.IsValid())
+            {
+                continue;
+            }
+
+            TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(A.Get());
+            if (IsValid(TargetASC))
+            {
+                break;
+            }
+        }
+
         FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect, CurrentLevel);
         if (EffectSpecHandle.IsValid())
         {
@@ -135,8 +160,16 @@ void URSGameplayAbility_CheckHit::OnSweepSingleCapsuleResultReady(const FGamepla
             FGameplayCueParameters CueParam;
             CueParam.EffectContext = CueContextHandle;
 
+            const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+
+            // Cue 실행은 TargetASC가 있는 경우에만
+            if (IsValid(TargetASC))
+            {
+                TargetASC->ExecuteGameplayCue(Tags.GameplayCue_Attack_Hit, CueParam);
+            }
+
             // SourceASC는 위에서 유효성 확보
-            SourceASC->ExecuteGameplayCue(GAMEPLAYCUE_ATTACK_HIT, CueParam);
+            SourceASC->ExecuteGameplayCue(Tags.GameplayCue_Attack_Hit, CueParam);
         }
     }
 

@@ -14,7 +14,8 @@ void URSHPBarWidget::SetAbilitySystemComponent(AActor* InOwner)
 		ASC->GetGameplayAttributeValueChangeDelegate(URSAttributeSet_Character::GetHealthAttribute()).AddUObject(this, &ThisClass::OnHealthChanged);
 		ASC->GetGameplayAttributeValueChangeDelegate(URSAttributeSet_Character::GetMaxHealthAttribute()).AddUObject(this, &ThisClass::OnMaxHealthChanged);
 		//HPBar->SetFillColorAndOpacity(FLinearColor::Green);
-		ASC->RegisterGameplayTagEvent(STATE_INVINCIBLE, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::OnInvincibleTagGranted);
+		ASC->RegisterGameplayTagEvent(FRSGameplayTags::Get().State_Invincible, EGameplayTagEventType::NewOrRemoved)
+			.AddUObject(this, &ThisClass::OnInvincibleTagGranted);
 		HPBar->SetFillColorAndOpacity(NormalHPBarColor);
 
 		const URSAttributeSet_Character* CurrentAttributeSet = ASC->GetSet<URSAttributeSet_Character>();
