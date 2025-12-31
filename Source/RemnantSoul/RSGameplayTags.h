@@ -43,6 +43,14 @@ public:
 	// =========================================================
 	FGameplayTag Data_Damage;
 
+	// Damage.* (데미지 의미/종류)
+	FGameplayTag Damage_Type_Light;     // "Damage.Type.Light"
+	FGameplayTag Damage_Type_Heavy;     // "Damage.Type.Heavy"
+
+	// Damage.Source.* (무기/스킬 등 출처 구분)
+	FGameplayTag Damage_Source_Melee;   // "Damage.Source.Melee"
+	FGameplayTag Damage_Source_Skill;   // "Damage.Source.Skill"
+
 	// =========================================================
 	// Event (기존)
 	// =========================================================

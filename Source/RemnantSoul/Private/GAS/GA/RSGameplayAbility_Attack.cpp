@@ -9,27 +9,60 @@ URSGameplayAbility_Attack::URSGameplayAbility_Attack()
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 
-void URSGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+void URSGameplayAbility_Attack::ActivateAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("URSGameplayAbility_Attack::ActivateAbility()")));
+	ARSCharacter* AvatarCharacter = ActorInfo ? Cast<ARSCharacter>(ActorInfo->AvatarActor.Get()) : nullptr;
+	if (!IsValid(AvatarCharacter))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
 
-	//EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackMontage();
+	if (!IsValid(AttackMontage))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
 
-	ARSCharacter* AvatarCharacter = CastChecked<ARSCharacter>(ActorInfo->AvatarActor.Get());
-	AvatarCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
 
-	//UAbilityTask_PlayMontageAndWait* PlayAttackTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("PlayAttack"), AvatarCharacter->AttackMontage);
-	UAbilityTask_PlayMontageAndWait* PlayAttackTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("PlayAttack"), AvatarCharacter->GetAttackMontage(), 1.f, GetNextAnimMontageSection());
+	if (UCharacterMovementComponent* MoveComp = AvatarCharacter->GetCharacterMovement())
+	{
+		MoveComp->SetMovementMode(EMovementMode::MOVE_None);
+	}
+
+	UAbilityTask_PlayMontageAndWait* PlayAttackTask =
+		UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
+			this,
+			TEXT("PlayAttack"),
+			AttackMontage,
+			1.f,
+			GetNextAnimMontageSection());
+
+	if (!PlayAttackTask)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
 	PlayAttackTask->OnCompleted.AddDynamic(this, &ThisClass::OnCompleted);
 	PlayAttackTask->OnInterrupted.AddDynamic(this, &ThisClass::OnCanceled);
 	PlayAttackTask->ReadyForActivation();
 
 	StartComboTimer();
 }
+
 
 void URSGameplayAbility_Attack::OnCompleted()
 {
@@ -79,21 +112,26 @@ void URSGameplayAbility_Attack::CheckComboInput()
 	}
 }
 
-void URSGameplayAbility_Attack::EndAbility(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-	bool bReplicateEndAbility, bool bWasCancelled)
+void URSGameplayAbility_Attack::EndAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	bool bReplicateEndAbility,
+	bool bWasCancelled)
 {
-	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	ARSCharacter* AvatarCharacter = ActorInfo ? Cast<ARSCharacter>(ActorInfo->AvatarActor.Get()) : nullptr;
+	if (IsValid(AvatarCharacter))
+	{
+		AvatarCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	}
 
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("URSGameplayAbility_Attack::EndAbility()")));
-
-	ARSCharacter* AvatarCharacter = CastChecked<ARSCharacter>(ActorInfo->AvatarActor.Get());
-	AvatarCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-
-	if (ComboTimerHandle.IsValid() == true)
+	if (ComboTimerHandle.IsValid())
 	{
 		ComboTimerHandle.Invalidate();
 	}
+
 	CurrentCombo = 0;
 	IsNextComboInputPressed = false;
+
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }

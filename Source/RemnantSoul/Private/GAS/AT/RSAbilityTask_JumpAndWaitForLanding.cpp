@@ -18,28 +18,76 @@ void URSAbilityTask_JumpAndWaitForLanding::Activate()
 {
 	Super::Activate();
 
-	ACharacter* Character = CastChecked<ACharacter>(GetAvatarActor());
-	Character->LandedDelegate.AddDynamic(this, &ThisClass::OnLanded);
+	ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
+	if (!IsValid(Character))
+	{
+		EndTask();
+		return;
+	}
+
+	CachedCharacter = Character;
+
+	BindLanded();
 	Character->Jump();
 
 	SetWaitingOnAvatar();
-	// 어빌리티 태스크의 종료를 미루고자 한다면 이 함수를 호출해서 Waiting 상태로 진입.
-	// 만약 Tick을 활성화 하고 싶다면 bTickingTask 값을 true로 설정.
 }
 
 void URSAbilityTask_JumpAndWaitForLanding::OnDestroy(bool AbilityEnded)
 {
-	ACharacter* Character = CastChecked<ACharacter>(GetAvatarActor());
-	Character->LandedDelegate.RemoveDynamic(this, &ThisClass::OnLanded);
-
+	UnbindLanded();
 	Super::OnDestroy(AbilityEnded);
 }
 
 void URSAbilityTask_JumpAndWaitForLanding::OnLanded(const FHitResult& Hit)
 {
+	UnbindLanded();
+
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{
 		OnComplete.Broadcast();
-		// 어빌리티 쪽으로 종료를 알림.
 	}
+
+	EndTask();
+}
+
+void URSAbilityTask_JumpAndWaitForLanding::ExternalCancel()
+{
+	UnbindLanded();
+	Super::ExternalCancel();
+	EndTask();
+}
+
+void URSAbilityTask_JumpAndWaitForLanding::BindLanded()
+{
+	if (bBoundToLanded)
+	{
+		return;
+	}
+
+	ACharacter* Character = CachedCharacter.Get();
+	if (!IsValid(Character))
+	{
+		return;
+	}
+
+	Character->LandedDelegate.AddDynamic(this, &ThisClass::OnLanded);
+	bBoundToLanded = true;
+}
+
+void URSAbilityTask_JumpAndWaitForLanding::UnbindLanded()
+{
+	if (!bBoundToLanded)
+	{
+		return;
+	}
+
+	ACharacter* Character = CachedCharacter.Get();
+	if (IsValid(Character))
+	{
+		Character->LandedDelegate.RemoveDynamic(this, &ThisClass::OnLanded);
+	}
+
+	bBoundToLanded = false;
+	CachedCharacter = nullptr;
 }

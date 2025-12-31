@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -14,40 +14,31 @@ class REMNANTSOUL_API URSAbilityTask_RollMove : public UAbilityTask
 {
 	GENERATED_BODY()
 
-
 public:
-
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks",
-		meta = (DisplayName = "Roll Move",
-				HidePin = "OwningAbility",
-				DefaultToSelf = "OwningAbility"))
-	static URSAbilityTask_RollMove* RollMove(
-		UGameplayAbility* OwningAbility,
-		FVector InDirection,
-		float InDistance,
-		float InDuration
-	);
+		meta = (DisplayName = "Roll Move", HidePin = "OwningAbility", DefaultToSelf = "OwningAbility"))
+	static URSAbilityTask_RollMove* RollMove(UGameplayAbility* OwningAbility, FVector InDirection, float InDistance, float InDuration);
 
 	UPROPERTY(BlueprintAssignable)
-	FRollMoveFinished OnBlocked;   // 벽 충돌
+	FRollMoveFinished OnBlocked;
 
 	UPROPERTY(BlueprintAssignable)
 	FRollMoveFinished OnFinished;
 
-	virtual void Activate();
+	virtual void Activate() override;
 	virtual void TickTask(float DeltaTime) override;
 	virtual void OnDestroy(bool AbilityEnded) override;
+	virtual void ExternalCancel() override;
 
-protected:
-	FVector MoveDirection;
-	float TotalDistance;
-	float Duration;
+private:
+	void Cleanup();
+
+	FVector MoveDirection = FVector::ZeroVector;
+	float TotalDistance = 0.f;
+	float Duration = 0.f;
 
 	float ElapsedTime = 0.f;
 	float MovedDistance = 0.f;
 
 	TWeakObjectPtr<ACharacter> Character;
-	
-
-	
 };

@@ -14,106 +14,144 @@ URSGameplayAbility_CheckHit::URSGameplayAbility_CheckHit()
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 
-void URSGameplayAbility_CheckHit::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-	const FGameplayEventData* TriggerEventData)
+void URSGameplayAbility_CheckHit::ActivateAbility(
+    const FGameplayAbilitySpecHandle Handle,
+    const FGameplayAbilityActorInfo* ActorInfo,
+    const FGameplayAbilityActivationInfo ActivationInfo,
+    const FGameplayEventData* TriggerEventData)
 {
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+    Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	CurrentLevel = TriggerEventData->EventMagnitude;
+    // [0] ActorInfo/ASC 기본 가드
+    if (!ActorInfo || !ActorInfo->AvatarActor.IsValid())
+    {
+        EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        return;
+    }
 
-    URSAbilityTask_SweepSingleCapsule* AttackTraceTask = URSAbilityTask_SweepSingleCapsule::CreateTask(this, TargetActorClass);
-	AttackTraceTask->OnComplete.AddDynamic(this, &ThisClass::OnSweepSingleCapsuleResultReady);
-	AttackTraceTask->ReadyForActivation();
+    // [1] TriggerEventData 가드 (EventMagnitude 사용)
+    if (!TriggerEventData)
+    {
+        EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        return;
+    }
+
+    CurrentLevel = TriggerEventData->EventMagnitude;
+
+    // [2] Commit 규칙 통일 (비용/쿨타임/태그 적용 실패 시 종료)
+    if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+    {
+        EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        return;
+    }
+
+    URSAbilityTask_SweepSingleCapsule* AttackTraceTask =
+        URSAbilityTask_SweepSingleCapsule::CreateTask(this, TargetActorClass);
+
+    if (!AttackTraceTask)
+    {
+        EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        return;
+    }
+
+    AttackTraceTask->OnComplete.AddDynamic(this, &ThisClass::OnSweepSingleCapsuleResultReady);
+    AttackTraceTask->ReadyForActivation();
 }
 
-void URSGameplayAbility_CheckHit::OnSweepSingleCapsuleResultReady(const FGameplayAbilityTargetDataHandle& TargetDataHandle)
+void URSGameplayAbility_CheckHit::OnSweepSingleCapsuleResultReady(
+    const FGameplayAbilityTargetDataHandle& TargetDataHandle)
 {
     // ---------- [0] Ability/ActorInfo 생존성 방어 ----------
-    // CurrentActorInfo는 EndAbility 후에도 nullptr일 수 있음
     if (CurrentActorInfo == nullptr)
     {
-        return; // 이미 종료된 뒤 콜백이 들어온 케이스 방어
+        return;
     }
 
     UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo();
     if (!IsValid(SourceASC))
     {
-        // 더 진행해봤자 Apply/Cue 불가
         EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
         return;
     }
 
-    // 1. TargetData 기본 안전성 방어
     const int32 Index = 0;
 
     if (TargetDataHandle.Data.Num() <= Index || TargetDataHandle.Data[Index].Get() == nullptr)
     {
-        // 타겟이 없거나(미검출) 비정상 타겟데이터가 있다면 그냥 EndAbility해주자. 이걸 안해주면 크러시가남..
         EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
         return;
     }
 
-    //  2. HitResult 경로 
+    const FRSGameplayTags& RS_Tags = FRSGameplayTags::Get();
+
+    // -------------------------
+    // 1) HitResult 경로
+    // -------------------------
     if (UAbilitySystemBlueprintLibrary::TargetDataHasHitResult(TargetDataHandle, Index))
     {
-        const FHitResult HitResult = UAbilitySystemBlueprintLibrary::GetHitResultFromTargetData(TargetDataHandle, Index);
+        const FHitResult HitResult =
+            UAbilitySystemBlueprintLibrary::GetHitResultFromTargetData(TargetDataHandle, Index);
 
         AActor* HitActor = HitResult.GetActor();
         if (!IsValid(HitActor))
         {
-            // WorldStatic/Component-only hit 등 Actor가 없을 수 있음
             EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
             return;
         }
 
-        UE_LOG(LogTemp, Log, TEXT("Target %s Detected"), *HitActor->GetName());
+        UAbilitySystemComponent* TargetASC =
+            UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitActor);
 
-        // Target ASC는 있을 수도/없을 수도 있음 (월드 오브젝트/ASC 미보유 Actor)
-        UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitActor);
-
-        //  3. GE 적용 방어 
-        // TriggerEventData가 nullptr였으면 CurrentLevel이 쓰레기일 수 있으니 ActivateAbility에서 가드 권장
-        FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect, CurrentLevel);
+        FGameplayEffectSpecHandle EffectSpecHandle =
+            MakeOutgoingGameplayEffectSpec(AttackDamageEffect, CurrentLevel);
 
         if (EffectSpecHandle.IsValid())
         {
-            // Apply는 TargetData 기반으로 하므로 TargetASC가 없어도 동작할 수 있음(타겟이 ASC를 가진 경우에만 실제 반영)
-            ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, TargetDataHandle);
+            // 핵심: ExecCalc가 읽을 BaseDamage + 결정태그를 Spec에 주입
+            SetupDamageSpec(EffectSpecHandle);
 
-            // Cue 파라미터 구성
-            FGameplayEffectContextHandle CueContextHandle = UAbilitySystemBlueprintLibrary::GetEffectContext(EffectSpecHandle);
+            ApplyGameplayEffectSpecToTarget(
+                CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo,
+                EffectSpecHandle, TargetDataHandle);
+
+            FGameplayEffectContextHandle CueContextHandle =
+                UAbilitySystemBlueprintLibrary::GetEffectContext(EffectSpecHandle);
             CueContextHandle.AddHitResult(HitResult);
 
             FGameplayCueParameters CueParam;
             CueParam.EffectContext = CueContextHandle;
 
-            const FRSGameplayTags& Tags = FRSGameplayTags::Get();
-
-            // Cue 실행은 TargetASC가 있는 경우에만
+            // Target에게 Cue (ASC 있는 경우만)
             if (IsValid(TargetASC))
             {
-                TargetASC->ExecuteGameplayCue(Tags.GameplayCue_Attack_Hit, CueParam);
+                TargetASC->ExecuteGameplayCue(RS_Tags.GameplayCue_Attack_Hit, CueParam);
             }
 
-            // SourceASC는 위에서 유효성 확보
-            SourceASC->ExecuteGameplayCue(Tags.GameplayCue_Attack_Hit, CueParam);
+            // Source에게도 Cue (원하면 유지)
+            SourceASC->ExecuteGameplayCue(RS_Tags.GameplayCue_Attack_Hit, CueParam);
         }
 
-        // 버프는 Source에게 - 여기서 말한 Source는 우리 RSCharacter를 말하는것임.
+        // 버프는 Source에게
         FGameplayEffectSpecHandle BuffEffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackBuffEffect);
         if (BuffEffectSpecHandle.IsValid())
         {
-            ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, BuffEffectSpecHandle);
+            ApplyGameplayEffectSpecToOwner(
+                CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo,
+                BuffEffectSpecHandle);
         }
-    }
-    //  4. Actor 경로(히트리절트가 없는 타겟데이터) 
-    else if (UAbilitySystemBlueprintLibrary::TargetDataHasActor(TargetDataHandle, Index))
-    {
-        // 여기서도 Data[Index] 안전성은 위에서 이미 확보됨
-        const TArray<TWeakObjectPtr<AActor>> Actors = TargetDataHandle.Data[Index].Get()->GetActors();
 
-        // 방어: 타겟 actor가 비어있으면 종료
+        EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+        return;
+    }
+
+    // -------------------------
+    // 2) ActorArray 경로 (HitResult 없음)
+    // -------------------------
+    if (UAbilitySystemBlueprintLibrary::TargetDataHasActor(TargetDataHandle, Index))
+    {
+        const TArray<TWeakObjectPtr<AActor>> Actors =
+            TargetDataHandle.Data[Index].Get()->GetActors();
+
         bool bHasValidActor = false;
         for (const TWeakObjectPtr<AActor>& A : Actors)
         {
@@ -123,55 +161,83 @@ void URSGameplayAbility_CheckHit::OnSweepSingleCapsuleResultReady(const FGamepla
                 break;
             }
         }
+
         if (!bHasValidActor)
         {
             EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
             return;
         }
 
-        // ==========================
-        // [FIX] Actor 경로에서는 TargetASC가 스코프에 없으므로,
-        //       TargetData의 Actor 목록에서 ASC를 계산한다.
-        //       (여러 타겟이면 "첫 유효 ASC"만 사용. 단일 히트 연출에 현실적)
-        // ==========================
-        UAbilitySystemComponent* TargetASC = nullptr;
-        for (const TWeakObjectPtr<AActor>& A : Actors)
-        {
-            if (!A.IsValid())
-            {
-                continue;
-            }
+        FGameplayEffectSpecHandle EffectSpecHandle =
+            MakeOutgoingGameplayEffectSpec(AttackDamageEffect, CurrentLevel);
 
-            TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(A.Get());
-            if (IsValid(TargetASC))
-            {
-                break;
-            }
-        }
-
-        FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect, CurrentLevel);
         if (EffectSpecHandle.IsValid())
         {
-            ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, TargetDataHandle);
+            // 핵심: ExecCalc가 읽을 BaseDamage + 결정태그를 Spec에 주입
+            SetupDamageSpec(EffectSpecHandle);
 
-            FGameplayEffectContextHandle CueContextHandle = UAbilitySystemBlueprintLibrary::GetEffectContext(EffectSpecHandle);
+            ApplyGameplayEffectSpecToTarget(
+                CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo,
+                EffectSpecHandle, TargetDataHandle);
+
+            // Cue 파라미터(ActorArray 기반)
+            FGameplayEffectContextHandle CueContextHandle =
+                UAbilitySystemBlueprintLibrary::GetEffectContext(EffectSpecHandle);
             CueContextHandle.AddActors(Actors, false);
 
             FGameplayCueParameters CueParam;
             CueParam.EffectContext = CueContextHandle;
 
-            const FRSGameplayTags& Tags = FRSGameplayTags::Get();
-
-            // Cue 실행은 TargetASC가 있는 경우에만
-            if (IsValid(TargetASC))
+            // 멀티 타겟: 각 타겟 ASC에 Cue (있는 경우만)
+            for (const TWeakObjectPtr<AActor>& A : Actors)
             {
-                TargetASC->ExecuteGameplayCue(Tags.GameplayCue_Attack_Hit, CueParam);
+                AActor* TargetActor = A.Get();
+                if (!IsValid(TargetActor))
+                {
+                    continue;
+                }
+
+                UAbilitySystemComponent* TargetASC_Local =
+                    UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
+
+                if (IsValid(TargetASC_Local))
+                {
+                    TargetASC_Local->ExecuteGameplayCue(RS_Tags.GameplayCue_Attack_Hit, CueParam);
+                }
             }
 
-            // SourceASC는 위에서 유효성 확보
-            SourceASC->ExecuteGameplayCue(Tags.GameplayCue_Attack_Hit, CueParam);
+            // Source Cue
+            SourceASC->ExecuteGameplayCue(RS_Tags.GameplayCue_Attack_Hit, CueParam);
         }
+
+        EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+        return;
     }
 
     EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+}
+
+void URSGameplayAbility_CheckHit::SetupDamageSpec(FGameplayEffectSpecHandle& SpecHandle) const
+{
+    if (!SpecHandle.IsValid() || SpecHandle.Data == nullptr)
+    {
+        return;
+    }
+
+    const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+
+    // (1) GA는 "BaseDamage"만 넣는다.
+    // 지금은 예시 상수. 다음 단계에서 무기/스탯에서 가져오면 됨.
+    const float BaseDamage = 30.0f;
+    SpecHandle.Data->SetSetByCallerMagnitude(Tags.Data_Damage, BaseDamage);
+
+    // (2) 배율 결정을 위한 "결정 태그"는 Spec에만 부여한다. (ExecCalc가 읽음)
+    // - 라이트/헤비: 입력/공격 종류에 따라 GA가 결정
+    // - 소스: 근접/스킬 등
+    // - 무기 타입: 현재 장비 기반이 이상적. 지금은 예시
+    SpecHandle.Data->DynamicGrantedTags.AddTag(Tags.Damage_Source_Melee);
+    SpecHandle.Data->DynamicGrantedTags.AddTag(Tags.Damage_Type_Light);
+
+    // 무기 타입 예시 (나중에 장비에서 읽어와서 넣으면 됨)
+    SpecHandle.Data->DynamicGrantedTags.AddTag(Tags.Weapon_Sword_OneHand);
 }

@@ -5,38 +5,43 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTraceResultDelegate, const FGameplayAbilityTargetDataHandle&, TargetDataHandle);
 
-class ARSTargetActor_SweepSingleCapsule;
-
 UCLASS()
 class REMNANTSOUL_API URSAbilityTask_SweepSingleCapsule : public UAbilityTask
 {
 	GENERATED_BODY()
-	
+
 public:
 	URSAbilityTask_SweepSingleCapsule();
 
-	UFUNCTION(BlueprintCallable, Category = "Ability|Task", meta = (DisplayName = "WaitForSweepingSingleCapsule", HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static URSAbilityTask_SweepSingleCapsule* CreateTask(UGameplayAbility* OwningAbility, TSubclassOf<ARSTargetActor_SweepSingleCapsule> TargetActorClass);
+	UFUNCTION(BlueprintCallable, Category = "Ability|Task",
+		meta = (DisplayName = "WaitForSweepingSingleCapsule", HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
+	static URSAbilityTask_SweepSingleCapsule* CreateTask(UGameplayAbility* OwningAbility, TSubclassOf<class ARSTargetActor_SweepSingleCapsule> TargetActorClass);
 
 	virtual void Activate() override;
-
-	void SpawnAndInitializeTargetActor();
-
-	void FinalizeTargetActor();
-
 	virtual void OnDestroy(bool AbilityEnded) override;
-
-protected:
-	void OnTargetDataReady(const FGameplayAbilityTargetDataHandle& DataHandle);
+	virtual void ExternalCancel() override;
 
 public:
 	UPROPERTY(BlueprintAssignable)
 	FTraceResultDelegate OnComplete;
 
 protected:
-	UPROPERTY()
-	TSubclassOf<ARSTargetActor_SweepSingleCapsule> TargetActorClass;
+	void SpawnAndInitializeTargetActor();
+	void FinalizeTargetActor();
+
+	UFUNCTION()
+	void OnTargetDataReady(const FGameplayAbilityTargetDataHandle& DataHandle);
+
+private:
+	void CleanupTargetActor();
 
 	UPROPERTY()
-	TObjectPtr<ARSTargetActor_SweepSingleCapsule> TargetActorInstance;
+	TSubclassOf<class ARSTargetActor_SweepSingleCapsule> TargetActorClass;
+
+	UPROPERTY()
+	TObjectPtr<class ARSTargetActor_SweepSingleCapsule> TargetActorInstance;
+
+	TWeakObjectPtr<UAbilitySystemComponent> CachedASC;
+	bool bCleanedUp = false;
 };
+

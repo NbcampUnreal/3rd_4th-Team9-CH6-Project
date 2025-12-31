@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "GAS/AT/RSAbilityTask_RollMove.h"
@@ -27,24 +27,29 @@ void URSAbilityTask_RollMove::Activate()
 
 	bTickingTask = true;
 
-	if (Ability && Ability->GetCurrentActorInfo())
-	{
-		Character = Cast<ACharacter>(
-			Ability->GetCurrentActorInfo()->AvatarActor.Get()
-		);
-	}
-
-	if (!Character.IsValid())
+	AActor* Avatar = GetAvatarActor();
+	ACharacter* C = Cast<ACharacter>(Avatar);
+	if (!IsValid(C))
 	{
 		EndTask();
+		return;
 	}
+
+	Character = C;
+
+	// Duration 가드
+	Duration = FMath::Max(Duration, KINDA_SMALL_NUMBER);
+
+	SetWaitingOnAvatar();
 }
+
 
 void URSAbilityTask_RollMove::TickTask(float DeltaTime)
 {
 	Super::TickTask(DeltaTime);
 
-	if (!Character.IsValid())
+	ACharacter* C = Character.Get();
+	if (!IsValid(C))
 	{
 		EndTask();
 		return;
@@ -52,7 +57,7 @@ void URSAbilityTask_RollMove::TickTask(float DeltaTime)
 
 	ElapsedTime += DeltaTime;
 
-	const float Alpha = ElapsedTime / Duration;
+	const float Alpha = FMath::Clamp(ElapsedTime / Duration, 0.f, 1.f);
 	const float TargetDistance = TotalDistance * Alpha;
 	const float DeltaDistance = TargetDistance - MovedDistance;
 
@@ -61,11 +66,14 @@ void URSAbilityTask_RollMove::TickTask(float DeltaTime)
 		const FVector MoveDelta = MoveDirection * DeltaDistance;
 
 		FHitResult Hit;
-		Character->AddActorWorldOffset(MoveDelta, true, &Hit);
+		C->AddActorWorldOffset(MoveDelta, true, &Hit);
 
 		if (Hit.bBlockingHit)
 		{
-			OnBlocked.Broadcast();
+			if (ShouldBroadcastAbilityTaskDelegates())
+			{
+				OnBlocked.Broadcast();
+			}
 			EndTask();
 			return;
 		}
@@ -75,13 +83,29 @@ void URSAbilityTask_RollMove::TickTask(float DeltaTime)
 
 	if (ElapsedTime >= Duration)
 	{
-		OnFinished.Broadcast();
+		if (ShouldBroadcastAbilityTaskDelegates())
+		{
+			OnFinished.Broadcast();
+		}
 		EndTask();
 	}
 }
 
 void URSAbilityTask_RollMove::OnDestroy(bool AbilityEnded)
 {
-	bTickingTask = false;
+	Cleanup();
 	Super::OnDestroy(AbilityEnded);
+}
+
+void URSAbilityTask_RollMove::ExternalCancel()
+{
+	Cleanup();
+	Super::ExternalCancel();
+	EndTask();
+}
+
+void URSAbilityTask_RollMove::Cleanup()
+{
+	bTickingTask = false;
+	Character = nullptr;
 }

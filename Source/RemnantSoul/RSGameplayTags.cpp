@@ -41,6 +41,13 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	// Data
 	AddTag(Manager, GameplayTags.Data_Damage, "Data.Damage", "SetByCaller / Damage meta value");
 
+	// Damage.* (데미지 의미/종류)
+	AddTag(Manager, GameplayTags.Damage_Type_Light, "Damage.Type.Light", "Damage type: Light attack");
+	AddTag(Manager, GameplayTags.Damage_Type_Heavy, "Damage.Type.Heavy", "Damage type: Heavy attack");
+	// Damage.Source.* (무기/스킬 등 출처 구분)
+	AddTag(Manager, GameplayTags.Damage_Source_Melee, "Damage.Source.Melee", "Damage source: Melee");
+	AddTag(Manager, GameplayTags.Damage_Source_Skill, "Damage.Source.Skill", "Damage source: Skill");
+
 	// Event
 	AddTag(Manager, GameplayTags.Event_Equip_Weapon, "Event.Equip.Weapon", "Equip weapon event");
 	AddTag(Manager, GameplayTags.Event_Unequip_Weapon, "Event.Unequip.Weapon", "Unequip weapon event");

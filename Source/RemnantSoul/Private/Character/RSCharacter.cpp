@@ -108,31 +108,6 @@ ARSCharacter::ARSCharacter()
 		*GetNameSafe(GetController()));
 }
 
-void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	UE_LOG(LogTemp, Warning, TEXT("[Char] SetupPIC Pawn=%s HeroComp=%s Valid=%d"),
-		*GetNameSafe(this),
-		*GetNameSafe(HeroComponent),
-		IsValid(HeroComponent) ? 1 : 0);
-
-	if (IsValid(HeroComponent))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[Char] Calling HeroComp->SetupPIC"));
-		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("[Char] HeroComponent is NULL/Invalid. Check CreateDefaultSubobject name/UPROPERTY."));
-	}
-
-	if (IsValid(HeroComponent))
-	{
-		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
-	}
-}
-
 void ARSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -210,6 +185,32 @@ void ARSCharacter::BeginPlay()
 		true
 	);
 }
+
+void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	UE_LOG(LogTemp, Warning, TEXT("[Char] SetupPIC Pawn=%s HeroComp=%s Valid=%d"),
+		*GetNameSafe(this),
+		*GetNameSafe(HeroComponent),
+		IsValid(HeroComponent) ? 1 : 0);
+
+	if (IsValid(HeroComponent))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Char] Calling HeroComp->SetupPIC"));
+		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Char] HeroComponent is NULL/Invalid. Check CreateDefaultSubobject name/UPROPERTY."));
+	}
+
+	if (IsValid(HeroComponent))
+	{
+		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
+	}
+}
+
 
 void ARSCharacter::OnOutOfHealth()
 {

@@ -6,9 +6,6 @@
 #include "Abilities/GameplayAbility.h"
 #include "RSGameplayAbility_Attack.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class REMNANTSOUL_API URSGameplayAbility_Attack : public UGameplayAbility
 {
