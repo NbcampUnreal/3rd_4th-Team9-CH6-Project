@@ -10,6 +10,7 @@
 class URSInventoryWidget;
 class URSInventoryComponent;
 class URSEnhancedInputComponent;
+class URSGameOverWidget;
 
 UCLASS()
 class REMNANTSOUL_API ARSPlayerController : public APlayerController
@@ -38,6 +39,8 @@ public:
 	
 	virtual void Tick(float DeltaSeconds) override;
 
+	void ShowGameOverUI();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
@@ -52,6 +55,13 @@ protected:
 	UPROPERTY()
 	TObjectPtr<URSInventoryComponent> InventoryComp;
 	bool bInventoryWidgetInited;
+
+	// 에디터에서 WBP_GameOver를 할당할 변수
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> GameOverWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> GameOverWidget;
 
 private:
 	bool bInventoryOpen = false;
