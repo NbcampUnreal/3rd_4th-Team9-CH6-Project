@@ -2,8 +2,14 @@
 
 
 #include "Character/PlayerController/RSPlayerController.h"
+#include "Blueprint/UserWidget.h"
 #include "IngameUI/inventory/RSInventoryWidget.h"
 //#include "Input/RSEnhancedInputComponent.h"
+#include "Component/Inventory/RSInventoryComponent.h"
+#include "GameFramework/Pawn.h"
+
+static const float PickupRange = 250.0f;
+
 
 ARSPlayerController::ARSPlayerController()
 {
@@ -24,6 +30,18 @@ void ARSPlayerController::OnPossess(APawn* InPawn)
 	InventoryComp = InPawn ? InPawn->FindComponentByClass<URSInventoryComponent>() : nullptr;
 }
 
+void ARSPlayerController::UseItemFromSlot(int32 SlotIndex)
+{
+	APawn* Pawnd = GetPawn();
+	if (!Pawnd)
+	{
+		return;
+	}
+	
+
+	InventoryComp->UseItem(SlotIndex, Pawnd);
+}
+
 void ARSPlayerController::EnsureInventoryWidgetCreated()
 {
 	if (InventoryWidget) return;
@@ -34,12 +52,18 @@ void ARSPlayerController::EnsureInventoryWidgetCreated()
 
 	InventoryWidget->AddToViewport(10);
 	InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
+	
 
 	
 	if (InventoryComp)
 	{
 		InventoryWidget->Init(InventoryComp);
+		UE_LOG(LogTemp, Warning, TEXT("[PC] Binding InventoryWidget->OnUseRequested"));
+
+		InventoryWidget->OnUseRequested.AddUObject(this, &ThisClass::UseItemFromSlot);
+		UE_LOG(LogTemp, Warning, TEXT("[PC] Bound OK. InventoryWidget=%s"), *GetNameSafe(InventoryWidget));
 		bInventoryWidgetInited = true;
+		
 	}
 }
 
@@ -114,4 +138,35 @@ void ARSPlayerController::OnPlayerDeath()
 	FInputModeUIOnly InputMode;
 	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	SetInputMode(InputMode);
+}
+
+void ARSPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	
+	
+}
+
+void ARSPlayerController::ShowGameOverUI()
+{
+	// 이미 떠있으면 무시
+	if (GameOverWidget && GameOverWidget->IsInViewport())
+	{
+		return;
+	}
+
+	if (GameOverWidgetClass)
+	{
+		GameOverWidget = CreateWidget<UUserWidget>(this, GameOverWidgetClass);
+		if (GameOverWidget)
+		{
+			GameOverWidget->AddToViewport(100); // 다른 UI보다 위에 뜨게 
+
+			// 마우스 커서 보이게 설정 및 입력 모드 변경
+			bShowMouseCursor = true;
+			FInputModeUIOnly InputMode;
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			SetInputMode(InputMode);
+		}
+	}
 }

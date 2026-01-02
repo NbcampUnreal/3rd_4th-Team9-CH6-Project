@@ -2,68 +2,73 @@
 
 
 #include "IngameUI/inventory/RSInventoryWidget.h"
+
 #include "Components/PanelWidget.h"
+#include "Components/UniformGridPanel.h"
+#include "Components/UniformGridSlot.h"
 #include "Component/Inventory/RSInventoryComponent.h"
 #include "Component/Inventory/RSInventoryType.h"
 #include "IngameUI/inventory/RSInventorySlotWidget.h"
-#include "ItemDataAsset/RSItemData.h"
 
 void URSInventoryWidget::Init(URSInventoryComponent* InInventory)
 {
-	UE_LOG(LogTemp, Log, TEXT("[InvUI] Init called. InInventory=%s"), *GetNameSafe(InInventory));
-
 	InventoryComp = InInventory;
 	if (!InventoryComp)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[InvUI] InventoryComp is null"));
 		return;
 	}
 
-	// (Dynamic delegate면 AddDynamic, Native delegate면 AddUObject)
-	UE_LOG(LogTemp, Log, TEXT("[InvUI] Bind OnInventoryChanged"));
-	InventoryComp->OnInventoryChanged.AddUObject(this, &ThisClass::Refresh);
+	if (!InventoryChangedHandle.IsValid())
+	{
+		InventoryChangedHandle = InventoryComp->OnInventoryChanged.AddUObject(this, &ThisClass::Refresh);
+	}
 
-	UE_LOG(LogTemp, Log, TEXT("[InvUI] First Refresh"));
 	Refresh();
 }
 
+void URSInventoryWidget::NativeDestruct()
+{
+	if (InventoryComp && InventoryChangedHandle.IsValid())
+	{
+		InventoryComp->OnInventoryChanged.Remove(InventoryChangedHandle);
+		InventoryChangedHandle.Reset();
+	}
 
+	Super::NativeDestruct();
+}
 
 void URSInventoryWidget::Refresh()
 {
 	if (!InventoryComp)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[InvUI] InventoryComp null"));
 		return;
 	}
 
-	if (SlotWidgets.Num() == 0)
+	const int32 DesiredSlots = InventoryComp->GetSlotCount();
+	if (SlotWidgets.Num() == 0 || (DesiredSlots > 0 && SlotWidgets.Num() != DesiredSlots))
 	{
-		CollectSlots(); // 최초 1회 or 안전장치
+		CollectSlots();
 	}
 
-	// 1) 일단 전부 비우기
-	for (URSInventorySlotWidget* Slots : SlotWidgets)
+	for (URSInventorySlotWidget* SlotWidget : SlotWidgets)
 	{
-		if (Slots) Slots->ClearSlot();
+		if (SlotWidget)
+		{
+			SlotWidget->ClearSlot();
+		}
 	}
 
-	// 2) 아이템을 슬롯에 채우기
-	const TArray<FInventoryItem>& Items = InventoryComp->GetItems();
+	const TArray<FInventoryItem>& Slots = InventoryComp->GetSlots();
+	const int32 FillCount = FMath::Min(Slots.Num(), SlotWidgets.Num());
 
-	const int32 FillCount = FMath::Min(Items.Num(), SlotWidgets.Num());
 	for (int32 i = 0; i < FillCount; ++i)
 	{
 		if (SlotWidgets[i])
 		{
-			SlotWidgets[i]->SetItem(Items[i]);
+			SlotWidgets[i]->SetItem(Slots[i]);
 		}
 	}
-
-	UE_LOG(LogTemp, Log, TEXT("[InvUI] Refresh done. Items=%d Slots=%d"),
-		Items.Num(), SlotWidgets.Num());
 }
-
 
 void URSInventoryWidget::CollectSlots()
 {
@@ -71,7 +76,6 @@ void URSInventoryWidget::CollectSlots()
 
 	if (!SlotContainer)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[InvUI] SlotContainer is null"));
 		return;
 	}
 
@@ -87,5 +91,92 @@ void URSInventoryWidget::CollectSlots()
 		}
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("[InvUI] Collected Slots=%d"), SlotWidgets.Num());
+	if (SlotWidgets.Num() == 0 && bAutoBuildSlots)
+	{
+		BuildSlots();
+	}
+
+	for (int32 i = 0; i < SlotWidgets.Num(); ++i)
+	{
+		if (SlotWidgets[i])
+		{
+			SlotWidgets[i]->Setup(InventoryComp, i);
+		}
+	}
+}
+
+void URSInventoryWidget::BuildSlots()
+{
+	if (!SlotContainer || !SlotWidgetClass)
+	{
+		return;
+	}
+
+	const int32 InventorySlots = InventoryComp ? InventoryComp->GetSlotCount() : 0;
+	const int32 TotalSlots = (InventorySlots > 0) ? InventorySlots : FMath::Max(0, Rows * Columns);
+
+	SlotContainer->ClearChildren();
+	SlotWidgets.Reset();
+	SlotWidgets.Reserve(TotalSlots);
+
+	if (UUniformGridPanel* Grid = Cast<UUniformGridPanel>(SlotContainer))
+	{
+		for (int32 Index = 0; Index < TotalSlots; ++Index)
+		{
+			URSInventorySlotWidget* Slots = CreateWidget<URSInventorySlotWidget>(GetWorld(), SlotWidgetClass);
+			if (!Slots)
+			{
+				continue;
+			}
+
+			const int32 Row = Index / Columns;
+			const int32 Col = Index % Columns;
+
+			if (UUniformGridSlot* GridSlot = Grid->AddChildToUniformGrid(Slots, Row, Col))
+			{
+				GridSlot->SetHorizontalAlignment(HAlign_Fill);
+				GridSlot->SetVerticalAlignment(VAlign_Fill);
+			}
+
+			SlotWidgets.Add(Slots);
+		}
+	}
+	else
+	{
+		for (int32 Index = 0; Index < TotalSlots; ++Index)
+		{
+			URSInventorySlotWidget* Slots = CreateWidget<URSInventorySlotWidget>(GetWorld(), SlotWidgetClass);
+			if (!Slots)
+			{
+				continue;
+			}
+
+			SlotContainer->AddChild(Slots);
+			SlotWidgets.Add(Slots);
+		}
+	}
+	
+	int32 BoundCount = 0;
+
+	for (URSInventorySlotWidget* Slots : SlotWidgets)
+	{
+		if (!Slots)
+		{
+			continue;
+		}
+
+		Slots->OnUseRequested.AddUObject(this, &ThisClass::HandleSlotUseRequested);
+		++BoundCount;
+	}
+
+	
+}
+
+void URSInventoryWidget::HandleSlotUseRequested(int32 SlotIndex, UUserWidget* Sender)
+{
+
+
+	OnUseRequested.Broadcast(SlotIndex);
+	
+	
 }

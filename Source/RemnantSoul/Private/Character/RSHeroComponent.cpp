@@ -116,8 +116,6 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	auto* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	if (!Subsystem) return;
 
-	// NOTE: 현재는 단순화를 위해 ClearAllMappings 사용.
-	// 추후 UI/공용 IMC 추가 시 "추적 기반 RemoveMappingContext"로 전환 권장.
 	Subsystem->ClearAllMappings();
 
 	const URSInputConfig* InputConfig = Char->GetInputConfig(); 
@@ -171,7 +169,7 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Interaction,ETriggerEvent::Triggered, this, &ThisClass::Input_Interaction);
 	
-	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Triggered, this, &ThisClass::Input_InventoryToggle);
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Started, this, &ThisClass::Input_InventoryToggle);
 
 
 

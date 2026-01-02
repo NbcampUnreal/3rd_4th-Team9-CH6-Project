@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "AbilitySystemComponent.h"
+#include "Character/PlayerController/RSPlayerController.h"
 
 #include "GAS/AS/RSAttributeSet_Character.h"
 #include "GAS/AS/RSAttributeSet_Skill.h"
@@ -101,7 +102,7 @@ ARSCharacter::ARSCharacter()
 	// Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
 	// Weapon->SetupAttachment(GetMesh(), FName(TEXT("hand_rSocket")));
 
-	Inventory = CreateDefaultSubobject<URSInventoryComponent>(TEXT("Inventory"));
+	Inventory = CreateDefaultSubobject<URSInventoryComponent>(TEXT("InventoryComponent"));
 
 	UE_LOG(LogTemp, Warning, TEXT("[Char] BeginPlay Pawn=%s Controlled=%d Controller=%s"),
 		*GetNameSafe(this),
@@ -219,6 +220,11 @@ void ARSCharacter::OnOutOfHealth()
 
 	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 	GetMesh()->SetSimulatePhysics(true);
+
+	if (ARSPlayerController* PC = Cast<ARSPlayerController>(GetController()))
+	{
+		PC->ShowGameOverUI();
+	}
 
 	if (AController* C = GetController())
 	{

@@ -10,6 +10,7 @@
 class URSInventoryWidget;
 class URSInventoryComponent;
 class URSEnhancedInputComponent;
+class URSGameOverWidget;
 
 UCLASS()
 class REMNANTSOUL_API ARSPlayerController : public APlayerController
@@ -17,6 +18,10 @@ class REMNANTSOUL_API ARSPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+	
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	void UseItemFromSlot(int32 SlotIndex);
+	
 	ARSPlayerController();
 	// 인벤 UI
 	UFUNCTION(BlueprintCallable)
@@ -31,10 +36,14 @@ public:
 	bool IsInventoryOpen() const { return bInventoryOpen; }
 	
 	void OnPlayerDeath();
+	
+	virtual void Tick(float DeltaSeconds) override;
+
+	void ShowGameOverUI();
 
 protected:
 	virtual void BeginPlay() override;
-	void OnPossess(APawn* InPawn);
+	virtual void OnPossess(APawn* InPawn) override;
 
 	// 인벤 위젯 클래스(에디터에서 WBP_Inventory 지정)
 	UPROPERTY(EditDefaultsOnly, Category="UI")
@@ -46,6 +55,13 @@ protected:
 	UPROPERTY()
 	TObjectPtr<URSInventoryComponent> InventoryComp;
 	bool bInventoryWidgetInited;
+
+	// 에디터에서 WBP_GameOver를 할당할 변수
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> GameOverWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> GameOverWidget;
 
 private:
 	bool bInventoryOpen = false;
