@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿// RSAnimNotify_RollEnd.h
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
@@ -17,9 +18,8 @@ public:
 		const FAnimNotifyEventReference& EventReference) override;
 #endif
 
-	// 호환용(에디터/버전차 대비)
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 
 private:
-	void SendRollEndEvent(USkeletalMeshComponent* MeshComp) const;
+	void SendRollEndEvent(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) const;
 };
