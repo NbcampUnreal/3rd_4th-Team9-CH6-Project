@@ -42,13 +42,20 @@ void URSGameplayAbility_Attack::ActivateAbility(
 		MoveComp->SetMovementMode(EMovementMode::MOVE_None);
 	}
 
+	CurrentCombo = 1;
+	const FName FirstSection = GetSectionNameForCombo(CurrentCombo);
+	const float FirstRate = GetPlayRateForCombo(CurrentCombo);
+
 	UAbilityTask_PlayMontageAndWait* PlayAttackTask =
 		UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 			this,
 			TEXT("PlayAttack"),
 			AttackMontage,
-			1.f,
-			GetNextAnimMontageSection());
+			FirstRate,          // 여기부터 1타 속도 적용
+			FirstSection        // Attack01
+		);
+
+	ApplyMontagePlayRate(AttackMontage, FirstRate);
 
 	if (!PlayAttackTask)
 	{
@@ -104,13 +111,42 @@ void URSGameplayAbility_Attack::InputPressed(const FGameplayAbilitySpecHandle Ha
 void URSGameplayAbility_Attack::CheckComboInput()
 {
 	ComboTimerHandle.Invalidate();
-	if (IsNextComboInputPressed == true)
+
+	if (!IsNextComboInputPressed)
 	{
-		MontageJumpToSection(GetNextAnimMontageSection());
-		StartComboTimer();
-		IsNextComboInputPressed = false;
+		return;
 	}
+
+	// 다음 콤보로 진행
+	CurrentCombo = FMath::Clamp<uint8>(CurrentCombo + 1, 1, 3);
+
+	ARSCharacter* AvatarCharacter = CurrentActorInfo ? Cast<ARSCharacter>(CurrentActorInfo->AvatarActor.Get()) : nullptr;
+	if (!IsValid(AvatarCharacter))
+	{
+		return;
+	}
+
+	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackMontage();
+	if (!IsValid(AttackMontage))
+	{
+		return;
+	}
+
+	const FName NextSection = GetSectionNameForCombo(CurrentCombo);
+	const float NextRate = GetPlayRateForCombo(CurrentCombo);
+
+	// 섹션 점프
+	MontageJumpToSection(NextSection);
+
+	// 점프 후 PlayRate 갱신 (이게 핵심)
+	ApplyMontagePlayRate(AttackMontage, NextRate);
+
+	// 다음 입력 타이머
+	StartComboTimer();
+
+	IsNextComboInputPressed = false;
 }
+
 
 void URSGameplayAbility_Attack::EndAbility(
 	const FGameplayAbilitySpecHandle Handle,
@@ -134,4 +170,33 @@ void URSGameplayAbility_Attack::EndAbility(
 	IsNextComboInputPressed = false;
 
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+float URSGameplayAbility_Attack::GetPlayRateForCombo(uint8 Combo) const
+{
+	switch (Combo)
+	{
+	case 1: return 1.10f;
+	case 2: return 1.40f;
+	case 3: return 1.55f;
+	default: return 1.0f;
+	}
+}
+
+FName URSGameplayAbility_Attack::GetSectionNameForCombo(uint8 Combo) const
+{
+	return *FString::Printf(TEXT("Attack%02d"), Combo); // Attack01, Attack02, Attack03
+}
+
+void URSGameplayAbility_Attack::ApplyMontagePlayRate(UAnimMontage* Montage, float PlayRate)
+{
+	if (!Montage) return;
+
+	const FGameplayAbilityActorInfo* Info = CurrentActorInfo;
+	if (!Info) return;
+
+	UAnimInstance* AnimInst = Info->GetAnimInstance();
+	if (!AnimInst) return;
+
+	AnimInst->Montage_SetPlayRate(Montage, PlayRate);
 }

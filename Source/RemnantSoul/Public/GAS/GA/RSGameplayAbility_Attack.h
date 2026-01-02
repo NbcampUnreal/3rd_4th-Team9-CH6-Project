@@ -41,4 +41,11 @@ protected:
 	FTimerHandle ComboTimerHandle;
 
 	bool IsNextComboInputPressed = false;
+
+#pragma region ComboSpeed
+	float GetPlayRateForCombo(uint8 Combo) const;
+	FName GetSectionNameForCombo(uint8 Combo) const;
+
+	void ApplyMontagePlayRate(UAnimMontage* Montage, float PlayRate);
+#pragma endregion
 };

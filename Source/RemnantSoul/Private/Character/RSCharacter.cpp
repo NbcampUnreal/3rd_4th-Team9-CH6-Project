@@ -30,6 +30,7 @@
 #include "Item/Managers/RSEquipmentManagerComponent.h"
 #include "Item/Managers/RSInventoryManagerComponent.h"
 #include "Item/Managers/RSItemManagerComponent.h"
+#include "Item/RSItemInstance.h"
 
 // Animation
 #include "Animation/AnimInstance.h"
@@ -635,4 +636,12 @@ UInputComponent* ARSCharacter::CreatePlayerInputComponent()
 		*GetNameSafe(InputComponent));
 
 	return NewIC;
+}
+
+void ARSCharacter::HandleAnimEquipAction(ERSAnimEquipAction Action)
+{
+	if (EquipmentManager)
+	{
+		EquipmentManager->HandleEquipAnimAction(Action);
+	}
 }

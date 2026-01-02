@@ -5,6 +5,7 @@
 #include "AbilitySystemInterface.h"
 #include "Interface/InventoryOwner.h"
 #include "GameplayTagContainer.h"
+#include "Animation/AnimNotify/RSAnimEquipAction.h"
 #include "Abilities/GameplayAbilityTypes.h"   // FGameplayEventData
 #include "RSCharacter.generated.h"
 
@@ -25,6 +26,7 @@ class URSInventoryManagerComponent;
 class URSEquipmentManagerComponent;
 class URSEquipManagerComponent;
 class URSCosmeticManagerComponent;
+enum class ERSAnimEquipAction : uint8;
 
 class URSItemData;
 
@@ -72,6 +74,10 @@ public:
 	const URSPawnData* GetPawnData() const;
 	const URSInputConfig* GetInputConfig() const;
 	const URSHeroData* GetHeroData() const { return HeroData; }
+
+	// AnimNotify 관련 : 무기장착 AnimNotify에서 호출
+	UFUNCTION(BlueprintCallable, Category = "RS|Equip")
+	void HandleAnimEquipAction(ERSAnimEquipAction Action);
 
 public:
 	// Attack
@@ -137,17 +143,17 @@ protected:
 	TObjectPtr<USkeletalMeshComponent> Weapon;
 
 	// Item managers
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Inventory")
-	TObjectPtr<URSInventoryManagerComponent> InventoryManager;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Item", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class URSInventoryManagerComponent> InventoryManager;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Equipment")
-	TObjectPtr<URSEquipmentManagerComponent> EquipmentManager;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Item", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class URSEquipmentManagerComponent> EquipmentManager;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Equipment")
-	TObjectPtr<URSEquipManagerComponent> EquipManager;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Item", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class URSEquipManagerComponent> EquipManager;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Cosmetic")
-	TObjectPtr<URSCosmeticManagerComponent> CosmeticManager;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RS|Item", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class URSCosmeticManagerComponent> CosmeticManager;
 
 	// Inventory (interface target)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")

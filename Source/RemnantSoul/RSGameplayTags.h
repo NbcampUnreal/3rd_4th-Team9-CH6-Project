@@ -26,6 +26,10 @@ public:
 	// Ability (기존)
 	// =========================================================
 	FGameplayTag Ability_Cosmetic_SteamParticle;
+	FGameplayTag Ability_Sprint;
+	FGameplayTag Ability_Sprint_Active;
+	FGameplayTag Ability_Sprint_Check;
+	FGameplayTag Ability_Crouch;
 
 	// =========================================================
 	// State (기존)
@@ -77,6 +81,7 @@ public:
 	FGameplayTag InputTag_Ability_SuperJump;
 	FGameplayTag InputTag_Ability_Attack;
 	FGameplayTag InputTag_Ability_Skill;
+	FGameplayTag InputTag_Ability_Sprint;
 
 	// =========================================================
 	// Slot.* (장착 슬롯)
@@ -106,6 +111,12 @@ public:
 	FGameplayTag State_AnimStyle_Unarmed; // "State.AnimStyle.Unarmed"
 	FGameplayTag State_AnimStyle_Sword1H; // "State.AnimStyle.Sword1H"
 	FGameplayTag State_AnimStyle_Staff2H; // "State.AnimStyle.Staff2H"
+
+	// =========================================================
+	// Status.* (ASC : RSGameplay_Crouch, RSGameplay_Sprint_Action, RSGameplay_Sprint_Check)
+	// =========================================================
+	FGameplayTag Status_Sprint;
+	FGameplayTag Status_Crouch;
 
 	// =========================================================
 	// Input.* (EnhancedInput → AbilityTag 매핑 키)

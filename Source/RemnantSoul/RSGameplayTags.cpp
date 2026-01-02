@@ -28,6 +28,9 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 {
 	// Ability
 	AddTag(Manager, GameplayTags.Ability_Cosmetic_SteamParticle, "Ability.Cosmetic.SteamParticle", "Cosmetic steam particle ability");
+	AddTag(Manager, GameplayTags.Ability_Sprint_Active, "Ability.Sprint.Active", "Sprint Active ability");
+	AddTag(Manager, GameplayTags.Ability_Sprint_Check, "Ability.Sprint.Check", "Sprint Check ability");
+	AddTag(Manager, GameplayTags.Ability_Crouch, "Ability.SprintCrouch", "Crouch Activate ability");
 
 	// State
 	AddTag(Manager, GameplayTags.State_Activated_SteamParticle, "State.Activated.SteamParticle", "Steam particle state");
@@ -68,6 +71,8 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.InputTag_Ability_SuperJump, "InputTag.Ability.SuperJump", "Ability input: SuperJump");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Attack, "InputTag.Ability.Attack", "Ability input: Attack");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Skill, "InputTag.Ability.Skill", "Ability input: Skill");
+	AddTag(Manager, GameplayTags.InputTag_Ability_Sprint, "InputTag.Ability.Sprint", "Ability input: Sprint");
+
 
 	// Slot.*
 	AddTag(Manager, GameplayTags.Slot_Weapon_Main, "Slot.Weapon.Main", "Equipment slot: Main weapon");
@@ -89,6 +94,10 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.State_AnimStyle_Unarmed, "State.AnimStyle.Unarmed", "Anim style: Unarmed");
 	AddTag(Manager, GameplayTags.State_AnimStyle_Sword1H, "State.AnimStyle.Sword1H", "Anim style: Sword 1H");
 	AddTag(Manager, GameplayTags.State_AnimStyle_Staff2H, "State.AnimStyle.Staff2H", "Anim style: Staff 2H");
+
+	// Status.*
+	AddTag(Manager, GameplayTags.Status_Sprint, "Status.Sprint", " Status : Sprint");
+	AddTag(Manager, GameplayTags.Status_Crouch, "Status.Crouch", " Status : Crouch");
 
 	// Input.*
 	AddTag(Manager, GameplayTags.Input_Attack_Light, "Input.Attack.Light", "Input key: Light attack");

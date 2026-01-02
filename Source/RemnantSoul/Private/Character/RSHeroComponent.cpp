@@ -173,6 +173,8 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Triggered, this, &ThisClass::Input_InventoryToggle);
 
+
+
 	bInputInitialized = true;
 	UE_LOG(LogTemp, Warning, TEXT("[Hero] InputReady Broadcast"));
 	OnInputReady.Broadcast();

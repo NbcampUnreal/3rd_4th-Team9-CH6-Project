@@ -30,21 +30,33 @@ public:
         for (const FRSInputAction& Action : InputConfig->AbilityInputActions)
         {
             if (!Action.InputAction || !Action.InputTag.IsValid())
+            {
                 continue;
+            }
+
+            const UInputAction* IA = Action.InputAction.Get();
+            const FGameplayTag Tag = Action.InputTag;
 
             if (PressedFunc)
             {
                 BindHandles.Add(
-                    BindAction(Action.InputAction.Get(), ETriggerEvent::Started, Object, PressedFunc, Action.InputTag).GetHandle()
+                    BindAction(IA, ETriggerEvent::Started, Object, PressedFunc, Tag).GetHandle()
                 );
             }
 
             if (ReleasedFunc)
             {
+                // Released는 Completed만으로 부족할 수 있음
                 BindHandles.Add(
-                    BindAction(Action.InputAction.Get(), ETriggerEvent::Completed, Object, ReleasedFunc, Action.InputTag).GetHandle()
+                    BindAction(IA, ETriggerEvent::Completed, Object, ReleasedFunc, Tag).GetHandle()
+                );
+
+                // 키 뗄 때 Canceled로 떨어지는 케이스 대응
+                BindHandles.Add(
+                    BindAction(IA, ETriggerEvent::Canceled, Object, ReleasedFunc, Tag).GetHandle()
                 );
             }
         }
     }
+
 };
