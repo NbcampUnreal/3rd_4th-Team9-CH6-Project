@@ -35,11 +35,18 @@ void URSGameplayAbility_Jump::ActivateAbility(const FGameplayAbilitySpecHandle H
 	JumpAndWaitingForLandingTask->ReadyForActivation();
 }
 
-void URSGameplayAbility_Jump::InputReleased(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+void URSGameplayAbility_Jump::InputReleased(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo)
 {
-	ACharacter* AvatarCharacter = CastChecked<ACharacter>(ActorInfo->AvatarActor.Get());
-	AvatarCharacter->StopJumping();
+	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
+
+	ACharacter* AvatarCharacter = ActorInfo ? Cast<ACharacter>(ActorInfo->AvatarActor.Get()) : nullptr;
+	if (IsValid(AvatarCharacter))
+	{
+		AvatarCharacter->StopJumping();
+	}
 }
 
 void URSGameplayAbility_Jump::OnLanded()
