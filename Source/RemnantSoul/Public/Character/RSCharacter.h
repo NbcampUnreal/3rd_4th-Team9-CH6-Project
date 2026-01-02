@@ -88,6 +88,10 @@ public:
 
 	void SetHeroData(const URSHeroData* InHeroData);
 
+	// Roll
+	void SetRollDirectionDegrees(float InDegrees) { RollDirectionDegrees = InDegrees; }
+	float GetRollDirectionDegrees() const { return RollDirectionDegrees; }
+
 protected:
 	// replication/possession
 	virtual void PossessedBy(AController* NewController) override;
@@ -227,4 +231,11 @@ protected:
 	TObjectPtr<URSItemData> CurrentInteractItemData = nullptr;
 
 	FTimerHandle InteractTraceTimer;
+
+	// -------------------------
+	// Roll Degrees
+	// -------------------------
+private:
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	float RollDirectionDegrees = 0.f;
 };

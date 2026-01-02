@@ -30,6 +30,7 @@ public:
 	FGameplayTag Ability_Sprint_Active;
 	FGameplayTag Ability_Sprint_Check;
 	FGameplayTag Ability_Crouch;
+	FGameplayTag Ability_Roll;
 
 	// =========================================================
 	// State (기존)
@@ -61,6 +62,7 @@ public:
 	FGameplayTag Event_Equip_Weapon;
 	FGameplayTag Event_Unequip_Weapon;
 	FGameplayTag Event_Skill_CheckHit;
+	FGameplayTag Event_Roll_End;
 
 	// =========================================================
 	// GameplayCue (기존)
@@ -82,6 +84,10 @@ public:
 	FGameplayTag InputTag_Ability_Attack;
 	FGameplayTag InputTag_Ability_Skill;
 	FGameplayTag InputTag_Ability_Sprint;
+	FGameplayTag InputTag_Ability_Crouch;
+	FGameplayTag InputTag_Ability_Roll;
+
+
 
 	// =========================================================
 	// Slot.* (장착 슬롯)
@@ -117,6 +123,7 @@ public:
 	// =========================================================
 	FGameplayTag Status_Sprint;
 	FGameplayTag Status_Crouch;
+	FGameplayTag Status_Roll;
 
 	// =========================================================
 	// Input.* (EnhancedInput → AbilityTag 매핑 키)

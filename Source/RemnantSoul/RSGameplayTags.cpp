@@ -30,7 +30,9 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.Ability_Cosmetic_SteamParticle, "Ability.Cosmetic.SteamParticle", "Cosmetic steam particle ability");
 	AddTag(Manager, GameplayTags.Ability_Sprint_Active, "Ability.Sprint.Active", "Sprint Active ability");
 	AddTag(Manager, GameplayTags.Ability_Sprint_Check, "Ability.Sprint.Check", "Sprint Check ability");
-	AddTag(Manager, GameplayTags.Ability_Crouch, "Ability.SprintCrouch", "Crouch Activate ability");
+	AddTag(Manager, GameplayTags.Ability_Sprint, "Ability.Sprint", "Sprint Activate ability");
+	AddTag(Manager, GameplayTags.Ability_Crouch, "Ability.Crouch", "Crouch Activate ability");
+	AddTag(Manager, GameplayTags.Ability_Roll, "Ability.Roll", "Roll Activate ability");
 
 	// State
 	AddTag(Manager, GameplayTags.State_Activated_SteamParticle, "State.Activated.SteamParticle", "Steam particle state");
@@ -55,6 +57,7 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.Event_Equip_Weapon, "Event.Equip.Weapon", "Equip weapon event");
 	AddTag(Manager, GameplayTags.Event_Unequip_Weapon, "Event.Unequip.Weapon", "Unequip weapon event");
 	AddTag(Manager, GameplayTags.Event_Skill_CheckHit, "Event.Skill.CheckHit", "Skill check hit event");
+	AddTag(Manager, GameplayTags.Event_Roll_End, "Event.Roll.End", "Roll End check hit event");
 
 	// GameplayCue
 	AddTag(Manager, GameplayTags.GameplayCue_Attack_Hit, "GameplayCue.Attack.Hit", "Attack hit cue");
@@ -72,6 +75,9 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.InputTag_Ability_Attack, "InputTag.Ability.Attack", "Ability input: Attack");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Skill, "InputTag.Ability.Skill", "Ability input: Skill");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Sprint, "InputTag.Ability.Sprint", "Ability input: Sprint");
+	AddTag(Manager, GameplayTags.InputTag_Ability_Crouch, "InputTag.Ability.Crouch", "Ability input: Crouch");
+	AddTag(Manager, GameplayTags.InputTag_Ability_Roll, "InputTag.Ability.Roll", "Ability input: Roll");
+
 
 
 	// Slot.*
@@ -98,6 +104,7 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	// Status.*
 	AddTag(Manager, GameplayTags.Status_Sprint, "Status.Sprint", " Status : Sprint");
 	AddTag(Manager, GameplayTags.Status_Crouch, "Status.Crouch", " Status : Crouch");
+	AddTag(Manager, GameplayTags.Status_Roll, "Status.Roll", " Status : Roll");
 
 	// Input.*
 	AddTag(Manager, GameplayTags.Input_Attack_Light, "Input.Attack.Light", "Input key: Light attack");
