@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "AbilitySystemComponent.h"
+#include "Character/PlayerController/RSPlayerController.h"
 
 #include "GAS/AS/RSAttributeSet_Character.h"
 #include "GAS/AS/RSAttributeSet_Skill.h"
@@ -216,6 +217,11 @@ void ARSCharacter::OnOutOfHealth()
 
 	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 	GetMesh()->SetSimulatePhysics(true);
+
+	if (ARSPlayerController* PC = Cast<ARSPlayerController>(GetController()))
+	{
+		PC->ShowGameOverUI();
+	}
 
 	if (AController* C = GetController())
 	{
