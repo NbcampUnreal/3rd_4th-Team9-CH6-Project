@@ -3,11 +3,13 @@
 
 #include "Character/PlayerController/RSPlayerController.h"
 #include "Blueprint/UserWidget.h"
-#include "IngameUI/inventory/RSInventoryWidget.h"
+
 //#include "Input/RSEnhancedInputComponent.h"
 #include "Component/Inventory/RSInventoryComponent.h"
+#include "IngameUI/inventory/RSInventoryWidget.h"
 #include "GameFramework/Pawn.h"
-
+#include "IngameUI/inventory//RSQuickSlotWidget.h"
+#include "ItemDataAsset/RSItemData.h"
 static const float PickupRange = 250.0f;
 
 
@@ -28,6 +30,12 @@ void ARSPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	InventoryComp = InPawn ? InPawn->FindComponentByClass<URSInventoryComponent>() : nullptr;
+	if (InventoryComp)
+	{
+		InventoryComp->OnInventoryChanged.AddUObject(this, &ThisClass::HandleInventoryChanged);
+	}
+	EnsureQuickSlotWidgetCreated();
+	HandleInventoryChanged(); // 초기 1회 갱신
 }
 
 void ARSPlayerController::UseItemFromSlot(int32 SlotIndex)
@@ -169,4 +177,107 @@ void ARSPlayerController::ShowGameOverUI()
 			SetInputMode(InputMode);
 		}
 	}
+	
+}
+
+void ARSPlayerController::HandleInventoryChanged()
+{
+	RebuildQuickPotionSlots();
+	UpdateQuickSlotUI();
+}
+
+void ARSPlayerController::RebuildQuickPotionSlots()
+{
+	QuickPotionSlots.Reset();
+
+	if (!InventoryComp) return;
+
+	const TArray<FInventoryItem>& Slots = InventoryComp->GetSlots();
+	for (int32 i = 0; i < Slots.Num(); ++i)
+	{
+		const FInventoryItem& S = Slots[i];
+		if (S.IsEmpty() || !S.ItemData) continue;
+
+		if (S.ItemData->Category == EItemCategory::Potion)
+		{
+			QuickPotionSlots.Add(i);
+		}
+	}
+
+	if (QuickPotionSlots.Num() == 0)
+	{
+		QuickPotionIndex = 0;
+	}
+	else
+	{
+		QuickPotionIndex = FMath::Clamp(QuickPotionIndex, 0, QuickPotionSlots.Num() - 1);
+	}
+}
+void ARSPlayerController::EnsureQuickSlotWidgetCreated()
+{
+
+	if (!IsLocalController() || QuickSlotWidget)
+	{
+		return;
+	}
+
+	if (!QuickSlotWidgetClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[QuickSlot] QuickSlotWidgetClass is not set."));
+		return;
+	}
+
+	QuickSlotWidget = CreateWidget<URSQuickSlotWidget>(this, QuickSlotWidgetClass);
+	if (!QuickSlotWidget)
+	{
+		return;
+	}
+
+	QuickSlotWidget->AddToViewport(5);
+	QuickSlotWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+
+	
+
+	UE_LOG(LogTemp, Log, TEXT("[QuickSlot] Created & AddedToViewport"));
+	
+}
+
+void ARSPlayerController::QuickRotatePotion()
+{
+	if (bInventoryOpen) return;
+	if (QuickPotionSlots.Num() <= 1) return;
+
+	QuickPotionIndex = (QuickPotionIndex + 1) % QuickPotionSlots.Num();
+	UpdateQuickSlotUI();
+}
+
+void ARSPlayerController::QuickUsePotion()
+{
+	if (bInventoryOpen) return;
+
+	APawn* P = GetPawn();
+	if (!P || !InventoryComp) return;
+	if (QuickPotionSlots.Num() == 0) return;
+
+	const int32 SlotIndex = QuickPotionSlots[QuickPotionIndex];
+	InventoryComp->UseItem(SlotIndex, P);
+	// 성공/소비/정리 -> OnInventoryChanged.Broadcast()가 이미 불리니까 UI는 자동 갱신됨
+}
+
+void ARSPlayerController::UpdateQuickSlotUI()
+{
+	if (!QuickSlotWidget || !InventoryComp)
+	{
+		return;
+	}
+
+	if (QuickPotionSlots.Num() == 0)
+	{
+		QuickSlotWidget->SetEmpty();
+		return;
+	}
+
+	const int32 SlotIndex = QuickPotionSlots[QuickPotionIndex];
+	const FInventoryItem& Item = InventoryComp->GetSlots()[SlotIndex];
+	QuickSlotWidget->SetItem(Item);
 }

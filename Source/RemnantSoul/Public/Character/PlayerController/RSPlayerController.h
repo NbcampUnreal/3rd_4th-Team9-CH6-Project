@@ -10,6 +10,7 @@
 class URSInventoryWidget;
 class URSInventoryComponent;
 class URSEnhancedInputComponent;
+class URSQuickSlotWidget;
 class URSGameOverWidget;
 
 UCLASS()
@@ -40,6 +41,10 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	void ShowGameOverUI();
+	
+	void QuickUsePotion(); 
+	
+	void QuickRotatePotion();     
 
 protected:
 	virtual void BeginPlay() override;
@@ -55,7 +60,27 @@ protected:
 	UPROPERTY()
 	TObjectPtr<URSInventoryComponent> InventoryComp;
 	bool bInventoryWidgetInited;
+	
+	
+	
+	UPROPERTY(EditDefaultsOnly, Category="UI|QuickSlot")
+	TSubclassOf<URSQuickSlotWidget> QuickSlotWidgetClass;
 
+	UPROPERTY()
+	TObjectPtr<URSQuickSlotWidget> QuickSlotWidget;
+
+	// “포션이 들어있는 인벤 슬롯 인덱스들”
+	UPROPERTY(Transient)
+	TArray<int32> QuickPotionSlots;
+
+	UPROPERTY(Transient)
+	int32 QuickPotionIndex = 0;
+
+	void HandleInventoryChanged();
+	void RebuildQuickPotionSlots();
+	void UpdateQuickSlotUI();
+	
+	
 	// 에디터에서 WBP_GameOver를 할당할 변수
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> GameOverWidgetClass;
@@ -68,6 +93,8 @@ private:
 
 	void EnsureInventoryWidgetCreated();
 	void ApplyInventoryInputMode(bool bOpen);
+	// QuickSlot
+	void EnsureQuickSlotWidgetCreated();
 	
 	
 };
