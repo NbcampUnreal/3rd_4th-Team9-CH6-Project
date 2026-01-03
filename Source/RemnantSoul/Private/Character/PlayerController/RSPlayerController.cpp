@@ -35,7 +35,7 @@ void ARSPlayerController::OnPossess(APawn* InPawn)
 		InventoryComp->OnInventoryChanged.AddUObject(this, &ThisClass::HandleInventoryChanged);
 	}
 	EnsureQuickSlotWidgetCreated();
-	HandleInventoryChanged(); // 초기 1회 갱신
+	HandleInventoryChanged();
 }
 
 void ARSPlayerController::UseItemFromSlot(int32 SlotIndex)
