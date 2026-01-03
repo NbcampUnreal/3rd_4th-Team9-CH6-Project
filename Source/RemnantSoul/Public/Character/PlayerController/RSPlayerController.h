@@ -42,9 +42,8 @@ public:
 
 	void ShowGameOverUI();
 	
-	void QuickUsePotion(); 
-	
-	void QuickRotatePotion();     
+	void QuickSlotCycle();
+	void QuickSlotUse();   
 
 protected:
 	virtual void BeginPlay() override;

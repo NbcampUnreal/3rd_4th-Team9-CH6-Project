@@ -242,7 +242,7 @@ void ARSPlayerController::EnsureQuickSlotWidgetCreated()
 	
 }
 
-void ARSPlayerController::QuickRotatePotion()
+void ARSPlayerController::QuickSlotCycle()
 {
 	if (bInventoryOpen) return;
 	if (QuickPotionSlots.Num() <= 1) return;
@@ -251,7 +251,7 @@ void ARSPlayerController::QuickRotatePotion()
 	UpdateQuickSlotUI();
 }
 
-void ARSPlayerController::QuickUsePotion()
+void ARSPlayerController::QuickSlotUse()
 {
 	if (bInventoryOpen) return;
 

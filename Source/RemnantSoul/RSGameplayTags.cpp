@@ -68,8 +68,10 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.InputTag_Native_Move, "InputTag.Native.Move", "Native move input");
 	AddTag(Manager, GameplayTags.InputTag_Native_Look, "InputTag.Native.Look", "Native look input");
 	AddTag(Manager, GameplayTags.InputTag_Native_Interaction, "InputTag.Native.Interaction", "Native interaction input");
-	AddTag(Manager, GameplayTags.InputTag_Native_InventoryToggle, "InputTag.Native.InventoryToggle", "Inventory Toggle input");
-
+	AddTag(Manager, GameplayTags.InputTag_Native_InventoryToggle, "InputTag.Native.InventoryToggle", "Native Inventory Toggle Input");
+	AddTag(Manager, GameplayTags.InputTag_Native_QuickSlotCycle,"InputTag.Native.QuickSlotCycle","Native QuickSlotCycle Input");
+	AddTag(Manager, GameplayTags.InputTag_Native_QuickSlotUse,"InputTag.Native.QuickSlotUse","Native QuickSlotUse Input");
+	
 	AddTag(Manager, GameplayTags.InputTag_Ability_Jump, "InputTag.Ability.Jump", "Ability input: Jump");
 	AddTag(Manager, GameplayTags.InputTag_Ability_SuperJump, "InputTag.Ability.SuperJump", "Ability input: SuperJump");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Attack, "InputTag.Ability.Attack", "Ability input: Attack");
