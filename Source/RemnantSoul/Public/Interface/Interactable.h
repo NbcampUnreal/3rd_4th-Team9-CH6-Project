@@ -6,29 +6,20 @@
 #include "UObject/Interface.h"
 #include "Interactable.generated.h"
 
-class URSItemData;	
-// This class does not need to be modified.
 UINTERFACE(Blueprintable)
 class UInteractable : public UInterface
 {
 	GENERATED_BODY()
 };
 
-/**
- * 
- */
 class REMNANTSOUL_API IInteractable
 {
 	GENERATED_BODY()
 
-	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interact")
 	bool CanInteract(AActor* Interactor) const;
-	
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interact")
 	void Interact(AActor* Interactor);
-	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interact")
-	URSItemData* GetItemData() const;
 };

@@ -78,7 +78,9 @@ public:
 	FGameplayTag InputTag_Native_Look;
 	FGameplayTag InputTag_Native_Interaction;
 	FGameplayTag InputTag_Native_InventoryToggle;
-
+	FGameplayTag InputTag_Native_QuickSlotCycle;
+	FGameplayTag InputTag_Native_QuickSlotUse;
+	
 	FGameplayTag InputTag_Ability_Jump;
 	FGameplayTag InputTag_Ability_SuperJump;
 	FGameplayTag InputTag_Ability_Attack;
