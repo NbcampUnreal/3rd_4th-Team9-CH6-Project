@@ -26,6 +26,8 @@ void URSEquipmentManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	EquippedWeapons.SetNum(3);
+
 	CacheReferences();
 
 	// DefaultSlots 기반으로 초기 슬롯 세팅
@@ -444,7 +446,6 @@ void URSEquipmentManagerComponent::InternalUnequip(const FGameplayTag& SlotTag)
 		bEquipTransactionActive = true;
 		PendingSlotTag = SlotTag;
 		PendingOldItem = OldItem;
-		PendingNewItem = nullptr;
 
 		OnEquipmentChanged.Broadcast(SlotTag, OldItem, nullptr);
 		return;
@@ -456,4 +457,11 @@ void URSEquipmentManagerComponent::InternalUnequip(const FGameplayTag& SlotTag)
 	}
 
 	OnEquipmentChanged.Broadcast(SlotTag, OldItem, nullptr);
+}
+
+URSItemInstance* URSEquipmentManagerComponent::GetWeaponInSlot(int32 SlotIndex) const
+{
+	return EquippedWeapons.IsValidIndex(SlotIndex)
+		? EquippedWeapons[SlotIndex]
+		: nullptr;
 }

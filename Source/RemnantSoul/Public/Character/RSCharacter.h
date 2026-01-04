@@ -40,6 +40,7 @@ class UGameplayAbility;
 struct FTimerHandle;
 struct FRSAbilitySet_GrantedHandles;
 
+
 UCLASS()
 class REMNANTSOUL_API ARSCharacter
 	: public ACharacter

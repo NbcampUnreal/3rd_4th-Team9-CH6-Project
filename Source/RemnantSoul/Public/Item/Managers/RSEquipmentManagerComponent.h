@@ -79,6 +79,8 @@ public:
 	/** MainWeaponSlotTag Getter (ItemManager 등에서 사용) */
 	FGameplayTag GetMainWeaponSlotTag() const { return MainWeaponSlotTag; }
 
+	URSItemInstance* GetWeaponInSlot(int32 SlotIndex) const;
+
 public:
 	/** 장비 변경 알림 델리게이트 (UI 등에서 바인딩 용) */
 	UPROPERTY(BlueprintAssignable, Category = "RS|Equipment")
@@ -87,6 +89,8 @@ public:
 	// AnimNotify에서 호출되는 진입점(캐릭터->EquipmentManager)
 	UFUNCTION(BlueprintCallable, Category = "RS|Equipment|Anim")
 	void HandleEquipAnimAction(ERSAnimEquipAction Action);
+
+
 
 protected:
 	/** 내부 헬퍼: 실제 장착 처리 (검증 완료 후 호출) */
@@ -129,6 +133,14 @@ protected:
 	/** 코스메틱 담당 매니저 (무기 외형 등) */
 	UPROPERTY(Transient)
 	TWeakObjectPtr<URSCosmeticManagerComponent> CachedCosmeticManager;
+
+	/** 현재 사용 중인 HeroData */
+	UPROPERTY()
+	TObjectPtr<const URSHeroData> HeroData;
+
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<URSItemInstance>> EquippedWeapons;
+
 
 
 

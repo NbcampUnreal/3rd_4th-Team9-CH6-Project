@@ -7,6 +7,7 @@
 #include "Character/RSHeroComponent.h"
 #include "Character/RSHeroData.h"
 #include "Character/RSCombatStyleData.h"
+//#include "RSPlayerStateStructs.h"
 
 #include "Input/RSInputConfig.h"
 
@@ -15,7 +16,15 @@
 #include "Item/Fragments/RSItemFragment_AbilitySet.h"
 #include "Item/Fragments/RSItemFragment_CombatStyle.h"
 
+#include "RSGameplayTags.h"
+
+#include "Item/Managers/RSEquipmentManagerComponent.h"
+
+
+
+
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RSEquipManagerComponent)
+
 URSEquipManagerComponent::URSEquipManagerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -37,6 +46,14 @@ void URSEquipManagerComponent::BeginPlay()
 		{
 			HandleInputReady();
 		});
+
+	AActor* Owner = GetOwner();
+	if (!Owner)
+	{
+		return;
+	}
+
+	EquipmentManager = Owner->FindComponentByClass<URSEquipmentManagerComponent>();
 }
 
 UAbilitySystemComponent* URSEquipManagerComponent::GetASC() const
@@ -129,7 +146,7 @@ void URSEquipManagerComponent::ClearItemPassiveAbilitySets()
 	ItemPassiveHandles.Reset();
 }
 
-void URSEquipManagerComponent::ApplyCombatStyle(URSCombatStyleData* NewStyle)
+void URSEquipManagerComponent::ApplyCombatStyle(const URSCombatStyleData* NewStyle)
 {
 	if (!NewStyle)
 	{
@@ -295,7 +312,7 @@ void URSEquipManagerComponent::TakeAbilitySetList(TArray<FRSAbilitySet_GrantedHa
 	InOutHandles.Reset();
 }
 
-void URSEquipManagerComponent::ApplyAnimStyleTags(URSCombatStyleData* Style)
+void URSEquipManagerComponent::ApplyAnimStyleTags(const URSCombatStyleData* Style)
 {
 	if (!bApplyAnimStyleTagsToASC) return;
 
@@ -359,4 +376,76 @@ void URSEquipManagerComponent::ApplyDefaultStyleIfNeeded()
 	ApplyCombatStyle(HD->DefaultUnarmedStyle);
 
 	bDefaultStyleApplied = true;
+}
+
+ERSWeaponSlot URSEquipManagerComponent::ConvertInputTagToSlot(
+	const FGameplayTag& InputTag) const
+{
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+
+	if (InputTag == Tags.InputTag_Native_EquipSlot1)
+	{
+		return ERSWeaponSlot::Slot1;
+	}
+	if (InputTag == Tags.InputTag_Native_EquipSlot2)
+	{
+		return ERSWeaponSlot::Slot2;
+	}
+
+	return ERSWeaponSlot::None;
+}
+
+void URSEquipManagerComponent::SetCurrentState(
+	ERSWeaponSlot NewSlot,
+	URSItemInstance* NewWeapon)
+{
+	CurrentWeaponState.ActiveSlot = NewSlot;
+	CurrentWeaponState.ActiveWeapon = NewWeapon;
+}
+
+void URSEquipManagerComponent::HandleEquipSlotInput(
+	const FGameplayTag& InputTag)
+{
+	if (!EquipmentManager || !GetDefaultUnarmedStyle())
+	{
+		return;
+	}
+
+	const ERSWeaponSlot PressedSlot = ConvertInputTagToSlot(InputTag);
+	if (PressedSlot == ERSWeaponSlot::None)
+	{
+		return;
+	}
+
+	// 같은 슬롯 다시 누름 → Unarmed
+	if (PressedSlot == CurrentWeaponState.ActiveSlot)
+	{
+		if (!EquipmentManager || !GetDefaultUnarmedStyle())
+		{
+			return;
+		}
+
+		ApplyCombatStyle(GetDefaultUnarmedStyle());
+		SetCurrentState(ERSWeaponSlot::None, nullptr);
+		return;
+	}
+
+	URSItemInstance* Weapon =
+		EquipmentManager->GetWeaponInSlot(static_cast<int32>(PressedSlot));
+
+	if (!Weapon)
+	{
+		return;
+	}
+
+	const URSCombatStyleData* WeaponStyle =
+		ResolveCombatStyleForWeapon(Weapon);
+
+	if (!WeaponStyle)
+	{
+		return;
+	}
+
+	ApplyCombatStyle(GetDefaultUnarmedStyle());
+	SetCurrentState(PressedSlot, Weapon);
 }

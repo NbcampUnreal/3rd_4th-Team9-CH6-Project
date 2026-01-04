@@ -14,6 +14,7 @@ class ARSPlayerState;
 class UEnhancedInputLocalPlayerSubsystem;
 class URSEnhancedInputComponent;
 class URSInputConfig;
+class URSEquipManagerComponent;
 
 DECLARE_MULTICAST_DELEGATE(FRSOnInputReady);
 
@@ -38,8 +39,17 @@ protected:
 	void Input_Look(const FInputActionValue& Value);
 	void Input_Interaction(const FInputActionValue& Value);
 	void Input_InventoryToggle(const FInputActionValue& Value);
+	void Input_EquipSlot1();
+	void Input_EquipSlot2();
+
+
+	
 	
 	ARSCharacter* GetOwnerCharacter() const;
+
+protected:
+	UPROPERTY()
+	TObjectPtr<URSEquipManagerComponent> EquipManager;
 
 private:
 	UPROPERTY()

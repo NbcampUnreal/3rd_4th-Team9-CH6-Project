@@ -14,6 +14,11 @@
 #include "GameFramework/Pawn.h"
 #include "Character/PlayerController/RSPlayerController.h"
 
+#include "Abilities/GameplayAbility.h"
+#include "Item/Managers/RSEquipManagerComponent.h"
+
+
+
 void URSHeroComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -171,7 +176,9 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Started, this, &ThisClass::Input_InventoryToggle);
 
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot1, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot1);
 
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot2, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot2);
 
 	bInputInitialized = true;
 	UE_LOG(LogTemp, Warning, TEXT("[Hero] InputReady Broadcast"));
@@ -258,6 +265,30 @@ void URSHeroComponent::Input_Look(const FInputActionValue& InputActionValue)
 
 	if (!FMath::IsNearlyZero(Value.Y))
 		Character->AddControllerPitchInput(Value.Y);
+}
+
+void URSHeroComponent::Input_EquipSlot1()
+{
+	if (!EquipManager)
+	{
+		return;
+	}
+
+	EquipManager->HandleEquipSlotInput(
+		FRSGameplayTags::Get().InputTag_Native_EquipSlot1
+	);
+}
+
+void URSHeroComponent::Input_EquipSlot2()
+{
+	if (!EquipManager)
+	{
+		return;
+	}
+
+	EquipManager->HandleEquipSlotInput(
+		FRSGameplayTags::Get().InputTag_Native_EquipSlot2
+	);
 }
 
 void URSHeroComponent::ApplyOverlayInputConfig(const URSInputConfig* Overlay)
