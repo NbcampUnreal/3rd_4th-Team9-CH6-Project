@@ -16,33 +16,17 @@ class URSHeroComponent;
 class URSItemFragment_AbilitySet;
 class URSItemFragment_CombatStyle;
 class URSItemInstance;
+class URSEquipManagerComponent;
 class URSEquipmentManagerComponent;
 class URSHeroData;
+class ARSCharacter;
+
+
 
 DECLARE_MULTICAST_DELEGATE_OneParam(
 	FOnRSCombatStyleResolved,
 	const URSCombatStyleData*
 );
-
-UENUM(BlueprintType)
-enum class ERSWeaponSlot : uint8
-{
-	None,
-	Slot1,
-	Slot2,
-};
-
-USTRUCT(BlueprintType)
-struct FRSCurrentWeaponState
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	ERSWeaponSlot ActiveSlot = ERSWeaponSlot::None;
-
-	UPROPERTY()
-	TObjectPtr<URSItemInstance> ActiveWeapon = nullptr;
-};
 
 USTRUCT()
 struct FRSCombatStyleDecision
@@ -80,19 +64,23 @@ public:
 	/** 무기/장비 변경 시 외부(EquipmentManager)에서 호출: "이제 이 ItemInstance가 메인 무기다" */
 	void OnMainWeaponChanged(URSItemInstance* OldWeapon, URSItemInstance* NewWeapon);
 
+	URSItemInstance* GetEquippedWeaponBySlot(FGameplayTag SlotTag) const;
+	void SetEquippedWeapon(FGameplayTag SlotTag, URSItemInstance* NewItem);
+
+	FGameplayTag ResolveWeaponSlotFromInputTag(FGameplayTag InputTag) const;
+
+
 public:
 	// EquipmentManager가 장비 변화(Old->New)를 알려주는 진입점
 	void HandleEquipmentChanged(const FGameplayTag& SlotTag, URSItemInstance* OldItem, URSItemInstance* NewItem);
 	void ApplyAnimStyleLayers(const URSCombatStyleData* Style);
 	void ApplyCombatStyle(const URSCombatStyleData* NewStyle);
-	void HandleEquipSlotInput(const FGameplayTag& InputTag);
+	void HandleEquipSlotInput(FGameplayTag InputTag);
 
 
 protected:
 	virtual void BeginPlay() override;
 
-	ERSWeaponSlot ConvertInputTagToSlot(const FGameplayTag& InputTag) const;
-	void SetCurrentState(ERSWeaponSlot NewSlot, URSItemInstance* NewWeapon);
 
 
 
@@ -101,16 +89,18 @@ private:
 	void ClearCurrentCombatStyle();
 
 	// ===== 스타일 결정부(SSOT) =====
-	URSCombatStyleData* ResolveCombatStyleForWeapon(URSItemInstance* WeaponInstance) const;
-	URSCombatStyleData* GetDefaultUnarmedStyle() const;
+	const URSCombatStyleData* ResolveCombatStyleForWeapon(const URSItemInstance* WeaponItem) const;
+	const URSCombatStyleData* GetDefaultUnarmedStyle() const;
 
 	// ===== GAS Apply helpers =====
 	void GiveAbilitySetList(const TArray<TObjectPtr<const URSAbilitySet>>& Sets, TArray<FRSAbilitySet_GrantedHandles>& OutHandles);
 	void TakeAbilitySetList(TArray<FRSAbilitySet_GrantedHandles>& InOutHandles);
 
 	// ===== Input overlay helpers =====
+	ARSCharacter* GetOwnerCharacter() const;
 	URSHeroComponent* GetHeroComponent() const;
 	UAbilitySystemComponent* GetASC() const;
+	const URSHeroData* GetHeroData() const;
 
 	// ===== Default Style 적용 여부 =====
 	bool bDefaultStyleApplied = false;
@@ -183,14 +173,13 @@ private:
 	UPROPERTY()
 	URSItemInstance* EquippedWeaponInstance = nullptr;
 
-	UPROPERTY()
-	const URSCombatStyleData* CurrentCombatStyle = nullptr;
+	UPROPERTY(Transient)
+	TObjectPtr<const URSCombatStyleData> CurrentCombatStyle = nullptr;
 
 
 
 private:
-	// ===== 현재 무기 슬롯 상태 (EquipManager 내부 상태) =====
+	// ===== Equipped Weapon SSOT =====
 	UPROPERTY(Transient)
-	FRSCurrentWeaponState CurrentWeaponState;
-
+	TMap<FGameplayTag, TObjectPtr<URSItemInstance>> EquippedWeapons;
 };

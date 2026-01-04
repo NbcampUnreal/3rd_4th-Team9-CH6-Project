@@ -45,6 +45,7 @@
 #include "Interface/InventoryOwner.h"
 #include "ItemDataAsset/RSItemData.h"
 
+
 // HPBar 위젯 로드에 필요한 헤더(프로젝트 환경에 따라 간접 포함이 안 될 수 있어 명시)
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/UserWidget.h"
@@ -650,4 +651,26 @@ void ARSCharacter::HandleAnimEquipAction(ERSAnimEquipAction Action)
 	{
 		EquipmentManager->HandleEquipAnimAction(Action);
 	}
+}
+
+URSItemInstance* ARSCharacter::GetEquippedWeaponByInputTag(FGameplayTag InputTag) const
+{
+	// ARSCharacter는 Actor이므로 바로 컴포넌트 탐색
+	const URSEquipManagerComponent* EquipMgr =
+		FindComponentByClass<URSEquipManagerComponent>();
+
+	if (!EquipMgr)
+	{
+		return nullptr;
+	}
+
+	const FGameplayTag SlotTag =
+		EquipMgr->ResolveWeaponSlotFromInputTag(InputTag);
+
+	if (!SlotTag.IsValid())
+	{
+		return nullptr;
+	}
+
+	return EquipMgr->GetEquippedWeaponBySlot(SlotTag);
 }

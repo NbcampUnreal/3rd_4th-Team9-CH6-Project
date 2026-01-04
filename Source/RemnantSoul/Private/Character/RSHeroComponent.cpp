@@ -16,12 +16,18 @@
 
 #include "Abilities/GameplayAbility.h"
 #include "Item/Managers/RSEquipManagerComponent.h"
-
+#include "Character/RSCombatStyleData.h"
 
 
 void URSHeroComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+
+	if (ARSCharacter* OwnerCharacter = GetOwnerCharacter())
+	{
+		EquipManager = OwnerCharacter->FindComponentByClass<URSEquipManagerComponent>();
+	}
 }
 
 void URSHeroComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -518,3 +524,16 @@ void URSHeroComponent::Input_InventoryToggle(const FInputActionValue& Value)
 //		Set->GiveToAbilitySystem(ASC, &PawnGrantedAbilitySetHandles[i], this);
 //	}
 //}
+
+void URSHeroComponent::ApplyCombatStyle(const URSCombatStyleData* NewStyle)
+{
+	// 1차 MVP: 로그만
+	if (NewStyle)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[RS] CombatStyle Applied: %s"), *NewStyle->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[RS] CombatStyle Cleared"));
+	}
+}

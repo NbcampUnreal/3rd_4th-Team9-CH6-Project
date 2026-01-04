@@ -29,6 +29,7 @@ class URSCosmeticManagerComponent;
 enum class ERSAnimEquipAction : uint8;
 
 class URSItemData;
+class URSItemInstance;
 
 class UAnimMontage;
 class USpringArmComponent;
@@ -80,6 +81,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "RS|Equip")
 	void HandleAnimEquipAction(ERSAnimEquipAction Action);
 
+
 public:
 	// Attack
 	UAnimMontage* GetAttackMontage() const { return AttackMontage; }
@@ -92,6 +94,10 @@ public:
 	// Roll
 	void SetRollDirectionDegrees(float InDegrees) { RollDirectionDegrees = InDegrees; }
 	float GetRollDirectionDegrees() const { return RollDirectionDegrees; }
+
+	URSItemInstance* GetEquippedWeaponByInputTag(FGameplayTag InputTag) const;
+	FGameplayTag ResolveWeaponSlotFromInputTag(FGameplayTag InputTag) const;
+
 
 protected:
 	// replication/possession

@@ -148,20 +148,11 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
-	// === 상태 ===
-	UPROPERTY()
-	FRSCurrentWeaponState CurrentWeaponState;
-
 	// === 기본 Unarmed 스타일 ===
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<const URSCombatStyleData> DefaultUnarmedStyle;
 
 protected:
-	// === 내부 헬퍼 ===
-	ERSWeaponSlot ConvertInputTagToSlot(const FGameplayTag& InputTag) const;
-
-	void SetCurrentState(ERSWeaponSlot NewSlot, URSItemInstance* NewWeapon);
-
 	void ApplyCombatStyle(const URSCombatStyleData* NewStyle);
 #pragma endregion
 

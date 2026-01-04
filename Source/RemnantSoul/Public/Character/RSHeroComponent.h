@@ -15,6 +15,7 @@ class UEnhancedInputLocalPlayerSubsystem;
 class URSEnhancedInputComponent;
 class URSInputConfig;
 class URSEquipManagerComponent;
+class URSCombatStyleData;
 
 DECLARE_MULTICAST_DELEGATE(FRSOnInputReady);
 
@@ -84,5 +85,10 @@ private:
 	bool bSetupPICAcknowledged = false;
 #pragma endregion
 
+#pragma region CombatStyle
+public:
+	void ApplyCombatStyle(const URSCombatStyleData* NewStyle);
+
+#pragma endregion
 
 };
