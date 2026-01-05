@@ -62,7 +62,7 @@ void URSAttributeSet_Character::PostGameplayEffectExecute(const FGameplayEffectM
 
 	if ((GetHealth() <= 0.0f) && bOutOfHealth == false)
 	{
-		Data.Target.AddLooseGameplayTag(STATE_ISDEAD);
+		Data.Target.AddLooseGameplayTag(FRSGameplayTags::Get().State_IsDead);
 		OnOutOfHealth.Broadcast();
 	}
 
@@ -78,7 +78,7 @@ bool URSAttributeSet_Character::PreGameplayEffectExecute(struct FGameplayEffectM
 
 	if (Data.EvaluatedData.Attribute == GetMetaDamageAttribute() && KINDA_SMALL_NUMBER <= Data.EvaluatedData.Magnitude)
 	{
-		if (Data.Target.HasMatchingGameplayTag(STATE_INVINCIBLE) == true)
+		if (Data.Target.HasMatchingGameplayTag(FRSGameplayTags::Get().State_Invincible) == true)
 		{
 			Data.EvaluatedData.Magnitude = 0.0f;
 			return false;

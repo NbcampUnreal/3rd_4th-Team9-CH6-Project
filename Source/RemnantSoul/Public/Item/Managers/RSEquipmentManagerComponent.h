@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameplayTagContainer.h"
+#include "Animation/AnimNotify/RSAnimEquipAction.h"
 #include "RSEquipmentManagerComponent.generated.h"
 
 class URSItemInstance;
@@ -83,6 +84,10 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "RS|Equipment")
 	FRSEquipmentChangedSignature OnEquipmentChanged;
 
+	// AnimNotify에서 호출되는 진입점(캐릭터->EquipmentManager)
+	UFUNCTION(BlueprintCallable, Category = "RS|Equipment|Anim")
+	void HandleEquipAnimAction(ERSAnimEquipAction Action);
+
 protected:
 	/** 내부 헬퍼: 실제 장착 처리 (검증 완료 후 호출) */
 	void InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem);
@@ -144,5 +149,21 @@ private:
 	UPROPERTY(Transient)
 	TWeakObjectPtr<URSCombatStyleData> CachedAppliedStyle;
 
+private:
+	// ===== 장착/해제 진행 중 상태 =====
+	UPROPERTY(Transient)
+	bool bEquipTransactionActive = false;
+
+	UPROPERTY(Transient)
+	FGameplayTag PendingSlotTag;
+
+	UPROPERTY(Transient)
+	TObjectPtr<URSItemInstance> PendingOldItem = nullptr;
+
+	UPROPERTY(Transient)
+	TObjectPtr<URSItemInstance> PendingNewItem = nullptr;
+
+	// 트랜잭션 종료(정리)
+	void ClearEquipTransaction();
 
 };

@@ -51,12 +51,17 @@ void URSGameplayAbility_SuperJump::ActivateAbility(
 void URSGameplayAbility_SuperJump::InputReleased(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo
-)
+	const FGameplayAbilityActivationInfo ActivationInfo)
 {
-	ACharacter* Character = CastChecked<ACharacter>(ActorInfo->AvatarActor.Get());
-	Character->StopJumping();
+	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
+
+	ACharacter* Character = ActorInfo ? Cast<ACharacter>(ActorInfo->AvatarActor.Get()) : nullptr;
+	if (IsValid(Character))
+	{
+		Character->StopJumping();
+	}
 }
+
 
 void URSGameplayAbility_SuperJump::OnLanded()
 {

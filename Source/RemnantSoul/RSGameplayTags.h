@@ -6,22 +6,31 @@
 class UGameplayTagsManager;
 
 /**
- * CV 스타일: Native GameplayTag 등록(RemnantSoul.cpp에서 사용할 수 있도록 팀장 정영기가 설정해놓음.) + 전역 단일 인스턴스 접근가능함.(RSGameplayTags가 싱글톤 패턴이라는 뜻임.)
- * - 태그 문자열(예: "State.IsJumping")이 정체성이므로, 문자열만 유지하면 기존 에셋/설정은 그대로 살아있음. 여기서 헷갈리면 안되는게 State_IsJumping는 코드상으로 나타내는 게임플레이 태그고, State.IsJumping으로 언리얼에디터 상에서 설정해줘야한다. "_(언더바)" 헷갈리지말것.
+ * Native GameplayTag 등록 + 전역 단일 인스턴스 접근
+ *
+ * - 태그 문자열(예: "State.IsJumping")이 정체성이므로, 문자열만 유지하면 기존 에셋/설정은 그대로 유지된다.
+ * - 코드 변수명(State_IsJumping)과 에디터 문자열(State.IsJumping)은 다르다. 언더바/점 표기 혼동 주의.
  */
 struct REMNANTSOUL_API FRSGameplayTags
 {
 public:
-	// CV 방식: 전역 단일 인스턴스
+	// 전역 단일 인스턴스
 	static FRSGameplayTags GameplayTags;
 
 	static const FRSGameplayTags& Get() { return GameplayTags; }
+
+	/** 프로젝트 부팅 시 1회 호출(StartupModule). 중복 호출되어도 안전하게 방어한다. */
 	static void InitializeNativeTags();
 
 	// =========================================================
 	// Ability (기존)
 	// =========================================================
 	FGameplayTag Ability_Cosmetic_SteamParticle;
+	FGameplayTag Ability_Sprint;
+	FGameplayTag Ability_Sprint_Active;
+	FGameplayTag Ability_Sprint_Check;
+	FGameplayTag Ability_Crouch;
+	FGameplayTag Ability_Roll;
 
 	// =========================================================
 	// State (기존)
@@ -39,12 +48,21 @@ public:
 	// =========================================================
 	FGameplayTag Data_Damage;
 
+	// Damage.* (데미지 의미/종류)
+	FGameplayTag Damage_Type_Light;     // "Damage.Type.Light"
+	FGameplayTag Damage_Type_Heavy;     // "Damage.Type.Heavy"
+
+	// Damage.Source.* (무기/스킬 등 출처 구분)
+	FGameplayTag Damage_Source_Melee;   // "Damage.Source.Melee"
+	FGameplayTag Damage_Source_Skill;   // "Damage.Source.Skill"
+
 	// =========================================================
 	// Event (기존)
 	// =========================================================
 	FGameplayTag Event_Equip_Weapon;
 	FGameplayTag Event_Unequip_Weapon;
 	FGameplayTag Event_Skill_CheckHit;
+	FGameplayTag Event_Roll_End;
 
 	// =========================================================
 	// GameplayCue (기존)
@@ -60,14 +78,21 @@ public:
 	FGameplayTag InputTag_Native_Look;
 	FGameplayTag InputTag_Native_Interaction;
 	FGameplayTag InputTag_Native_InventoryToggle;
-
+	FGameplayTag InputTag_Native_QuickSlotCycle;
+	FGameplayTag InputTag_Native_QuickSlotUse;
+	
 	FGameplayTag InputTag_Ability_Jump;
 	FGameplayTag InputTag_Ability_SuperJump;
 	FGameplayTag InputTag_Ability_Attack;
 	FGameplayTag InputTag_Ability_Skill;
+	FGameplayTag InputTag_Ability_Sprint;
+	FGameplayTag InputTag_Ability_Crouch;
+	FGameplayTag InputTag_Ability_Roll;
+
+
 
 	// =========================================================
-	// 추가: Slot.* (장착 슬롯)
+	// Slot.* (장착 슬롯)
 	// =========================================================
 	FGameplayTag Slot_Weapon_Main;   // "Slot.Weapon.Main"
 	FGameplayTag Slot_Weapon_Sub;    // "Slot.Weapon.Sub" (선택)
@@ -75,29 +100,35 @@ public:
 	FGameplayTag Slot_Armor_Chest;   // "Slot.Armor.Chest" (선택)
 
 	// =========================================================
-	// 추가: Item.* (아이템 분류/인벤 필터/드랍)
+	// Item.* (아이템 분류/인벤 필터/드랍)
 	// =========================================================
 	FGameplayTag Item_Weapon_Sword;  // "Item.Weapon.Sword"
 	FGameplayTag Item_Weapon_Staff;  // "Item.Weapon.Staff"
 	FGameplayTag Item_Consumable;    // "Item.Consumable" (선택)
 
 	// =========================================================
-	// 추가: Weapon.* (무기 타입/애니 분기 기준)
+	// Weapon.* (무기 타입/애니 분기 기준)
 	// =========================================================
 	FGameplayTag Weapon_Sword_OneHand; // "Weapon.Sword.OneHand"
 	FGameplayTag Weapon_Staff_OneHand; // "Weapon.Staff.OneHand"
 	FGameplayTag Weapon_Staff_TwoHand; // "Weapon.Staff.TwoHand"
-	
+
 	// =========================================================
-	// 추가: State.AnimStyle.* (ASC LooseTags로 ABP가 읽게 할 스타일)
+	// State.AnimStyle.* (ASC LooseTags로 ABP가 읽게 할 스타일)
 	// =========================================================
 	FGameplayTag State_AnimStyle_Unarmed; // "State.AnimStyle.Unarmed"
 	FGameplayTag State_AnimStyle_Sword1H; // "State.AnimStyle.Sword1H"
 	FGameplayTag State_AnimStyle_Staff2H; // "State.AnimStyle.Staff2H"
 
 	// =========================================================
-	// 추가: Input.* (EnhancedInput → AbilityTag 매핑 키)
-	//  - 기존 InputTag.* 과 "공존"한다. (목적 분리)
+	// Status.* (ASC : RSGameplay_Crouch, RSGameplay_Sprint_Action, RSGameplay_Sprint_Check)
+	// =========================================================
+	FGameplayTag Status_Sprint;
+	FGameplayTag Status_Crouch;
+	FGameplayTag Status_Roll;
+
+	// =========================================================
+	// Input.* (EnhancedInput → AbilityTag 매핑 키)
 	// =========================================================
 	FGameplayTag Input_Attack_Light;     // "Input.Attack.Light"
 	FGameplayTag Input_Attack_Heavy;     // "Input.Attack.Heavy"
@@ -109,41 +140,39 @@ public:
 private:
 	FRSGameplayTags() = default;
 
-	static void AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment);
+	/** (A) Manager 주입 방식: 외부에서 전달받은 Manager를 사용해 Native Tag를 등록한다. */
+	static void AddTag(UGameplayTagsManager& Manager, FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment);
+
+	/** 모든 태그 등록 */
 	static void AddAllTags(UGameplayTagsManager& Manager);
 };
 
 
-/**
- *
- * // (권장) 기존 코드와 호환되는 브릿지 매크로
- *
- * 경호튜터님 GAS 프레임워크에서는 기존에 STATE_ISJUMPING 같은 매크로를 많이 써놨다.
- * 아래처럼 Get() 멤버를 참조하게 하면 "호출부 수정 없이" 새 구조로 이행 가능. - 지금 매크로 GameplayTag바꿀 내용이 너무 많아서 아래 내용을 임시로 둠.
- * 완전히 안정화되면 매크로는 제거하고 FRSGameplayTags::Get().XXX로 직접 쓸것임. 이미 HeroComponent쪽은 팀장 정영기가 바꿔놓음.
- */
+// =========================================================
+// (권장) 기존 코드와 호환되는 브릿지 매크로 (임시)
+// =========================================================
 
- // Ability
-#define ABILITY_COSMETIC_STEAMPARTICLE (FRSGameplayTags::Get().Ability_Cosmetic_SteamParticle)
-
-// State
-#define STATE_ACTIVATED_STEAMPARTICLE (FRSGameplayTags::Get().State_Activated_SteamParticle)
-#define STATE_ISJUMPING               (FRSGameplayTags::Get().State_IsJumping)
-#define STATE_ISATTACKING             (FRSGameplayTags::Get().State_IsAttacking)
-#define STATE_ISDEAD                  (FRSGameplayTags::Get().State_IsDead)
-#define STATE_INVINCIBLE              (FRSGameplayTags::Get().State_Invincible)
-#define STATE_ISSKILLING              (FRSGameplayTags::Get().State_IsSkilling)
-#define STATE_SKILL_COOLDOWN          (FRSGameplayTags::Get().State_Skill_Cooldown)
-
-// Data
-#define DATA_DAMAGE                   (FRSGameplayTags::Get().Data_Damage)
-
-// Event
-#define EVENT_EQUIP_WEAPON            (FRSGameplayTags::Get().Event_Equip_Weapon)
-#define EVENT_UNEQUIP_WEAPON          (FRSGameplayTags::Get().Event_Unequip_Weapon)
-#define EVENT_SKILL_CHECKHIT          (FRSGameplayTags::Get().Event_Skill_CheckHit)
-
-// GameplayCue
-#define GAMEPLAYCUE_ATTACK_HIT        (FRSGameplayTags::Get().GameplayCue_Attack_Hit)
-#define GAMEPLAYCUE_BOX_OPEN          (FRSGameplayTags::Get().GameplayCue_Box_Open)
-#define GAMEPLAYCUE_DAMAGE            (FRSGameplayTags::Get().GameplayCue_Damage)
+//// Ability
+//#define ABILITY_COSMETIC_STEAMPARTICLE (FRSGameplayTags::Get().Ability_Cosmetic_SteamParticle)
+//
+//// State
+//#define STATE_ACTIVATED_STEAMPARTICLE (FRSGameplayTags::Get().State_Activated_SteamParticle)
+//#define STATE_ISJUMPING               (FRSGameplayTags::Get().State_IsJumping)
+//#define STATE_ISATTACKING             (FRSGameplayTags::Get().State_IsAttacking)
+//#define STATE_ISDEAD                  (FRSGameplayTags::Get().State_IsDead)
+//#define STATE_INVINCIBLE              (FRSGameplayTags::Get().State_Invincible)
+//#define STATE_ISSKILLING              (FRSGameplayTags::Get().State_IsSkilling)
+//#define STATE_SKILL_COOLDOWN          (FRSGameplayTags::Get().State_Skill_Cooldown)
+//
+//// Data
+//#define DATA_DAMAGE                   (FRSGameplayTags::Get().Data_Damage)
+//
+//// Event
+//#define EVENT_EQUIP_WEAPON            (FRSGameplayTags::Get().Event_Equip_Weapon)
+//#define EVENT_UNEQUIP_WEAPON          (FRSGameplayTags::Get().Event_Unequip_Weapon)
+//#define EVENT_SKILL_CHECKHIT          (FRSGameplayTags::Get().Event_Skill_CheckHit)
+//
+//// GameplayCue
+//#define GAMEPLAYCUE_ATTACK_HIT        (FRSGameplayTags::Get().GameplayCue_Attack_Hit)
+//#define GAMEPLAYCUE_BOX_OPEN          (FRSGameplayTags::Get().GameplayCue_Box_Open)
+//#define GAMEPLAYCUE_DAMAGE            (FRSGameplayTags::Get().GameplayCue_Damage)

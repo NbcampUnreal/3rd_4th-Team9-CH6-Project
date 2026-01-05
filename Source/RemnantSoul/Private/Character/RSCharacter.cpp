@@ -31,6 +31,8 @@
 #include "Item/Managers/RSEquipmentManagerComponent.h"
 #include "Item/Managers/RSInventoryManagerComponent.h"
 #include "Item/Managers/RSItemManagerComponent.h"
+#include "Interface/RSItemSource.h"
+#include "Item/RSItemInstance.h"
 
 // Animation
 #include "Animation/AnimInstance.h"
@@ -41,7 +43,6 @@
 #include "Interface/Interactable.h"
 #include "DrawDebugHelpers.h"
 #include "Component/Inventory/RSInventoryComponent.h"
-#include "Interface/InventoryOwner.h"
 #include "ItemDataAsset/RSItemData.h"
 
 // HPBar 위젯 로드에 필요한 헤더(프로젝트 환경에 따라 간접 포함이 안 될 수 있어 명시)
@@ -109,31 +110,6 @@ ARSCharacter::ARSCharacter()
 		*GetNameSafe(GetController()));
 }
 
-void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	UE_LOG(LogTemp, Warning, TEXT("[Char] SetupPIC Pawn=%s HeroComp=%s Valid=%d"),
-		*GetNameSafe(this),
-		*GetNameSafe(HeroComponent),
-		IsValid(HeroComponent) ? 1 : 0);
-
-	if (IsValid(HeroComponent))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[Char] Calling HeroComp->SetupPIC"));
-		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("[Char] HeroComponent is NULL/Invalid. Check CreateDefaultSubobject name/UPROPERTY."));
-	}
-
-	if (IsValid(HeroComponent))
-	{
-		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
-	}
-}
-
 void ARSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -195,8 +171,9 @@ void ARSCharacter::BeginPlay()
 	// Equip/Unequip 이벤트 콜백(기존 유지)
 	if (ASC)
 	{
-		ASC->GenericGameplayEventCallbacks.FindOrAdd(EVENT_EQUIP_WEAPON).AddUObject(this, &ThisClass::EquipWeapon);
-		ASC->GenericGameplayEventCallbacks.FindOrAdd(EVENT_UNEQUIP_WEAPON).AddUObject(this, &ThisClass::UnequipWeapon);
+		const FRSGameplayTags& RSTags = FRSGameplayTags::Get();
+		ASC->GenericGameplayEventCallbacks.FindOrAdd(RSTags.Event_Equip_Weapon).AddUObject(this, &ThisClass::EquipWeapon);
+		ASC->GenericGameplayEventCallbacks.FindOrAdd(RSTags.Event_Unequip_Weapon).AddUObject(this, &ThisClass::UnequipWeapon);
 	}
 
 	// Interaction 타이머(기존 유지)
@@ -210,6 +187,32 @@ void ARSCharacter::BeginPlay()
 		true
 	);
 }
+
+void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	UE_LOG(LogTemp, Warning, TEXT("[Char] SetupPIC Pawn=%s HeroComp=%s Valid=%d"),
+		*GetNameSafe(this),
+		*GetNameSafe(HeroComponent),
+		IsValid(HeroComponent) ? 1 : 0);
+
+	if (IsValid(HeroComponent))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Char] Calling HeroComp->SetupPIC"));
+		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Char] HeroComponent is NULL/Invalid. Check CreateDefaultSubobject name/UPROPERTY."));
+	}
+
+	if (IsValid(HeroComponent))
+	{
+		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
+	}
+}
+
 
 void ARSCharacter::OnOutOfHealth()
 {
@@ -329,9 +332,9 @@ void ARSCharacter::UpdateInteractFocus()
 	CurrentInteractHit = Hit;
 	CurrentInteractItemData = nullptr;
 
-	if (CurrentInteractTarget && CurrentInteractTarget->Implements<UInteractable>())
+	if (CurrentInteractTarget->Implements<URSItemSource>())
 	{
-		CurrentInteractItemData = IInteractable::Execute_GetItemData(CurrentInteractTarget);
+		CurrentInteractItemData = IRSItemSource::Execute_GetItemData(CurrentInteractTarget);
 	}
 }
 
@@ -391,7 +394,11 @@ bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) co
 
 	OutActor = CharHit.GetActor();
 	OutHit = CharHit;
-	return (OutActor != nullptr);
+	if (!OutActor) return false;
+	if (!OutActor->Implements<UInteractable>()) return false;
+
+	return true;
+	
 }
 
 bool ARSCharacter::TryAddItem_Implementation(URSItemData* ItemData, int32 Count)
@@ -639,4 +646,12 @@ UInputComponent* ARSCharacter::CreatePlayerInputComponent()
 		*GetNameSafe(InputComponent));
 
 	return NewIC;
+}
+
+void ARSCharacter::HandleAnimEquipAction(ERSAnimEquipAction Action)
+{
+	if (EquipmentManager)
+	{
+		EquipmentManager->HandleEquipAnimAction(Action);
+	}
 }

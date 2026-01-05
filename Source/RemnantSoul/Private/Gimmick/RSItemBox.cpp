@@ -21,7 +21,7 @@ ARSItemBox::ARSItemBox()
 	Mesh->SetupAttachment(Trigger);
 	Mesh->SetCollisionProfileName(TEXT("NoCollision"));
 
-	GameplayCueTag = GAMEPLAYCUE_BOX_OPEN;
+	GameplayCueTag = FRSGameplayTags::Get().GameplayCue_Box_Open;
 }
 
 UAbilitySystemComponent* ARSItemBox::GetAbilitySystemComponent() const
