@@ -75,6 +75,10 @@ private:
 
 	void LogAbilityBindings(const URSInputConfig* Config, const TCHAR* Label) const;
 
+#pragma region Debug
+private:
+	void DebugDumpInputState(const URSInputConfig* InputConfig, const TCHAR* Label) const; 
+#pragma endregion
 
 public:
 	void ApplyOverlayInputConfig(const URSInputConfig* Overlay);

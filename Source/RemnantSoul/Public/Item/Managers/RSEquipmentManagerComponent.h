@@ -142,8 +142,6 @@ protected:
 	UPROPERTY()
 	TObjectPtr<const URSHeroData> HeroData;
 
-	UPROPERTY(Transient)
-	TArray<TObjectPtr<URSItemInstance>> EquippedWeapons;
 
 
 
@@ -195,6 +193,14 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "RS|Equipment")
 	FRSEquipmentChangedSignature OnEquipmentChanged;
 
+	// 무기 습득: Main/Sub 자동 배치 + 선택적으로 자동 장착
+	UFUNCTION(BlueprintCallable, Category = "RS|Equipment|Weapon")
+	bool TryPickupWeaponToSlots(URSItemInstance* NewWeaponItem, bool bAutoEquip = true);
+
+	// 슬롯 버튼: 1/2 입력에 대응 (필요하면 스왑 후 Active 변경)
+	UFUNCTION(BlueprintCallable, Category = "RS|Equipment|Weapon")
+	void RequestActivateWeaponSlot(FGameplayTag RequestedSlot);
+
 public:
 	FOnRSActiveWeaponChanged OnActiveWeaponChanged;
 
@@ -215,6 +221,10 @@ private:
 	void BroadcastActiveWeaponChanged(
 		const FGameplayTag& OldSlot,
 		const FGameplayTag& NewSlot);
+
+	void SwapWeaponSlots(const FGameplayTag& SlotA, const FGameplayTag& SlotB);
+	bool IsWeaponSlotFilled(const FGameplayTag& SlotTag) const;
+
 
 private:
 	// 1/2 슬롯 네이밍 확정: Slot.Weapon.Main / Slot.Weapon.Sub

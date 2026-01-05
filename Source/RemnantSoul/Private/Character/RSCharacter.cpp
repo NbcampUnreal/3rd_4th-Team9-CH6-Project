@@ -198,22 +198,15 @@ void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		*GetNameSafe(HeroComponent),
 		IsValid(HeroComponent) ? 1 : 0);
 
-	if (IsValid(HeroComponent))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[Char] Calling HeroComp->SetupPIC"));
-		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
-	}
-	else
+	if (!IsValid(HeroComponent))
 	{
 		UE_LOG(LogTemp, Error, TEXT("[Char] HeroComponent is NULL/Invalid. Check CreateDefaultSubobject name/UPROPERTY."));
+		return;
 	}
 
-	if (IsValid(HeroComponent))
-	{
-		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
-	}
+	UE_LOG(LogTemp, Warning, TEXT("[Char] Calling HeroComp->SetupPIC"));
+	HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
 }
-
 
 void ARSCharacter::OnOutOfHealth()
 {

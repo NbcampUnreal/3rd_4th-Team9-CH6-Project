@@ -436,6 +436,11 @@ void URSEquipManagerComponent::HandleActiveWeaponChanged(
 	URSItemInstance* OldItem,
 	URSItemInstance* NewItem)
 {
+
+	UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] HandleActiveWeaponChanged %s->%s Old=%s New=%s"),
+		*OldSlot.ToString(), *NewSlot.ToString(),
+		*GetNameSafe(OldItem), *GetNameSafe(NewItem));
+
 	// Cosmetic (활성 무기만)
 	if (URSCosmeticManagerComponent* CosMgr = CachedCosmeticManager.Get())
 	{

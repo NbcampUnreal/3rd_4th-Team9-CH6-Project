@@ -105,9 +105,8 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 
 	Subsystem->ClearAllMappings();
 
-	UE_LOG(LogTemp, Warning,
-		TEXT("[Hero] IMC rebuild: ClearAllMappings then Add %d contexts"),
-		InputConfig->DefaultMappings.Num());
+	const int32 NumContexts = InputConfig->DefaultMappings.Num();
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] IMC rebuild: ClearAllMappings then Add %d contexts"), NumContexts);
 
 	for (const auto& Mapping : InputConfig->DefaultMappings)
 	{
@@ -366,6 +365,33 @@ void URSHeroComponent::LogAbilityBindings(const URSInputConfig* Config, const TC
 	UE_LOG(LogTemp, Warning, TEXT("[Hero][%s] AbilityInputActions:\n%s"),
 		Label ? Label : TEXT("Unknown"),
 		*Lines);
+}
+
+void URSHeroComponent::DebugDumpInputState(const URSInputConfig* InputConfig, const TCHAR* Label) const
+{
+	const TCHAR* SafeLabel = Label ? Label : TEXT("Unknown");
+
+	UE_LOG(LogTemp, Warning, TEXT("[Hero][Dbg:%s] Owner=%s"), SafeLabel, *GetNameSafe(GetOwner()));
+
+	if (!InputConfig)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Hero][Dbg:%s] InputConfig=NULL"), SafeLabel);
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[Hero][Dbg:%s] DefaultMappings=%d"), SafeLabel, InputConfig->DefaultMappings.Num());
+	for (const auto& Mapping : InputConfig->DefaultMappings)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero][Dbg:%s] Config IMC=%s Priority=%d"),
+			SafeLabel,
+			*GetNameSafe(Mapping.InputMapping),
+			Mapping.Priority);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[Hero][Dbg:%s] Handles: BaseAbility=%d OverlayAbility=%d"),
+		SafeLabel,
+		BaseAbilityBindHandles.Num(),
+		OverlayBindHandles.Num());
 }
 
 void URSHeroComponent::Input_Interaction(const FInputActionValue& Value)
