@@ -11,6 +11,13 @@
 #include "Item/RSItemInstance.h"
 #include "Item/RSItemTemplate.h"
 
+
+#include "Item/Managers/RSEquipManagerComponent.h"
+#include "Character/RSCombatStyleData.h"
+#include "RSGameplayTags.h"
+#include "AbilitySystemComponent.h"
+
+
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RSItemManagerComponent)
 
 URSItemManagerComponent::URSItemManagerComponent()

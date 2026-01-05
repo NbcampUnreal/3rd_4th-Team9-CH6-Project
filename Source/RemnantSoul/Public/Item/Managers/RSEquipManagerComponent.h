@@ -5,6 +5,7 @@
 #include "GameplayTagContainer.h"
 #include "GAS/AS/RSAbilitySet.h"          // FRSAbilitySet_GrantedHandles
 #include "Item/RSItemInstance.h"
+
 #include "RSEquipManagerComponent.generated.h"
 
 class UAbilitySystemComponent;
@@ -14,6 +15,33 @@ class URSInputConfig;
 class URSHeroComponent;
 class URSItemFragment_AbilitySet;
 class URSItemFragment_CombatStyle;
+class URSItemInstance;
+class URSEquipManagerComponent;
+class URSEquipmentManagerComponent;
+class URSHeroData;
+class ARSCharacter;
+class URSCosmeticManagerComponent;
+
+
+
+DECLARE_MULTICAST_DELEGATE_OneParam(
+	FOnRSCombatStyleResolved,
+	const URSCombatStyleData*
+);
+
+USTRUCT()
+struct FRSCombatStyleDecision
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	bool bShouldChangeStyle = false;
+
+	UPROPERTY()
+	const URSCombatStyleData* NewStyle = nullptr;
+};
+
+// FRSCombatStyleDecision CalculateCombatStyleFromWeaponSlotInput(int32 SlotIndex);
 
 UCLASS(ClassGroup = (RS), meta = (BlueprintSpawnableComponent))
 class REMNANTSOUL_API URSEquipManagerComponent : public UActorComponent
@@ -23,34 +51,49 @@ class REMNANTSOUL_API URSEquipManagerComponent : public UActorComponent
 public:
 	URSEquipManagerComponent();
 
-	/** 무기/장비 변경 시 외부(EquipmentManager)에서 호출: "이제 이 ItemInstance가 메인 무기다" */
-	void OnMainWeaponChanged(URSItemInstance* OldWeapon, URSItemInstance* NewWeapon);
+	// --- External API ---
+	void InitializeEquipManager(URSHeroComponent* InHeroComponent);
+
+	void EquipWeapon(URSItemInstance* WeaponInstance);
+	void UnequipWeapon();
+
+	// --- CombatStyle ---
+	const URSCombatStyleData* GetCurrentCombatStyle() const;
+
+	FOnRSCombatStyleResolved OnCombatStyleResolved;
+
+	FGameplayTag ResolveWeaponSlotFromInputTag(FGameplayTag InputTag) const;
+
 
 public:
-	// EquipmentManager가 장비 변화(Old->New)를 알려주는 진입점
-	void HandleEquipmentChanged(const FGameplayTag& SlotTag, URSItemInstance* OldItem, URSItemInstance* NewItem);
-	void ApplyCombatStyle(URSCombatStyleData* NewStyle); 
 	void ApplyAnimStyleLayers(const URSCombatStyleData* Style);
+	void ApplyCombatStyle(const URSCombatStyleData* NewStyle);
+	void HandleEquipSlotInput(FGameplayTag InputTag);
 
 
 protected:
 	virtual void BeginPlay() override;
+
+
+
 
 private:
 	// ===== 핵심: 스타일 트랜잭션 =====
 	void ClearCurrentCombatStyle();
 
 	// ===== 스타일 결정부(SSOT) =====
-	URSCombatStyleData* ResolveCombatStyleForWeapon(URSItemInstance* WeaponInstance) const;
-	URSCombatStyleData* GetDefaultUnarmedStyle() const;
+	const URSCombatStyleData* ResolveCombatStyleForWeapon(const URSItemInstance* WeaponItem) const;
+	const URSCombatStyleData* GetDefaultUnarmedStyle() const;
 
 	// ===== GAS Apply helpers =====
 	void GiveAbilitySetList(const TArray<TObjectPtr<const URSAbilitySet>>& Sets, TArray<FRSAbilitySet_GrantedHandles>& OutHandles);
 	void TakeAbilitySetList(TArray<FRSAbilitySet_GrantedHandles>& InOutHandles);
 
 	// ===== Input overlay helpers =====
+	ARSCharacter* GetOwnerCharacter() const;
 	URSHeroComponent* GetHeroComponent() const;
 	UAbilitySystemComponent* GetASC() const;
+	const URSHeroData* GetHeroData() const;
 
 	// ===== Default Style 적용 여부 =====
 	bool bDefaultStyleApplied = false;
@@ -63,19 +106,37 @@ private:
 	void ClearItemPassiveAbilitySets();
 
 	// ===== Anim style notify (최소) =====
-	void ApplyAnimStyleTags(URSCombatStyleData* Style);
+	void ApplyAnimStyleTags(const URSCombatStyleData* Style);
+
 	void ClearAnimStyleTags();
 
 	void ApplyStyleInputOverlay(const URSCombatStyleData* Style);
 	void ClearStyleInputOverlay();
 
+	// --- Core ---
+	const URSCombatStyleData* ResolveDesiredCombatStyle() const;
+	void RefreshCombatStyle();
+
+
+	bool IsWeaponSlot(const FGameplayTag& SlotTag) const;
+	bool IsMainWeaponSlot(const FGameplayTag& SlotTag) const;
+
+	void HandleActiveWeaponChanged(
+		FGameplayTag OldSlot,
+		FGameplayTag NewSlot,
+		URSItemInstance* OldItem,
+		URSItemInstance* NewItem
+	);
+
+protected:
+	/** 슬롯에 실제 장착된 아이템 관리 */
+	UPROPERTY()
+	TObjectPtr<URSEquipmentManagerComponent> EquipmentManager;
+
+
 private:
 	UPROPERTY(Transient)
 	TWeakObjectPtr<UAbilitySystemComponent> CachedASC;
-
-	// 현재 스타일
-	UPROPERTY(Transient)
-	TObjectPtr<URSCombatStyleData> CurrentStyle = nullptr;
 
 	// 현재 스타일이 부여한 AbilitySet 핸들들
 	UPROPERTY(Transient)
@@ -86,10 +147,6 @@ private:
 
 	UPROPERTY(Transient)
 	TArray<FRSAbilitySet_GrantedHandles> ItemPassiveHandles;
-
-	// 현재 무기(메인)
-	UPROPERTY(Transient)
-	TObjectPtr<URSItemInstance> CurrentMainWeapon = nullptr;
 
 	// 무기 ItemFragment_AbilitySet(패시브)로 부여한 핸들들(선택)
 	UPROPERTY(Transient)
@@ -106,9 +163,13 @@ private:
 	UPROPERTY(Transient)
 	FGameplayTagContainer CachedAppliedAnimTags;
 
+	// --- Cached ---
+	UPROPERTY()
+	URSHeroComponent* HeroComponent = nullptr;
 
+	UPROPERTY(Transient)
+	TObjectPtr<const URSCombatStyleData> CurrentCombatStyle = nullptr;
 
-private:
-
-
+	UPROPERTY(Transient)
+	TWeakObjectPtr<URSCosmeticManagerComponent> CachedCosmeticManager;
 };

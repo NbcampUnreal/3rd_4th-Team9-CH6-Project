@@ -5,6 +5,7 @@
 #include "RSItemInstance.generated.h"
 
 class URSItemTemplate;
+class URSCombatStyleData;
 
 /**
  * RSItemInstance
@@ -80,4 +81,16 @@ protected:
 	/** 이 아이템 인스턴스를 소유한 Actor (Pawn/Character 등) */
 	UPROPERTY()
 	TWeakObjectPtr<AActor> OwningActor;
+
+
+#pragma region 
+public:
+	const URSCombatStyleData* GetItemCombatStyle() const;
+
+protected:
+	UPROPERTY()
+	TObjectPtr<const URSCombatStyleData> CombatStyle;
+
+#pragma endregion
+
 };

@@ -45,6 +45,7 @@
 #include "Component/Inventory/RSInventoryComponent.h"
 #include "ItemDataAsset/RSItemData.h"
 
+
 // HPBar 위젯 로드에 필요한 헤더(프로젝트 환경에 따라 간접 포함이 안 될 수 있어 명시)
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/UserWidget.h"
@@ -197,22 +198,15 @@ void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		*GetNameSafe(HeroComponent),
 		IsValid(HeroComponent) ? 1 : 0);
 
-	if (IsValid(HeroComponent))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[Char] Calling HeroComp->SetupPIC"));
-		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
-	}
-	else
+	if (!IsValid(HeroComponent))
 	{
 		UE_LOG(LogTemp, Error, TEXT("[Char] HeroComponent is NULL/Invalid. Check CreateDefaultSubobject name/UPROPERTY."));
+		return;
 	}
 
-	if (IsValid(HeroComponent))
-	{
-		HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
-	}
+	UE_LOG(LogTemp, Warning, TEXT("[Char] Calling HeroComp->SetupPIC"));
+	HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
 }
-
 
 void ARSCharacter::OnOutOfHealth()
 {
@@ -655,3 +649,33 @@ void ARSCharacter::HandleAnimEquipAction(ERSAnimEquipAction Action)
 		EquipmentManager->HandleEquipAnimAction(Action);
 	}
 }
+
+URSItemInstance* ARSCharacter::GetEquippedWeaponByInputTag(FGameplayTag InputTag) const
+{
+	const URSEquipmentManagerComponent* EqMgr =
+		FindComponentByClass<URSEquipmentManagerComponent>();
+
+	if (!EqMgr)
+	{
+		return nullptr;
+	}
+
+	const FRSGameplayTags& RSTags = FRSGameplayTags::Get();
+
+	FGameplayTag SlotTag;
+	if (InputTag == RSTags.InputTag_Native_EquipSlot1)
+	{
+		SlotTag = RSTags.Slot_Weapon_Main;
+	}
+	else if (InputTag == RSTags.InputTag_Native_EquipSlot2)
+	{
+		SlotTag = RSTags.Slot_Weapon_Sub;
+	}
+	else
+	{
+		return nullptr;
+	}
+
+	return EqMgr->GetItemInSlot(SlotTag);
+}
+

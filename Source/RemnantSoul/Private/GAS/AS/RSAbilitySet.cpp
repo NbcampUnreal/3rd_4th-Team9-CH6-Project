@@ -1,14 +1,4 @@
-﻿//// Fill out your copyright notice in the Description page of Project Settings.
-//
-//
-//#include "GAS/AS/RSAbilitySet.h"
-//
-
-
-
-// Private/GAS/AS/RSAbilitySet.cpp
-
-#include "GAS/AS/RSAbilitySet.h"
+﻿#include "GAS/AS/RSAbilitySet.h"
 
 #include "AbilitySystemComponent.h"
 #include "Abilities/GameplayAbility.h"
@@ -96,52 +86,4 @@ void URSAbilitySet::GiveToAbilitySystem(
 			OutGrantedHandles->AddAbilitySpecHandle(Handle);
 		}
 	}
-
-	// 2) (확장용) GameplayEffect 부여
-	//    나중에 GrantedEffects 배열을 활성화하면 여기서 처리:
-	/*
-	for (TSubclassOf<UGameplayEffect> EffectClass : GrantedEffects)
-	{
-		if (!EffectClass)
-		{
-			continue;
-		}
-
-		FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
-		Context.AddSourceObject(SourceObject);
-
-		const FGameplayEffectSpecHandle SpecHandle =
-			ASC->MakeOutgoingSpec(EffectClass, 1.f, Context);
-
-		if (SpecHandle.IsValid())
-		{
-			const FActiveGameplayEffectHandle GEHandle =
-				ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-
-			if (OutGrantedHandles)
-			{
-				OutGrantedHandles->AddGameplayEffectHandle(GEHandle);
-			}
-		}
-	}
-	*/
-
-	// 3) (확장용) AttributeSet 추가
-	/*
-	for (TSubclassOf<UAttributeSet> SetClass : GrantedAttributeSets)
-	{
-		if (!SetClass)
-		{
-			continue;
-		}
-
-		UAttributeSet* NewSet = NewObject<UAttributeSet>(ASC->GetOwner(), SetClass);
-		ASC->AddAttributeSetSubobject(NewSet);
-
-		if (OutGrantedHandles)
-		{
-			OutGrantedHandles->AddAttributeSet(NewSet);
-		}
-	}
-	*/
 }
