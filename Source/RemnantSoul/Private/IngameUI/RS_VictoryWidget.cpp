@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
 
+
 void URS_VictoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -100,6 +101,7 @@ void URS_VictoryWidget::StartFadeOut()
 	StopVictorySound(false);
 	
 	
+
 	if (FadeOutAnim)
 	{
 		PlayAnimation(FadeOutAnim);
@@ -126,6 +128,7 @@ void URS_VictoryWidget::ForceFadeOut()
 	StopVictorySound(true);
 	StartFadeOut();
 }
+
 
 void URS_VictoryWidget::OnFadeOutFinished()
 {
@@ -173,4 +176,5 @@ void URS_VictoryWidget::StopVictorySound(bool bImmediate)
 	}
 
 	VictoryAudioComponent = nullptr;
+
 }

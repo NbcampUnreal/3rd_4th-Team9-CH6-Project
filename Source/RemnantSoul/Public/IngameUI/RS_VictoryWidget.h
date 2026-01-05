@@ -12,6 +12,7 @@ class UWidgetAnimation;
 class UAudioComponent;
 class USoundBase;
 
+
 UCLASS()
 class REMNANTSOUL_API URS_VictoryWidget : public UUserWidget
 {
