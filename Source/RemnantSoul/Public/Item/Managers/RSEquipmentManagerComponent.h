@@ -34,6 +34,14 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
 	URSItemInstance*, NewItem
 );
 
+DECLARE_MULTICAST_DELEGATE_FourParams(
+	FOnRSActiveWeaponChanged,
+	FGameplayTag,
+	FGameplayTag,
+	URSItemInstance*,
+	URSItemInstance*
+);
+
 UCLASS(ClassGroup = (RS), meta = (BlueprintSpawnableComponent))
 class REMNANTSOUL_API URSEquipmentManagerComponent : public UActorComponent
 {
@@ -61,8 +69,8 @@ public:
 	bool UnequipItemFromSlot(const FGameplayTag& SlotTag);
 
 	/** 슬롯에 장착된 아이템 가져오기 */
-	UFUNCTION(BlueprintPure, Category = "RS|Equipment")
-	URSItemInstance* GetItemInSlot(const FGameplayTag& SlotTag) const;
+	//UFUNCTION(BlueprintPure, Category = "RS|Equipment")
+	//URSItemInstance* GetItemInSlot(const FGameplayTag& SlotTag) const;
 
 	/** 해당 슬롯이 존재하는 슬롯인지 여부 */
 	UFUNCTION(BlueprintPure, Category = "RS|Equipment")
@@ -82,10 +90,6 @@ public:
 	URSItemInstance* GetWeaponInSlot(int32 SlotIndex) const;
 
 public:
-	/** 장비 변경 알림 델리게이트 (UI 등에서 바인딩 용) */
-	UPROPERTY(BlueprintAssignable, Category = "RS|Equipment")
-	FRSEquipmentChangedSignature OnEquipmentChanged;
-
 	// AnimNotify에서 호출되는 진입점(캐릭터->EquipmentManager)
 	UFUNCTION(BlueprintCallable, Category = "RS|Equipment|Anim")
 	void HandleEquipAnimAction(ERSAnimEquipAction Action);
@@ -93,11 +97,11 @@ public:
 
 
 protected:
-	/** 내부 헬퍼: 실제 장착 처리 (검증 완료 후 호출) */
-	void InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem);
+	///** 내부 헬퍼: 실제 장착 처리 (검증 완료 후 호출) */
+	//void InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem);
 
-	/** 내부 헬퍼: 실제 해제 처리 (검증 완료 후 호출) */
-	void InternalUnequip(const FGameplayTag& SlotTag);
+	///** 내부 헬퍼: 실제 해제 처리 (검증 완료 후 호출) */
+	//void InternalUnequip(const FGameplayTag& SlotTag);
 
 	/** 아이템 템플릿/Fragment 기반으로 슬롯 호환 여부 체크 */
 	bool CheckSlotCompatibility(const FGameplayTag& SlotTag, const URSItemTemplate* Template, FText& OutFailReason) const;
@@ -105,8 +109,8 @@ protected:
 	/** EquipRequirement Fragment 기준으로 요구 조건 체크 */
 	bool CheckEquipRequirements(const URSItemTemplate* Template, FText& OutFailReason) const;
 
-	/** 해당 슬롯이 “무기 슬롯”인지 여부 (무기 슬롯일 때만 CosmeticManager 호출) */
-	bool IsWeaponSlot(const FGameplayTag& SlotTag) const;
+	///** 해당 슬롯이 “무기 슬롯”인지 여부 (무기 슬롯일 때만 CosmeticManager 호출) */
+	//bool IsWeaponSlot(const FGameplayTag& SlotTag) const;
 
 
 protected:
@@ -177,5 +181,43 @@ private:
 
 	// 트랜잭션 종료(정리)
 	void ClearEquipTransaction();
+
+
+
+#pragma region
+public:
+	// --- Active Weapon API ---
+	void SetActiveWeaponSlot(const FGameplayTag& NewActiveSlotTag);
+
+	FGameplayTag GetActiveWeaponSlot() const { return ActiveWeaponSlotTag; }
+	URSItemInstance* GetActiveWeaponItem() const;
+
+	UPROPERTY(BlueprintAssignable, Category = "RS|Equipment")
+	FRSEquipmentChangedSignature OnEquipmentChanged;
+
+public:
+	FOnRSActiveWeaponChanged OnActiveWeaponChanged;
+
+protected:
+	// 기존 구조(예시): EquippedItems / OnEquipmentChanged / InternalEquip / InternalUnequip 등 유지
+	// TMap<FGameplayTag, TObjectPtr<URSItemInstance>> EquippedItems;
+
+	bool IsWeaponSlot(const FGameplayTag& SlotTag) const;
+
+	URSItemInstance* GetItemInSlot(const FGameplayTag& SlotTag) const;
+
+	void InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem);
+	void InternalUnequip(const FGameplayTag& SlotTag);
+
+private:
+	void BroadcastActiveWeaponChanged(
+		const FGameplayTag& OldSlot,
+		const FGameplayTag& NewSlot);
+
+private:
+	// 1/2 슬롯 네이밍 확정: Slot.Weapon.Main / Slot.Weapon.Sub
+	UPROPERTY(Transient)
+	FGameplayTag ActiveWeaponSlotTag;
+#pragma endregion
 
 };

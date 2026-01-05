@@ -10,6 +10,8 @@
 #include "Item/RSItemTemplate.h"
 #include "Item/Fragments/RSItemFragment_EquipRequirement.h"
 
+#include "RSGameplayTags.h"
+
 #include "Character/RSCharacter.h"
 #include "Character/RSHeroData.h"
 #include "Item/Fragments/RSItemFragment_CombatStyle.h"
@@ -25,6 +27,10 @@ URSEquipmentManagerComponent::URSEquipmentManagerComponent()
 void URSEquipmentManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// 기본값: 메인 슬롯을 Active로 시작 (원하면 정책 변경 가능)
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+	ActiveWeaponSlotTag = Tags.Slot_Weapon_Main;
 
 	EquippedWeapons.SetNum(3);
 
@@ -396,72 +402,148 @@ void URSEquipmentManagerComponent::HandleEquipAnimAction(ERSAnimEquipAction Acti
 	}
 }
 
+//void URSEquipmentManagerComponent::InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem)
+//{
+//	URSItemInstance* OldItem = GetItemInSlot(SlotTag);
+//
+//	EquippedItems.FindOrAdd(SlotTag) = NewItem;
+//
+//	// 무기 슬롯이면: "즉시 적용" 금지 → 트랜잭션 시작
+//	if (IsWeaponSlot(SlotTag))
+//	{
+//		bEquipTransactionActive = true;
+//		PendingSlotTag = SlotTag;
+//		PendingOldItem = OldItem;
+//		PendingNewItem = NewItem;
+//
+//		// 여기서 몽타주 재생은 네 정책에 따라:
+//		// (A) 아이템 템플릿의 EquipMontage를 Character가 재생
+//		// (B) GA로 Equip 능력을 만들어서 재생
+//		// 지금 메시지에서는 “Notify 라우팅”이 목적이니까,
+//		// 몽타주 재생부는 네가 이미 만들어둔 방식에 연결만 하면 됨.
+//
+//		// 장비 변경 브로드캐스트를 "즉시" 할지 "몽타주 종료 후" 할지는 정책.
+//		// 일단 UI가 빨리 반응하게 하려면 지금처럼 즉시 쏴도 된다.
+//		OnEquipmentChanged.Broadcast(SlotTag, OldItem, NewItem);
+//		return;
+//	}
+//
+//	// 무기 슬롯이 아닌 장비는 기존 즉시 적용 유지
+//	if (URSEquipManagerComponent* EquipMgr = CachedEquipManager.Get())
+//	{
+//		EquipMgr->HandleEquipmentChanged(SlotTag, OldItem, NewItem);
+//	}
+//
+//	OnEquipmentChanged.Broadcast(SlotTag, OldItem, NewItem);
+//}
+//
+//void URSEquipmentManagerComponent::InternalUnequip(const FGameplayTag& SlotTag)
+//{
+//	URSItemInstance* OldItem = GetItemInSlot(SlotTag);
+//	if (!OldItem && !EquippedItems.Contains(SlotTag))
+//	{
+//		return;
+//	}
+//
+//	EquippedItems.FindOrAdd(SlotTag) = nullptr;
+//
+//	if (IsWeaponSlot(SlotTag))
+//	{
+//		bEquipTransactionActive = true;
+//		PendingSlotTag = SlotTag;
+//		PendingOldItem = OldItem;
+//
+//		OnEquipmentChanged.Broadcast(SlotTag, OldItem, nullptr);
+//		return;
+//	}
+//
+//	if (URSEquipManagerComponent* EquipMgr = CachedEquipManager.Get())
+//	{
+//		EquipMgr->HandleEquipmentChanged(SlotTag, OldItem, nullptr);
+//	}
+//
+//	OnEquipmentChanged.Broadcast(SlotTag, OldItem, nullptr);
+//}
+
 void URSEquipmentManagerComponent::InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem)
 {
 	URSItemInstance* OldItem = GetItemInSlot(SlotTag);
 
+	// 기존 로직: SSOT(EquippedItems) 갱신
 	EquippedItems.FindOrAdd(SlotTag) = NewItem;
 
-	// 무기 슬롯이면: "즉시 적용" 금지 → 트랜잭션 시작
-	if (IsWeaponSlot(SlotTag))
-	{
-		bEquipTransactionActive = true;
-		PendingSlotTag = SlotTag;
-		PendingOldItem = OldItem;
-		PendingNewItem = NewItem;
-
-		// 여기서 몽타주 재생은 네 정책에 따라:
-		// (A) 아이템 템플릿의 EquipMontage를 Character가 재생
-		// (B) GA로 Equip 능력을 만들어서 재생
-		// 지금 메시지에서는 “Notify 라우팅”이 목적이니까,
-		// 몽타주 재생부는 네가 이미 만들어둔 방식에 연결만 하면 됨.
-
-		// 장비 변경 브로드캐스트를 "즉시" 할지 "몽타주 종료 후" 할지는 정책.
-		// 일단 UI가 빨리 반응하게 하려면 지금처럼 즉시 쏴도 된다.
-		OnEquipmentChanged.Broadcast(SlotTag, OldItem, NewItem);
-		return;
-	}
-
-	// 무기 슬롯이 아닌 장비는 기존 즉시 적용 유지
-	if (URSEquipManagerComponent* EquipMgr = CachedEquipManager.Get())
-	{
-		EquipMgr->HandleEquipmentChanged(SlotTag, OldItem, NewItem);
-	}
-
+	// 기존 브로드캐스트 유지
 	OnEquipmentChanged.Broadcast(SlotTag, OldItem, NewItem);
+
+	// 핵심 추가: 지금 Active 슬롯이 갱신되었으면 ActiveChanged도 쏜다
+	if (IsWeaponSlot(SlotTag) && SlotTag == ActiveWeaponSlotTag)
+	{
+		OnActiveWeaponChanged.Broadcast(SlotTag, SlotTag, OldItem, NewItem);
+	}
 }
 
 void URSEquipmentManagerComponent::InternalUnequip(const FGameplayTag& SlotTag)
 {
 	URSItemInstance* OldItem = GetItemInSlot(SlotTag);
-	if (!OldItem && !EquippedItems.Contains(SlotTag))
-	{
-		return;
-	}
 
 	EquippedItems.FindOrAdd(SlotTag) = nullptr;
 
-	if (IsWeaponSlot(SlotTag))
-	{
-		bEquipTransactionActive = true;
-		PendingSlotTag = SlotTag;
-		PendingOldItem = OldItem;
-
-		OnEquipmentChanged.Broadcast(SlotTag, OldItem, nullptr);
-		return;
-	}
-
-	if (URSEquipManagerComponent* EquipMgr = CachedEquipManager.Get())
-	{
-		EquipMgr->HandleEquipmentChanged(SlotTag, OldItem, nullptr);
-	}
-
 	OnEquipmentChanged.Broadcast(SlotTag, OldItem, nullptr);
+
+	if (IsWeaponSlot(SlotTag) && SlotTag == ActiveWeaponSlotTag)
+	{
+		OnActiveWeaponChanged.Broadcast(SlotTag, SlotTag, OldItem, nullptr);
+	}
 }
 
 URSItemInstance* URSEquipmentManagerComponent::GetWeaponInSlot(int32 SlotIndex) const
 {
-	return EquippedWeapons.IsValidIndex(SlotIndex)
-		? EquippedWeapons[SlotIndex]
-		: nullptr;
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+
+	if (SlotIndex == 1) return GetItemInSlot(Tags.Slot_Weapon_Main);
+	if (SlotIndex == 2) return GetItemInSlot(Tags.Slot_Weapon_Sub);
+
+	return nullptr;
+}
+
+URSItemInstance* URSEquipmentManagerComponent::GetActiveWeaponItem() const
+{
+	if (!ActiveWeaponSlotTag.IsValid())
+	{
+		return nullptr;
+	}
+	return GetItemInSlot(ActiveWeaponSlotTag);
+}
+
+void URSEquipmentManagerComponent::SetActiveWeaponSlot(const FGameplayTag& NewActiveSlotTag)
+{
+	if (!NewActiveSlotTag.IsValid())
+	{
+		return;
+	}
+
+	if (!IsWeaponSlot(NewActiveSlotTag))
+	{
+		return;
+	}
+
+	if (ActiveWeaponSlotTag == NewActiveSlotTag)
+	{
+		return;
+	}
+
+	const FGameplayTag OldSlot = ActiveWeaponSlotTag;
+	ActiveWeaponSlotTag = NewActiveSlotTag;
+
+	BroadcastActiveWeaponChanged(OldSlot, ActiveWeaponSlotTag);
+}
+
+void URSEquipmentManagerComponent::BroadcastActiveWeaponChanged(
+	const FGameplayTag& OldSlot,
+	const FGameplayTag& NewSlot)
+{
+	URSItemInstance* OldItem = GetItemInSlot(OldSlot);
+	URSItemInstance* NewItem = GetItemInSlot(NewSlot);
+
+	OnActiveWeaponChanged.Broadcast(OldSlot, NewSlot, OldItem, NewItem);
 }
