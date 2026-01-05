@@ -3,6 +3,9 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameplayTagContainer.h"
+#include "AbilitySystemComponent.h"
+#include "Item/Managers/RSEquipManagerComponent.h"
+#include "AbilitySystemComponent.h"
 #include "RSItemManagerComponent.generated.h"
 
 class ARSCharacter;
@@ -130,4 +133,27 @@ protected:
 	/** 드랍 시 스폰 위치 오프셋 (Pawn 기준) */
 	UPROPERTY(EditDefaultsOnly, Category = "RS|Item|Drop")
 	FVector DropOffset = FVector(100.f, 0.f, 50.f);
+
+
+
+#pragma region Weapon Slot Input Handling
+public:
+	void HandleEquipSlotInput(const FGameplayTag& InputTag);
+
+protected:
+	// === 필수 참조 ===
+	UPROPERTY()
+	TObjectPtr<URSEquipmentManagerComponent> EquipmentManager;
+
+	UPROPERTY()
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+
+	// === 기본 Unarmed 스타일 ===
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<const URSCombatStyleData> DefaultUnarmedStyle;
+
+protected:
+	void ApplyCombatStyle(const URSCombatStyleData* NewStyle);
+#pragma endregion
+
 };

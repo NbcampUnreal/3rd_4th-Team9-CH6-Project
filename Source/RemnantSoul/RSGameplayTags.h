@@ -78,6 +78,10 @@ public:
 	FGameplayTag InputTag_Native_Look;
 	FGameplayTag InputTag_Native_Interaction;
 	FGameplayTag InputTag_Native_InventoryToggle;
+
+	FGameplayTag InputTag_Native_EquipSlot1;
+	FGameplayTag InputTag_Native_EquipSlot2;
+
 	FGameplayTag InputTag_Native_QuickSlotCycle;
 	FGameplayTag InputTag_Native_QuickSlotUse;
 	

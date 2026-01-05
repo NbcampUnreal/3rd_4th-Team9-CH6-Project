@@ -71,3 +71,8 @@ bool URSItemInstance::IsValidInstance() const
 {
 	return (ItemTemplate != nullptr) && (Count > 0);
 }
+
+const URSCombatStyleData* URSItemInstance::GetItemCombatStyle() const
+{
+	return CombatStyle;
+}
