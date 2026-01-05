@@ -65,18 +65,15 @@ URSItemData* ARSItemPickup::GetItemData_Implementation() const
 	return ItemData;
 }
 
-void ARSItemPickup::SetHighlight(bool bEnable)
+void ARSItemPickup::OnFocusBegin_Implementation(AActor* Interactor)
 {
-	if (!Body)
-	{
-		return;
-	}
+	if (!Body) return;
+	Body->SetRenderCustomDepth(true);
+	Body->SetCustomDepthStencilValue(1);
+}
 
-	Body->SetRenderCustomDepth(bEnable);
-
-	// 선택: 스텐실 값도 같이 (프로젝트/PP 설정에 맞춰)
-	if (bEnable)
-	{
-		Body->SetCustomDepthStencilValue(1);
-	}
+void ARSItemPickup::OnFocusEnd_Implementation(AActor* Interactor)
+{
+	if (!Body) return;
+	Body->SetRenderCustomDepth(false);
 }

@@ -11,11 +11,6 @@ class URSItemData;
 
 DECLARE_MULTICAST_DELEGATE(FOnInventoryChanged);
 
-/**
- * 슬롯 고정형 인벤토리
- * - Slots.Num() == MaxSlots 유지
- * - 슬롯 인덱스가 UI/입력과 1:1 매칭
- */
 UCLASS(ClassGroup=(Inventory), meta=(BlueprintSpawnableComponent))
 class REMNANTSOUL_API URSInventoryComponent : public UActorComponent
 {

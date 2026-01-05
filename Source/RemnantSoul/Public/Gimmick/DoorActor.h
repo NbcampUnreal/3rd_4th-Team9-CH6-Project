@@ -50,7 +50,9 @@ private:
 	//
 	
 	bool PassesTagGate(AActor* Interactor) const;
-	
+	void OnFocusBegin_Implementation(AActor* Interactor);
+	void OnFocusEnd_Implementation(AActor* Interactor);
+
 	// ===== Settings =====
 	UPROPERTY(EditAnywhere, Category = "Door|Settings")
 	bool bLocked = false;

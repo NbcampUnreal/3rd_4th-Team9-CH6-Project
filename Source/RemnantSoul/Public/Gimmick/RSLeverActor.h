@@ -30,6 +30,8 @@ private:
 	void StartLeverAnim();
 	void UpdateLeverAnim(float DeltaSeconds);
 	void TriggerLinkedTargets(AActor* Interactor);
+	void OnFocusBegin_Implementation(AActor* Interactor);
+	void OnFocusEnd_Implementation(AActor* Interactor);
 
 private:
 	UPROPERTY(VisibleAnywhere, Category="Lever")
@@ -48,7 +50,7 @@ private:
 	UPROPERTY(VisibleInstanceOnly, Category="Lever|OneShot")
 	bool bHasFired = false;
 
-	// ===== Tag Gate (선택) =====
+	// ===== Tag Gate =====
 	UPROPERTY(EditAnywhere, Category="Lever|TagGate")
 	FGameplayTagContainer InteractorRequiredTags;
 
@@ -64,7 +66,7 @@ private:
 
 	// ===== Anim =====
 	UPROPERTY(EditAnywhere, Category="Lever|Anim")
-	FVector LocalAxis = FVector(1.0f, 0.0f, 0.0f); // Pivot 로컬 X축 (원하는 축으로 바꾸면 됨)
+	FVector LocalAxis = FVector(1.0f, 0.0f, 0.0f); 
 
 	UPROPERTY(EditAnywhere, Category="Lever|Anim")
 	float AngleDegrees = -45.0f;

@@ -309,21 +309,31 @@ void ARSCharacter::UpdateInteractFocus()
 
 	if (!TraceInteractTarget(HitActor, Hit))
 	{
+		if (CurrentInteractTarget && CurrentInteractTarget->Implements<UInteractable>())
+		{
+			IInteractable::Execute_OnFocusEnd(CurrentInteractTarget, this);
+		}
 		CurrentInteractTarget = nullptr;
 		CurrentInteractItemData = nullptr;
 		CurrentInteractHit = FHitResult();
 		return;
 	}
 
-	// 같은 대상이면 Hit만 갱신하고 끝
 	if (CurrentInteractTarget == HitActor)
 	{
 		CurrentInteractHit = Hit;
 		return;
 	}
+	
+	if (CurrentInteractTarget && CurrentInteractTarget->Implements<UInteractable>())
+	{
+		IInteractable::Execute_OnFocusEnd(CurrentInteractTarget, this);
+	}
 
 	CurrentInteractTarget = HitActor;
 	CurrentInteractHit = Hit;
+	IInteractable::Execute_OnFocusBegin(CurrentInteractTarget, this);
+	
 	CurrentInteractItemData = nullptr;
 
 	if (CurrentInteractTarget->Implements<URSItemSource>())
@@ -369,25 +379,48 @@ bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) co
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(InteractTrace), false);
 	Params.AddIgnoredActor(this);
 
-	// 1) 카메라 시선 트레이스
+	// 1) 카메라 시선: Sphere Sweep
 	const FVector CamStart = Camera->GetComponentLocation();
 	const FVector CamDir = Camera->GetForwardVector();
 	const FVector CamEnd = CamStart + CamDir * InteractTraceDistance;
 
 	FHitResult CamHit;
-	const bool bCamHit = World->LineTraceSingleByChannel(CamHit, CamStart, CamEnd, ECC_Visibility, Params);
+	const FCollisionShape CamSphere = FCollisionShape::MakeSphere(InteractCameraTraceRadius);
+
+	const bool bCamHit = World->SweepSingleByChannel(
+		CamHit,
+		CamStart,
+		CamEnd,
+		FQuat::Identity,
+		ECC_Visibility,
+		CamSphere,
+		Params
+	);
+
 	const FVector AimPoint = bCamHit ? CamHit.ImpactPoint : CamEnd;
 
-	// 2) 캐릭터에서 AimPoint로 트레이스
+	// 2) 캐릭터 -> AimPoint: Sphere Sweep
 	const FVector CharStart = GetActorLocation() + FVector(0.f, 0.f, BaseEyeHeight);
 	const FVector CharEnd = AimPoint;
 
 	FHitResult CharHit;
-	const bool bCharHit = World->LineTraceSingleByChannel(CharHit, CharStart, CharEnd, ECC_Visibility, Params);
+	const FCollisionShape CharSphere = FCollisionShape::MakeSphere(InteractTraceRadius);
+
+	const bool bCharHit = World->SweepSingleByChannel(
+		CharHit,
+		CharStart,
+		CharEnd,
+		FQuat::Identity,
+		ECC_Visibility,
+		CharSphere,
+		Params
+	);
+
 	if (!bCharHit) return false;
 
 	OutActor = CharHit.GetActor();
 	OutHit = CharHit;
+
 	if (!OutActor) return false;
 	if (!OutActor->Implements<UInteractable>()) return false;
 

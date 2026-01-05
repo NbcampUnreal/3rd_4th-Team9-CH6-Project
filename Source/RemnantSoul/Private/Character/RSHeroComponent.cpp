@@ -149,11 +149,7 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
 
 	UE_LOG(LogTemp, Warning, TEXT("[Hero] BindNativeAction: Look OK"));
-
-	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Interaction,ETriggerEvent::Triggered, this, &ThisClass::Input_Interaction);
 	
-	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Started, this, &ThisClass::Input_InventoryToggle);
-
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot1, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot1);
 
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot2, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot2);
