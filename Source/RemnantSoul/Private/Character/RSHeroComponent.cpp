@@ -156,7 +156,7 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot1, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot1);
 
-  IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot2, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot2);
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot2, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot2);
 
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Interaction,ETriggerEvent::Started, this, &ThisClass::Input_Interaction);
 	
