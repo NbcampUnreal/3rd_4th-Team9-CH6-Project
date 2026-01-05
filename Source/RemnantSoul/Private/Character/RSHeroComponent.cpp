@@ -147,6 +147,7 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	UE_LOG(LogTemp, Warning, TEXT("[Hero] BindNativeAction: Move OK"));
 
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
+
 	UE_LOG(LogTemp, Warning, TEXT("[Hero] BindNativeAction: Look OK"));
 
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Interaction,ETriggerEvent::Triggered, this, &ThisClass::Input_Interaction);
@@ -155,7 +156,17 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot1, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot1);
 
-	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot2, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot2);
+  IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot2, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot2);
+
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Interaction,ETriggerEvent::Started, this, &ThisClass::Input_Interaction);
+	
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Started, this, &ThisClass::Input_InventoryToggle);
+
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_QuickSlotCycle, ETriggerEvent::Started,this,&ThisClass::Input_QuickSlotCycle);
+	 
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_QuickSlotUse,ETriggerEvent::Started,this,&ThisClass::Input_QuickSlotUse);
+
+
 
 	bInputInitialized = true;
 	UE_LOG(LogTemp, Warning, TEXT("[Hero] InputReady Broadcast"));
@@ -400,6 +411,32 @@ void URSHeroComponent::Input_Interaction(const FInputActionValue& Value)
 	if (!Char) return;
 
 	Char->TryInteract();
+}
+
+void URSHeroComponent::Input_QuickSlotCycle(const FInputActionValue& Value)
+{
+	(void)Value;
+
+	if (APawn* Pawn = Cast<APawn>(GetOwner()))
+	{
+		if (ARSPlayerController* RSPC = Cast<ARSPlayerController>(Pawn->GetController()))
+		{
+			RSPC->QuickSlotCycle(); 
+		}
+	}
+}
+
+void URSHeroComponent::Input_QuickSlotUse(const FInputActionValue& Value)
+{
+	(void)Value;
+
+	if (APawn* Pawn = Cast<APawn>(GetOwner()))
+	{
+		if (ARSPlayerController* RSPC = Cast<ARSPlayerController>(Pawn->GetController()))
+		{
+			RSPC->QuickSlotUse();
+		}
+	}
 }
 
 void URSHeroComponent::Input_InventoryToggle(const FInputActionValue& Value)

@@ -31,6 +31,7 @@
 #include "Item/Managers/RSEquipmentManagerComponent.h"
 #include "Item/Managers/RSInventoryManagerComponent.h"
 #include "Item/Managers/RSItemManagerComponent.h"
+#include "Interface/RSItemSource.h"
 #include "Item/RSItemInstance.h"
 
 // Animation
@@ -42,7 +43,6 @@
 #include "Interface/Interactable.h"
 #include "DrawDebugHelpers.h"
 #include "Component/Inventory/RSInventoryComponent.h"
-#include "Interface/InventoryOwner.h"
 #include "ItemDataAsset/RSItemData.h"
 
 
@@ -326,9 +326,9 @@ void ARSCharacter::UpdateInteractFocus()
 	CurrentInteractHit = Hit;
 	CurrentInteractItemData = nullptr;
 
-	if (CurrentInteractTarget && CurrentInteractTarget->Implements<UInteractable>())
+	if (CurrentInteractTarget->Implements<URSItemSource>())
 	{
-		CurrentInteractItemData = IInteractable::Execute_GetItemData(CurrentInteractTarget);
+		CurrentInteractItemData = IRSItemSource::Execute_GetItemData(CurrentInteractTarget);
 	}
 }
 
@@ -388,7 +388,11 @@ bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) co
 
 	OutActor = CharHit.GetActor();
 	OutHit = CharHit;
-	return (OutActor != nullptr);
+	if (!OutActor) return false;
+	if (!OutActor->Implements<UInteractable>()) return false;
+
+	return true;
+	
 }
 
 bool ARSCharacter::TryAddItem_Implementation(URSItemData* ItemData, int32 Count)

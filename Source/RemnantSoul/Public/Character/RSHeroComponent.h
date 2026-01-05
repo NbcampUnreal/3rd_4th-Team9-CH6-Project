@@ -41,11 +41,12 @@ protected:
 	void Input_Look(const FInputActionValue& Value);
 	void Input_Interaction(const FInputActionValue& Value);
 	void Input_InventoryToggle(const FInputActionValue& Value);
+
 	void Input_EquipSlot1();
 	void Input_EquipSlot2();
 
-
-	
+	void Input_QuickSlotCycle(const FInputActionValue& Value);
+	void Input_QuickSlotUse(const FInputActionValue& Value);
 	
 	ARSCharacter* GetOwnerCharacter() const;
 
