@@ -655,22 +655,30 @@ void ARSCharacter::HandleAnimEquipAction(ERSAnimEquipAction Action)
 
 URSItemInstance* ARSCharacter::GetEquippedWeaponByInputTag(FGameplayTag InputTag) const
 {
-	// ARSCharacter는 Actor이므로 바로 컴포넌트 탐색
-	const URSEquipManagerComponent* EquipMgr =
-		FindComponentByClass<URSEquipManagerComponent>();
+	const URSEquipmentManagerComponent* EqMgr =
+		FindComponentByClass<URSEquipmentManagerComponent>();
 
-	if (!EquipMgr)
+	if (!EqMgr)
 	{
 		return nullptr;
 	}
 
-	const FGameplayTag SlotTag =
-		EquipMgr->ResolveWeaponSlotFromInputTag(InputTag);
+	const FRSGameplayTags& RSTags = FRSGameplayTags::Get();
 
-	if (!SlotTag.IsValid())
+	FGameplayTag SlotTag;
+	if (InputTag == RSTags.InputTag_Native_EquipSlot1)
+	{
+		SlotTag = RSTags.Slot_Weapon_Main;
+	}
+	else if (InputTag == RSTags.InputTag_Native_EquipSlot2)
+	{
+		SlotTag = RSTags.Slot_Weapon_Sub;
+	}
+	else
 	{
 		return nullptr;
 	}
 
-	return EquipMgr->GetEquippedWeaponBySlot(SlotTag);
+	return EqMgr->GetItemInSlot(SlotTag);
 }
+

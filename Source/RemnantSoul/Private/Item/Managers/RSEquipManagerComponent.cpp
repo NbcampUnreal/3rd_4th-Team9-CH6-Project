@@ -20,7 +20,7 @@
 
 #include "Item/Managers/RSEquipmentManagerComponent.h"
 
-
+#include "Item/Managers/RSCosmeticManagerComponent.h"
 
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RSEquipManagerComponent)
@@ -37,23 +37,23 @@ void URSEquipManagerComponent::BeginPlay()
 	ARSCharacter* Char = Cast<ARSCharacter>(GetOwner());
 	if (!Char) return;
 
-	CachedASC = Char->GetAbilitySystemComponent(); // 필수
+	CachedASC = Char->GetAbilitySystemComponent();
 
-	URSHeroComponent* HeroComp = Char->FindComponentByClass<URSHeroComponent>();
-	if (!HeroComp) return;
+	CachedCosmeticManager = Char->FindComponentByClass<URSCosmeticManagerComponent>();
 
-	HeroComp->OnInputReady.AddLambda([this]()
-		{
-			HandleInputReady();
-		});
+	EquipmentManager = Char->FindComponentByClass<URSEquipmentManagerComponent>();
+	if (!EquipmentManager) return;
 
-	AActor* Owner = GetOwner();
-	if (!Owner)
+	// ActiveWeaponChanged 구독 (Native delegate 기준)
+	EquipmentManager->OnActiveWeaponChanged.AddUObject(
+		this, &ThisClass::HandleActiveWeaponChanged
+	);
+
+	// InputReady 이후 DefaultStyle 적용은 유지해도 됨(정책)
+	if (URSHeroComponent* HeroComp = Char->FindComponentByClass<URSHeroComponent>())
 	{
-		return;
+		HeroComp->OnInputReady.AddLambda([this]() { ApplyDefaultStyleIfNeeded(); });
 	}
-
-	EquipmentManager = Owner->FindComponentByClass<URSEquipmentManagerComponent>();
 }
 
 UAbilitySystemComponent* URSEquipManagerComponent::GetASC() const
@@ -68,17 +68,6 @@ const URSCombatStyleData* URSEquipManagerComponent::GetDefaultUnarmedStyle() con
 		return HeroData->DefaultUnarmedStyle;
 	}
 	return nullptr;
-}
-
-void URSEquipManagerComponent::OnMainWeaponChanged(URSItemInstance* OldWeapon, URSItemInstance* NewWeapon)
-{
-	// 1. 무기 패시브 AbilitySet (아이템 자체 AbilitySet) 정리/적용
-	ClearItemPassiveAbilitySets();
-	ApplyItemPassiveAbilitySets(NewWeapon);
-
-	// 2. CombatStyle (InputOverlay + StyleAbilitySets + AnimLayer 등) 결정/적용
-	const URSCombatStyleData* NewStyle = ResolveCombatStyleForWeapon(NewWeapon);
-	ApplyCombatStyle(NewStyle);
 }
 
 void URSEquipManagerComponent::ApplyItemPassiveAbilitySets(URSItemInstance* Item)
@@ -147,40 +136,6 @@ void URSEquipManagerComponent::ClearStyleInputOverlay()
 	HeroComp->ClearOverlayInputConfig();
 }
 
-void URSEquipManagerComponent::HandleEquipmentChanged(
-	const FGameplayTag& SlotTag,
-	URSItemInstance* OldItem,
-	URSItemInstance* NewItem
-)
-{
-	if (!IsWeaponSlot(SlotTag))
-	{
-		return;
-	}
-
-	// 1. SSOT 갱신
-	if (NewItem)
-	{
-		EquippedWeapons.Add(SlotTag, NewItem);
-	}
-	else
-	{
-		EquippedWeapons.Remove(SlotTag);
-	}
-
-	// 2. "메인 무기 슬롯"만 스타일에 영향
-	if (!IsMainWeaponSlot(SlotTag))
-	{
-		return;
-	}
-
-	ClearItemPassiveAbilitySets();
-	ApplyItemPassiveAbilitySets(NewItem);
-
-	// 3. CombatStyle 재결정
-	const URSCombatStyleData* NewStyle = ResolveCombatStyleForWeapon(NewItem);
-	ApplyCombatStyle(NewStyle);
-}
 
 
 void URSEquipManagerComponent::ApplyAnimStyleLayers(const URSCombatStyleData* Style)
@@ -416,48 +371,30 @@ const URSHeroData* URSEquipManagerComponent::GetHeroData() const
 
 void URSEquipManagerComponent::HandleEquipSlotInput(FGameplayTag InputTag)
 {
-	const FGameplayTag SlotTag = ResolveWeaponSlotFromInputTag(InputTag);
-	if (!SlotTag.IsValid())
+	if (!EquipmentManager)
 	{
 		return;
 	}
 
-	URSItemInstance* Weapon = GetEquippedWeaponBySlot(SlotTag);
-	const URSCombatStyleData* NewStyle = ResolveCombatStyleForWeapon(Weapon);
-	ApplyCombatStyle(NewStyle);
-}
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
 
-URSItemInstance* URSEquipManagerComponent::GetEquippedWeaponBySlot(FGameplayTag SlotTag) const
-{
-	if (const TObjectPtr<URSItemInstance>* Found = EquippedWeapons.Find(SlotTag))
+	FGameplayTag DesiredSlot;
+	if (InputTag == Tags.InputTag_Native_EquipSlot1)
 	{
-		return Found->Get();
+		DesiredSlot = Tags.Slot_Weapon_Main;
 	}
-	return nullptr;
-}
-
-void URSEquipManagerComponent::SetEquippedWeapon(
-	FGameplayTag SlotTag,
-	URSItemInstance* NewItem)
-{
-	URSItemInstance* OldItem = nullptr;
-
-	if (TObjectPtr<URSItemInstance>* Found = EquippedWeapons.Find(SlotTag))
+	else if (InputTag == Tags.InputTag_Native_EquipSlot2)
 	{
-		OldItem = Found->Get();
-	}
-
-	if (NewItem)
-	{
-		EquippedWeapons.Add(SlotTag, NewItem);
+		DesiredSlot = Tags.Slot_Weapon_Sub;
 	}
 	else
 	{
-		EquippedWeapons.Remove(SlotTag);
+		return;
 	}
 
-	HandleEquipmentChanged(SlotTag, OldItem, NewItem);
+	EquipmentManager->SetActiveWeaponSlot(DesiredSlot);
 }
+
 
 FGameplayTag URSEquipManagerComponent::ResolveWeaponSlotFromInputTag(FGameplayTag InputTag) const
 {
@@ -492,3 +429,27 @@ bool URSEquipManagerComponent::IsMainWeaponSlot(const FGameplayTag& SlotTag) con
 	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
 	return SlotTag == Tags.Slot_Weapon_Main;
 }
+
+void URSEquipManagerComponent::HandleActiveWeaponChanged(
+	FGameplayTag OldSlot,
+	FGameplayTag NewSlot,
+	URSItemInstance* OldItem,
+	URSItemInstance* NewItem)
+{
+	// Cosmetic (활성 무기만)
+	if (URSCosmeticManagerComponent* CosMgr = CachedCosmeticManager.Get())
+	{
+		CosMgr->ApplyWeaponFromItem(NewItem);
+	}
+
+	// Passive (활성 무기만)
+	ClearItemPassiveAbilitySets();
+	ApplyItemPassiveAbilitySets(NewItem);
+
+	// Style (활성 무기만)
+	const URSCombatStyleData* NewStyle = ResolveCombatStyleForWeapon(NewItem);
+	ApplyCombatStyle(NewStyle);
+}
+
+
+

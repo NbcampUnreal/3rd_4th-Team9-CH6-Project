@@ -20,6 +20,7 @@ class URSEquipManagerComponent;
 class URSEquipmentManagerComponent;
 class URSHeroData;
 class ARSCharacter;
+class URSCosmeticManagerComponent;
 
 
 
@@ -60,19 +61,11 @@ public:
 	const URSCombatStyleData* GetCurrentCombatStyle() const;
 
 	FOnRSCombatStyleResolved OnCombatStyleResolved;
-	
-	/** 무기/장비 변경 시 외부(EquipmentManager)에서 호출: "이제 이 ItemInstance가 메인 무기다" */
-	void OnMainWeaponChanged(URSItemInstance* OldWeapon, URSItemInstance* NewWeapon);
-
-	URSItemInstance* GetEquippedWeaponBySlot(FGameplayTag SlotTag) const;
-	void SetEquippedWeapon(FGameplayTag SlotTag, URSItemInstance* NewItem);
 
 	FGameplayTag ResolveWeaponSlotFromInputTag(FGameplayTag InputTag) const;
 
 
 public:
-	// EquipmentManager가 장비 변화(Old->New)를 알려주는 진입점
-	void HandleEquipmentChanged(const FGameplayTag& SlotTag, URSItemInstance* OldItem, URSItemInstance* NewItem);
 	void ApplyAnimStyleLayers(const URSCombatStyleData* Style);
 	void ApplyCombatStyle(const URSCombatStyleData* NewStyle);
 	void HandleEquipSlotInput(FGameplayTag InputTag);
@@ -128,6 +121,13 @@ private:
 	bool IsWeaponSlot(const FGameplayTag& SlotTag) const;
 	bool IsMainWeaponSlot(const FGameplayTag& SlotTag) const;
 
+	void HandleActiveWeaponChanged(
+		FGameplayTag OldSlot,
+		FGameplayTag NewSlot,
+		URSItemInstance* OldItem,
+		URSItemInstance* NewItem
+	);
+
 protected:
 	/** 슬롯에 실제 장착된 아이템 관리 */
 	UPROPERTY()
@@ -170,10 +170,6 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<const URSCombatStyleData> CurrentCombatStyle = nullptr;
 
-
-
-private:
-	// ===== Equipped Weapon SSOT =====
 	UPROPERTY(Transient)
-	TMap<FGameplayTag, TObjectPtr<URSItemInstance>> EquippedWeapons;
+	TWeakObjectPtr<URSCosmeticManagerComponent> CachedCosmeticManager;
 };

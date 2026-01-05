@@ -32,8 +32,6 @@ void URSEquipmentManagerComponent::BeginPlay()
 	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
 	ActiveWeaponSlotTag = Tags.Slot_Weapon_Main;
 
-	EquippedWeapons.SetNum(3);
-
 	CacheReferences();
 
 	// DefaultSlots 기반으로 초기 슬롯 세팅
@@ -264,25 +262,10 @@ bool URSEquipmentManagerComponent::CheckEquipRequirements(const URSItemTemplate*
 
 bool URSEquipmentManagerComponent::IsWeaponSlot(const FGameplayTag& SlotTag) const
 {
-	if (!SlotTag.IsValid() || !MainWeaponSlotTag.IsValid())
-	{
-		return false;
-	}
-
-	// 단순히 "메인 무기 슬롯"만 무기 슬롯으로 취급
-	if (SlotTag == MainWeaponSlotTag)
-	{
-		return true;
-	}
-
-	// 필요하면 Slot.Weapon.* 계층을 쓰면서 확장 가능
-	// if (SlotTag.MatchesTag(MainWeaponSlotTag))
-	// {
-	//     return true;
-	// }
-
-	return false;
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+	return SlotTag == Tags.Slot_Weapon_Main || SlotTag == Tags.Slot_Weapon_Sub;
 }
+
 
 URSCombatStyleData* URSEquipmentManagerComponent::ResolveDefaultUnarmedStyle() const
 {
@@ -333,13 +316,15 @@ URSCombatStyleData* URSEquipmentManagerComponent::ResolveCombatStyleForWeaponIte
 
 void URSEquipmentManagerComponent::HandleMainWeaponChanged(URSItemInstance* OldWeapon, URSItemInstance* NewWeapon)
 {
-	// 1) GAS/전투 규칙
-	if (URSEquipManagerComponent* EquipMgr = CachedEquipManager.Get())
+	// GAS/전투 규칙 적용은 금지(ActiveWeaponChanged에서만 적용)
+
+	// Active 슬롯이 메인일 때만 코스메틱 적용
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+	if (ActiveWeaponSlotTag != Tags.Slot_Weapon_Main)
 	{
-		EquipMgr->OnMainWeaponChanged(OldWeapon, NewWeapon);
+		return;
 	}
 
-	// 2) 코스메틱(외형)
 	if (URSCosmeticManagerComponent* CosMgr = CachedCosmeticManager.Get())
 	{
 		CosMgr->ApplyWeaponFromItem(NewWeapon);
@@ -361,13 +346,11 @@ void URSEquipmentManagerComponent::HandleEquipAnimAction(ERSAnimEquipAction Acti
 		return;
 	}
 
-	URSEquipManagerComponent* EquipMgr = CachedEquipManager.Get();
 	URSCosmeticManagerComponent* CosMgr = CachedCosmeticManager.Get();
 
 	switch (Action)
 	{
 	case ERSAnimEquipAction::AttachWeapon:
-		// 외형은 CosmeticManager가 담당
 		if (CosMgr)
 		{
 			CosMgr->ApplyWeaponFromItem(PendingNewItem);
@@ -377,23 +360,28 @@ void URSEquipmentManagerComponent::HandleEquipAnimAction(ERSAnimEquipAction Acti
 	case ERSAnimEquipAction::DetachWeapon:
 		if (CosMgr)
 		{
-			// 해제면 nullptr로 클리어
 			CosMgr->ApplyWeaponFromItem(nullptr);
 		}
 		break;
 
 	case ERSAnimEquipAction::ApplyStyle:
-		// GAS/입력/AnimLayer는 EquipManager가 담당
-		if (EquipMgr)
+		// EquipManager 직접 호출 금지: ActiveWeaponChanged만 트리거
+		if (PendingSlotTag == ActiveWeaponSlotTag)
 		{
-			EquipMgr->OnMainWeaponChanged(PendingOldItem, PendingNewItem);
+			OnActiveWeaponChanged.Broadcast(
+				ActiveWeaponSlotTag, ActiveWeaponSlotTag,
+				PendingOldItem, PendingNewItem
+			);
 		}
 		break;
 
 	case ERSAnimEquipAction::ClearStyle:
-		if (EquipMgr)
+		if (PendingSlotTag == ActiveWeaponSlotTag)
 		{
-			EquipMgr->OnMainWeaponChanged(PendingOldItem, nullptr);
+			OnActiveWeaponChanged.Broadcast(
+				ActiveWeaponSlotTag, ActiveWeaponSlotTag,
+				PendingOldItem, nullptr
+			);
 		}
 		break;
 
@@ -401,6 +389,8 @@ void URSEquipmentManagerComponent::HandleEquipAnimAction(ERSAnimEquipAction Acti
 		break;
 	}
 }
+
+
 
 //void URSEquipmentManagerComponent::InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem)
 //{
@@ -499,10 +489,8 @@ void URSEquipmentManagerComponent::InternalUnequip(const FGameplayTag& SlotTag)
 URSItemInstance* URSEquipmentManagerComponent::GetWeaponInSlot(int32 SlotIndex) const
 {
 	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
-
 	if (SlotIndex == 1) return GetItemInSlot(Tags.Slot_Weapon_Main);
 	if (SlotIndex == 2) return GetItemInSlot(Tags.Slot_Weapon_Sub);
-
 	return nullptr;
 }
 

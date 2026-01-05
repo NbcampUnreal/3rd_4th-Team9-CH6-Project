@@ -198,13 +198,15 @@ public:
 public:
 	FOnRSActiveWeaponChanged OnActiveWeaponChanged;
 
+	URSItemInstance* GetItemInSlot(const FGameplayTag& SlotTag) const;
+
 protected:
 	// 기존 구조(예시): EquippedItems / OnEquipmentChanged / InternalEquip / InternalUnequip 등 유지
 	// TMap<FGameplayTag, TObjectPtr<URSItemInstance>> EquippedItems;
 
 	bool IsWeaponSlot(const FGameplayTag& SlotTag) const;
 
-	URSItemInstance* GetItemInSlot(const FGameplayTag& SlotTag) const;
+
 
 	void InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem);
 	void InternalUnequip(const FGameplayTag& SlotTag);
