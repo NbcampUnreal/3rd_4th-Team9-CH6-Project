@@ -1,23 +1,4 @@
-﻿//// Fill out your copyright notice in the Description page of Project Settings.
-//
-//#pragma once
-//
-//#include "CoreMinimal.h"
-//#include "Engine/DataAsset.h"
-//#include "RSHeroData.generated.h"
-//
-///**
-// * 
-// */
-//UCLASS()
-//class REMNANTSOUL_API URSHeroData : public UDataAsset
-//{
-//	GENERATED_BODY()
-//	
-//};
-
-
-// Public/Character/RSHeroData.h
+﻿
 #pragma once
 
 #include "CoreMinimal.h"

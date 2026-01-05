@@ -86,8 +86,7 @@ private:
 #pragma endregion
 
 #pragma region CombatStyle
-public:
-	void ApplyCombatStyle(const URSCombatStyleData* NewStyle);
+
 
 #pragma endregion
 

@@ -56,50 +56,6 @@ void URSHeroComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		UE_LOG(LogTemp, Error, TEXT("[Hero] SetupPIC FAIL: PC is null. Pawn=%s"), *GetNameSafe(Pawn));
 		return;
 	}
-
-	ARSPlayerState* PS = Pawn->GetPlayerState<ARSPlayerState>();
-	if (!PS)
-	{
-		UE_LOG(LogTemp, Error, TEXT("[Hero] SetupPIC FAIL: PlayerState is null. Pawn=%s"), *GetNameSafe(Pawn));
-		return;
-	}
-
-	const URSHeroData* HDNow = PS->GetHeroData();
-	UE_LOG(LogTemp, Warning, TEXT("[Hero] SetupPIC OK: PC=%s PS=%s HeroDataNow=%s"),
-		*GetNameSafe(PC),
-		*GetNameSafe(PS),
-		*GetNameSafe(HDNow));
-
-	// ---- 기존 Apply 로직 ----
-	auto Apply = [this, PlayerInputComponent, PC](const URSHeroData* InHD)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[Hero] Apply HeroData=%s"), *GetNameSafe(InHD));
-
-			ARSCharacter* Char = GetOwnerCharacter();
-			if (!Char || !InHD)
-			{
-				UE_LOG(LogTemp, Error, TEXT("[Hero] Apply FAIL: Char=%s InHD=%s"),
-					*GetNameSafe(Char), *GetNameSafe(InHD));
-				return;
-			}
-
-			Char->SetHeroData(InHD);
-			InitializePlayerInput(PlayerInputComponent, PC);
-		};
-
-	if (HDNow)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[Hero] HeroData already ready -> Apply now"));
-		Apply(HDNow);
-		return;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("[Hero] HeroData not ready -> bind OnHeroDataReady"));
-	PS->OnHeroDataReady.AddLambda([Apply](const URSHeroData* InHD)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[Hero] OnHeroDataReady fired InHD=%s"), *GetNameSafe(InHD));
-			Apply(InHD);
-		});
 }
 
 void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent, APlayerController* PlayerController)
@@ -131,16 +87,6 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 
 	const URSInputConfig* InputConfig = Char->GetInputConfig(); 
 	if (!InputConfig) return;
-
-	if (Char->IsPlayerControlledPawn())
-	{
-		const URSHeroData* HD = Char->GetHeroData();
-		if (!HD || !HD->PawnData)
-		{
-			UE_LOG(LogTemp, Error, TEXT("[Hero] Missing HeroData/PawnData on Player %s"), *GetNameSafe(Char));
-			return;
-		}
-	}
 
 	for (const auto& Mapping : InputConfig->DefaultMappings)
 	{
@@ -482,58 +428,5 @@ void URSHeroComponent::Input_InventoryToggle(const FInputActionValue& Value)
 
 }
 
-//bool ARSCharacter::IsPlayerControlledPawn() const
-//{
-//	const AController* C = GetController();
-//	return C && C->IsPlayerController();
-//}
-//
-//void ARSCharacter::PossessedBy(AController* NewController)
-//{
-//	Super::PossessedBy(NewController);
-//	InitializeAbilitySystemAndPawnData();
-//}
-//
-//void ARSCharacter::OnRep_PlayerState()
-//{
-//	Super::OnRep_PlayerState();
-//	InitializeAbilitySystemAndPawnData();
-//}
-//
-//void ARSCharacter::InitializeAbilitySystemAndPawnData()
-//{
-//	if (!ASC) return;
-//
-//	// ASC ActorInfo는 여기서 확정
-//	ASC->InitAbilityActorInfo(this, this);
-//
-//	const URSPawnData* PD = GetPawnData();
-//	if (!PD) return;
-//
-//	// (선택) 중복 부여 방지: 이미 부여했다면 스킵
-//	// if (PawnGrantedAbilitySetHandles.Num() > 0) return;
-//
-//	PawnGrantedAbilitySetHandles.Reset();
-//	PawnGrantedAbilitySetHandles.SetNum(PD->AbilitySets.Num());
-//
-//	for (int32 i = 0; i < PD->AbilitySets.Num(); ++i)
-//	{
-//		const URSAbilitySet* Set = PD->AbilitySets[i];
-//		if (!Set) continue;
-//
-//		Set->GiveToAbilitySystem(ASC, &PawnGrantedAbilitySetHandles[i], this);
-//	}
-//}
 
-void URSHeroComponent::ApplyCombatStyle(const URSCombatStyleData* NewStyle)
-{
-	// 1차 MVP: 로그만
-	if (NewStyle)
-	{
-		UE_LOG(LogTemp, Log, TEXT("[RS] CombatStyle Applied: %s"), *NewStyle->GetName());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[RS] CombatStyle Cleared"));
-	}
-}
+

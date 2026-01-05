@@ -124,6 +124,10 @@ private:
 	const URSCombatStyleData* ResolveDesiredCombatStyle() const;
 	void RefreshCombatStyle();
 
+
+	bool IsWeaponSlot(const FGameplayTag& SlotTag) const;
+	bool IsMainWeaponSlot(const FGameplayTag& SlotTag) const;
+
 protected:
 	/** 슬롯에 실제 장착된 아이템 관리 */
 	UPROPERTY()
@@ -134,9 +138,6 @@ private:
 	UPROPERTY(Transient)
 	TWeakObjectPtr<UAbilitySystemComponent> CachedASC;
 
-	UPROPERTY(Transient)
-	TObjectPtr<const URSCombatStyleData> CurrentStyle = nullptr;
-
 	// 현재 스타일이 부여한 AbilitySet 핸들들
 	UPROPERTY(Transient)
 	TArray<FRSAbilitySet_GrantedHandles> CurrentStyleGrantedHandles;
@@ -146,10 +147,6 @@ private:
 
 	UPROPERTY(Transient)
 	TArray<FRSAbilitySet_GrantedHandles> ItemPassiveHandles;
-
-	// 현재 무기(메인)
-	UPROPERTY(Transient)
-	TObjectPtr<URSItemInstance> CurrentMainWeapon = nullptr;
 
 	// 무기 ItemFragment_AbilitySet(패시브)로 부여한 핸들들(선택)
 	UPROPERTY(Transient)
@@ -169,9 +166,6 @@ private:
 	// --- Cached ---
 	UPROPERTY()
 	URSHeroComponent* HeroComponent = nullptr;
-
-	UPROPERTY()
-	URSItemInstance* EquippedWeaponInstance = nullptr;
 
 	UPROPERTY(Transient)
 	TObjectPtr<const URSCombatStyleData> CurrentCombatStyle = nullptr;

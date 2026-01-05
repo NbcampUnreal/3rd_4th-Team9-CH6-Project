@@ -1,26 +1,4 @@
-﻿//// Fill out your copyright notice in the Description page of Project Settings.
-//
-//#pragma once
-//
-//#include "CoreMinimal.h"
-//#include "UObject/NoExportTypes.h"
-//#include "RSAbilitySet.generated.h"
-//
-///**
-// * 
-// */
-//UCLASS()
-//class REMNANTSOUL_API URSAbilitySet : public UObject
-//{
-//	GENERATED_BODY()
-//	
-//};
-
-
-
-// Public/GAS/AS/RSAbilitySet.h
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 //#include "UObject/Object.h"

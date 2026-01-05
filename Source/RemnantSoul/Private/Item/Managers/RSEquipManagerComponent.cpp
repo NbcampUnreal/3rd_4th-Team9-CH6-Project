@@ -150,23 +150,35 @@ void URSEquipManagerComponent::ClearStyleInputOverlay()
 void URSEquipManagerComponent::HandleEquipmentChanged(
 	const FGameplayTag& SlotTag,
 	URSItemInstance* OldItem,
-	URSItemInstance* NewItem)
+	URSItemInstance* NewItem
+)
 {
-	// 1. 메인 무기 슬롯일 때만 CombatStyle 관여
-	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
-	if (SlotTag != Tags.Slot_Weapon_Main)
+	if (!IsWeaponSlot(SlotTag))
 	{
 		return;
 	}
 
-	// 2. 패시브 AbilitySet 갱신
+	// 1. SSOT 갱신
+	if (NewItem)
+	{
+		EquippedWeapons.Add(SlotTag, NewItem);
+	}
+	else
+	{
+		EquippedWeapons.Remove(SlotTag);
+	}
+
+	// 2. "메인 무기 슬롯"만 스타일에 영향
+	if (!IsMainWeaponSlot(SlotTag))
+	{
+		return;
+	}
+
 	ClearItemPassiveAbilitySets();
 	ApplyItemPassiveAbilitySets(NewItem);
 
-	// 3. CombatStyle 갱신
-	const URSCombatStyleData* NewStyle =
-		ResolveCombatStyleForWeapon(NewItem);
-
+	// 3. CombatStyle 재결정
+	const URSCombatStyleData* NewStyle = ResolveCombatStyleForWeapon(NewItem);
 	ApplyCombatStyle(NewStyle);
 }
 
@@ -212,7 +224,7 @@ void URSEquipManagerComponent::ClearCurrentCombatStyle()
 	// - 버전 첫번쨰 : "링크 해제" 개념이 애매하니, DefaultUnarmedStyle이 기본 레이어를 갖고 있도록 설계
 	ApplyAnimStyleLayers(nullptr);
 
-	CurrentStyle = nullptr;
+	CurrentCombatStyle = nullptr;
 }
 
 void URSEquipManagerComponent::GiveAbilitySetList(
@@ -350,22 +362,32 @@ void URSEquipManagerComponent::ApplyCombatStyle(const URSCombatStyleData* NewSty
 		return;
 	}
 
+	// 0. 이전 스타일 완전 정리
+	ClearCurrentCombatStyle();
+
 	CurrentCombatStyle = NewStyle;
 
-	URSHeroComponent* HeroComp = GetHeroComponent();
-	if (!HeroComp) return;
-
-	if (NewStyle && NewStyle->OverlayInputConfig)
+	if (!NewStyle)
 	{
-		HeroComp->ApplyOverlayInputConfig(NewStyle->OverlayInputConfig);
-	}
-	else
-	{
-		HeroComp->ClearOverlayInputConfig();
+		return;
 	}
 
-	HeroComp->ApplyCombatStyle(NewStyle);
+	// 1. AbilitySets 적용 (CombatStyle 고유)
+	GiveAbilitySetList(NewStyle->AbilitySets, CurrentStyleGrantedHandles);
+
+	// 2. Input Overlay
+	ApplyStyleInputOverlay(NewStyle);
+
+	// 3. Anim Style Tags (ASC)
+	ApplyAnimStyleTags(NewStyle);
+
+	// 4. Anim Layer 교체
+	ApplyAnimStyleLayers(NewStyle);
+
+	// 5. 디버그/노티파이 (선택)
+	OnCombatStyleResolved.Broadcast(NewStyle);
 }
+
 
 
 
@@ -394,21 +416,14 @@ const URSHeroData* URSEquipManagerComponent::GetHeroData() const
 
 void URSEquipManagerComponent::HandleEquipSlotInput(FGameplayTag InputTag)
 {
-	// 1. Owner Character 확보
-	ARSCharacter* OwnerCharacter = GetOwnerCharacter();
-	if (!OwnerCharacter)
+	const FGameplayTag SlotTag = ResolveWeaponSlotFromInputTag(InputTag);
+	if (!SlotTag.IsValid())
 	{
 		return;
 	}
 
-	// 2. 입력 태그에 대응하는 무기 조회
-	URSItemInstance* EquippedWeapon =
-		OwnerCharacter->GetEquippedWeaponByInputTag(InputTag);
-
-	// 3. CombatStyle 결정
-	const URSCombatStyleData* NewStyle = ResolveCombatStyleForWeapon(EquippedWeapon);
-
-	// 4. CombatStyle 적용
+	URSItemInstance* Weapon = GetEquippedWeaponBySlot(SlotTag);
+	const URSCombatStyleData* NewStyle = ResolveCombatStyleForWeapon(Weapon);
 	ApplyCombatStyle(NewStyle);
 }
 
@@ -458,4 +473,22 @@ FGameplayTag URSEquipManagerComponent::ResolveWeaponSlotFromInputTag(FGameplayTa
 	}
 
 	return FGameplayTag();
+}
+
+bool URSEquipManagerComponent::IsWeaponSlot(const FGameplayTag& SlotTag) const
+{
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+
+	// v1: 무기 슬롯 정의를 "명시 2개"로 고정 (Main/Sub)
+	return SlotTag == Tags.Slot_Weapon_Main
+		|| SlotTag == Tags.Slot_Weapon_Sub;
+
+	// (확장안) 계층 태그를 쓸 거면 아래처럼 바꿀 수 있음:
+	// return SlotTag.MatchesTag(Tags.Slot_Weapon);
+}
+
+bool URSEquipManagerComponent::IsMainWeaponSlot(const FGameplayTag& SlotTag) const
+{
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+	return SlotTag == Tags.Slot_Weapon_Main;
 }
