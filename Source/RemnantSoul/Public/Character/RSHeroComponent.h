@@ -16,6 +16,7 @@ class URSEnhancedInputComponent;
 class URSInputConfig;
 class URSEquipManagerComponent;
 class URSCombatStyleData;
+class URSInputConfig;
 
 DECLARE_MULTICAST_DELEGATE(FRSOnInputReady);
 
@@ -64,6 +65,9 @@ private:
 
 	UPROPERTY()
 	TArray<TWeakObjectPtr<UInputMappingContext>> OverlayAddedIMCs;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<UInputComponent> LastSetupInputComponent;
 
 private:
 	UEnhancedInputLocalPlayerSubsystem* GetInputSubsystem() const;

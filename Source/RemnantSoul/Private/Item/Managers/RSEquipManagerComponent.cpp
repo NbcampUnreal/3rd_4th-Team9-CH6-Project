@@ -416,7 +416,7 @@ bool URSEquipManagerComponent::IsWeaponSlot(const FGameplayTag& SlotTag) const
 {
 	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
 
-	// v1: 무기 슬롯 정의를 "명시 2개"로 고정 (Main/Sub)
+	// 무기 슬롯 정의를 "명시 2개"로 고정 (Main/Sub) - Sword랑 Staff 무기 넣어서 사용할 수 있게 만들것임.
 	return SlotTag == Tags.Slot_Weapon_Main
 		|| SlotTag == Tags.Slot_Weapon_Sub;
 
