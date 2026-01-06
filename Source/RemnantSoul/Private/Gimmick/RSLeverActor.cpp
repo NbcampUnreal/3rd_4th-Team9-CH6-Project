@@ -30,8 +30,7 @@ ARSLeverActor::ARSLeverActor()
 	HandleMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	HandleMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	HandleMesh->SetGenerateOverlapEvents(false);
-
-	// 베이스는 굳이 Visibility Block 안 해도 됨(원하면 켜도 OK)
+	
 	BaseMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	BaseMesh->SetGenerateOverlapEvents(false);
 }
@@ -180,4 +179,20 @@ void ARSLeverActor::TriggerLinkedTargets(AActor* Interactor)
 			}
 		}
 	}
+}
+
+void ARSLeverActor::OnFocusBegin_Implementation(AActor* Interactor)
+{
+	if (!HandleMesh) return;
+	HandleMesh->SetRenderCustomDepth(true);
+	HandleMesh->SetCustomDepthStencilValue(1);
+	BaseMesh->SetRenderCustomDepth(true);
+	BaseMesh->SetCustomDepthStencilValue(1);
+}
+
+void ARSLeverActor::OnFocusEnd_Implementation(AActor* Interactor)
+{
+	if (!HandleMesh) return;
+	HandleMesh->SetRenderCustomDepth(false);
+	BaseMesh->SetRenderCustomDepth(false);
 }

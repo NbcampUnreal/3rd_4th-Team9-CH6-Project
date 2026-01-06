@@ -177,3 +177,18 @@ bool ADoorActor::PassesTagGate(AActor* Interactor) const
 
 	return true;
 }
+
+
+void ADoorActor::OnFocusBegin_Implementation(AActor* Interactor)
+{
+	if (!DoorMesh) return;
+	DoorMesh->SetRenderCustomDepth(true);
+	DoorMesh->SetCustomDepthStencilValue(1);
+}
+
+void ADoorActor::OnFocusEnd_Implementation(AActor* Interactor)
+{
+	if (!DoorMesh) return;
+	DoorMesh->SetRenderCustomDepth(false);
+}
+

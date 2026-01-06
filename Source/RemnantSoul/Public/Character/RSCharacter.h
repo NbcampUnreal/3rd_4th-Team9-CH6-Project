@@ -220,10 +220,10 @@ protected:
 	// Interaction state
 	// -------------------------
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Interaction")
-	float InteractTraceDistance = 500.0f;
+	float InteractTraceDistance = 900.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Interaction")
-	float InteractDistance = 500.f;
+	float InteractDistance = 900.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Interaction")
 	float InteractTraceInterval = 0.1f;
@@ -238,6 +238,14 @@ protected:
 	TObjectPtr<URSItemData> CurrentInteractItemData = nullptr;
 
 	FTimerHandle InteractTraceTimer;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Interaction", meta=(ClampMin="0.0"))
+	float InteractTraceRadius = 30.0f;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Interaction", meta=(ClampMin="0.0"))
+	float InteractCameraTraceRadius = 8.0f;
+
+	
 
 	// -------------------------
 	// Roll Degrees
