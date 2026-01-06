@@ -220,6 +220,16 @@ ARSCharacter* URSHeroComponent::GetOwnerCharacter() const
 	return Cast<ARSCharacter>(GetOwner());
 }
 
+void URSHeroComponent::HandleEquipInput(FGameplayTag InputTag)
+{
+	if (!EquipManager)
+	{
+		return;
+	}
+
+	EquipManager->HandleEquipSlotInput(InputTag);
+}
+
 void URSHeroComponent::Input_Move(const FInputActionValue& InputActionValue)
 {
 	ACharacter* Character = Cast<ACharacter>(GetOwner());

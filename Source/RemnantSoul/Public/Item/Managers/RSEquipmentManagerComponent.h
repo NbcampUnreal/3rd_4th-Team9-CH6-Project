@@ -220,16 +220,25 @@ protected:
 private:
 	void BroadcastActiveWeaponChanged(
 		const FGameplayTag& OldSlot,
-		const FGameplayTag& NewSlot);
+		const FGameplayTag& NewSlot,
+		URSItemInstance* OldItem,
+		URSItemInstance* NewItem
+	);
 
 	void SwapWeaponSlots(const FGameplayTag& SlotA, const FGameplayTag& SlotB);
 	bool IsWeaponSlotFilled(const FGameplayTag& SlotTag) const;
+
+	void SwapMainAndSubIfNeeded(const FGameplayTag& NewSlot);
+
 
 
 private:
 	// 1/2 슬롯 네이밍 확정: Slot.Weapon.Main / Slot.Weapon.Sub
 	UPROPERTY(Transient)
 	FGameplayTag ActiveWeaponSlotTag;
+
+	UPROPERTY(Transient)
+	FGameplayTag LastRequestedWeaponSlotTag;
 #pragma endregion
 
 };

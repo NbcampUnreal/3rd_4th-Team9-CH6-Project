@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
-//#include "Engine/DataAsset.h"
+#include "Engine/DataAsset.h"
 #include "GameplayTagContainer.h"
 #include "RSItemTemplate.generated.h"
 
@@ -42,7 +42,7 @@ enum class ERSItemType : uint8
  *         - RSItemFragment_EquipRequirement
  */
 UCLASS(Blueprintable, Abstract)
-class REMNANTSOUL_API URSItemTemplate : public UObject
+class REMNANTSOUL_API URSItemTemplate : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
