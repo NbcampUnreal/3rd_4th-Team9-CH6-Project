@@ -73,7 +73,7 @@ public:
 	void ApplyCombatStyle(const URSCombatStyleData* NewStyle);
 	void HandleEquipSlotInput(FGameplayTag InputTag);
 
-	// 외부에서 호출 가능한 단 하나의 진입점
+	//// 외부에서 호출 가능한 단 하나의 진입점
 	void EquipWeaponFromSlot(ERSWeaponSlot Slot);
 
 	// 아이템 획득 시 호출

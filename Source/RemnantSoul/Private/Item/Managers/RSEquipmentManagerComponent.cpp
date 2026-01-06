@@ -37,11 +37,17 @@ void URSEquipmentManagerComponent::BeginPlay()
 
 	if (URSCosmeticManagerComponent* Cos = CachedCosmeticManager.Get())
 	{
-		OnActiveWeaponChanged.AddLambda([Cos](FGameplayTag OldSlot, FGameplayTag NewSlot, URSItemInstance* OldItem, URSItemInstance* NewItem)
+		TWeakObjectPtr<URSCosmeticManagerComponent> WeakCos = Cos;
+
+		OnActiveWeaponChanged.AddLambda(
+			[WeakCos](FGameplayTag OldSlot, FGameplayTag NewSlot, URSItemInstance* OldItem, URSItemInstance* NewItem)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("[Eq->Cos] ActiveWeaponChanged NewItem=%s"), *GetNameSafe(NewItem));
-				Cos->ApplyWeaponFromItem(NewItem);
-			});
+				if (URSCosmeticManagerComponent* Pinned = WeakCos.Get())
+				{
+					Pinned->ApplyWeaponFromItem(NewItem);
+				}
+			}
+		);
 	}
 
 	// DefaultSlots 기반으로 초기 슬롯 세팅
@@ -532,40 +538,27 @@ void URSEquipmentManagerComponent::SetActiveWeaponSlot(const FGameplayTag& NewSl
 	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
 	const FGameplayTag Main = Tags.Slot_Weapon_Main;
 
-	if (!NewSlot.IsValid())
+	if (!NewSlot.IsValid() || !IsWeaponSlot(NewSlot))
 	{
 		return;
 	}
 
-	if (!IsWeaponSlot(NewSlot))
-	{
-		return;
-	}
-
-	// 정책상 Active는 항상 Main으로 강제
+	// 정책상 Active는 항상 Main
 	const FGameplayTag DesiredActive = Main;
 
-	if (ActiveWeaponSlotTag == DesiredActive)
-	{
-		// 이미 Main이면, 그래도 아이템이 바뀐 경우 갱신이 필요할 수 있다면 여기서 Broadcast를 할지 정책 결정.
-		// 지금은 “슬롯 변경 이벤트”만 쏘는 구조라면 return 유지 가능.
-		return;
-	}
-
 	const FGameplayTag OldSlot = ActiveWeaponSlotTag;
-	URSItemInstance* OldItem = GetItemInSlot(OldSlot);
+	URSItemInstance* OldItem = OldSlot.IsValid() ? GetItemInSlot(OldSlot) : nullptr;
 
+	// 값이 같아도 "재적용"을 위해 항상 세팅
 	ActiveWeaponSlotTag = DesiredActive;
+
 	URSItemInstance* NewItem = GetItemInSlot(ActiveWeaponSlotTag);
 
-	UE_LOG(LogTemp, Warning, TEXT("[Eq] SetActiveWeaponSlot Old=%s New=%s OldItem=%s NewItem=%s"),
+	UE_LOG(LogTemp, Warning, TEXT("[Eq] SetActiveWeaponSlot (Reapply) Old=%s New=%s OldItem=%s NewItem=%s"),
 		*OldSlot.ToString(), *ActiveWeaponSlotTag.ToString(),
 		*GetNameSafe(OldItem), *GetNameSafe(NewItem));
 
 	BroadcastActiveWeaponChanged(OldSlot, ActiveWeaponSlotTag, OldItem, NewItem);
-
-	UE_LOG(LogTemp, Warning, TEXT("[Eq] ActiveChanged -> should call Cosmetic. ActiveItem=%s"),
-		*GetNameSafe(GetItemInSlot(ActiveWeaponSlotTag)));
 }
 
 void URSEquipmentManagerComponent::BroadcastActiveWeaponChanged(
@@ -708,8 +701,7 @@ void URSEquipmentManagerComponent::RequestActivateWeaponSlot(FGameplayTag Reques
 		return;
 	}
 
-	URSItemInstance* RequestedItem = GetItemInSlot(RequestedSlot);
-	if (!RequestedItem)
+	if (!GetItemInSlot(RequestedSlot))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[Eq] RequestActivate slot empty -> ignore"));
 		return;
@@ -719,39 +711,15 @@ void URSEquipmentManagerComponent::RequestActivateWeaponSlot(FGameplayTag Reques
 	if (RequestedSlot == Sub)
 	{
 		SwapWeaponSlots(Main, Sub);
-		SetActiveWeaponSlot(Main);
-	}
-	else
-	{
-		SetActiveWeaponSlot(Main);
 	}
 
-	// 타입 안전화: UObject*로 미리 떨구기
-	URSItemInstance* MainItem = GetItemInSlot(Main);
-	URSItemInstance* SubItem = GetItemInSlot(Sub);
+	// 언제나 Main을 재적용 트리거 (중요)
+	SetActiveWeaponSlot(Main);
 
 	UE_LOG(LogTemp, Warning, TEXT("[Eq] After RequestActivate Active=%s Main=%s Sub=%s"),
 		*ActiveWeaponSlotTag.ToString(),
-		*GetNameSafe(MainItem),
-		*GetNameSafe(SubItem));
-
-	if (AActor* OwnerActor = GetOwner())
-	{
-		if (URSCosmeticManagerComponent* Cos = OwnerActor->FindComponentByClass<URSCosmeticManagerComponent>())
-		{
-			URSItemInstance* ActiveItem = GetItemInSlot(ActiveWeaponSlotTag);
-
-			UE_LOG(LogTemp, Warning, TEXT("[Eq->Cos] ApplyWeaponFromItem ActiveItem=%s"),
-				*GetNameSafe(ActiveItem));
-
-			Cos->ApplyWeaponFromItem(ActiveItem);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[Eq->Cos] CosmeticManager NOT FOUND on Owner=%s"),
-				*GetNameSafe(OwnerActor));
-		}
-	}
+		*GetNameSafe(GetItemInSlot(Main)),
+		*GetNameSafe(GetItemInSlot(Sub)));
 }
 
 void URSEquipmentManagerComponent::SwapMainAndSubIfNeeded(const FGameplayTag& NewSlot)

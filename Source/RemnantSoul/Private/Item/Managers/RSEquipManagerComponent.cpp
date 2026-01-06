@@ -49,11 +49,6 @@ void URSEquipManagerComponent::BeginPlay()
 	EquipmentManager = Char->FindComponentByClass<URSEquipmentManagerComponent>();
 	if (!EquipmentManager) return;
 
-	// ActiveWeaponChanged 구독 (Native delegate 기준)
-	EquipmentManager->OnActiveWeaponChanged.AddUObject(
-		this, &ThisClass::HandleActiveWeaponChanged
-	);
-
 	// InputReady 이후 DefaultStyle 적용은 유지해도 됨(정책)
 	if (URSHeroComponent* HeroComp = Char->FindComponentByClass<URSHeroComponent>())
 	{
@@ -513,49 +508,31 @@ void URSEquipManagerComponent::HandleActiveWeaponChanged(
 		*OldSlot.ToString(), *NewSlot.ToString(),
 		*GetNameSafe(OldItem), *GetNameSafe(NewItem));
 
-	AActor* Owner = GetOwner();
-
-	// 1) 코스메틱 우선 적용 (뷰포트 즉시 피드백)
-	if (URSCosmeticManagerComponent* Cos = CachedCosmeticManager.Get())
-	{
-		Cos->ApplyWeaponFromItem(NewItem);
-
-		UE_LOG(LogTemp, Warning,
-			TEXT("[EquipMgr] Cosmetic applied from item=%s"),
-			*GetNameSafe(NewItem));
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] Cosmetic ApplyWeaponFromItem(%s)"),
-		*GetNameSafe(NewItem));
-
-	// 2) CombatStyle 결정 (없으면 Unarmed)
-	URSCombatStyleData* NewStyle = ResolveStyleFromItemOrDefault(Owner, NewItem);
-
-	UE_LOG(LogTemp, Warning,
-		TEXT("[EquipMgr] Style resolved = %s"),
-		*GetNameSafe(NewStyle));
-
-	// 3) 입력 Overlay(=Ability 바인딩만) 적용
-	//    - 너는 “Overlay IMC는 안 쓴다” 정책이므로, HeroComponent에 Ability 바인딩만 덮어쓰기
+	// 0) InputReady 이전 방어 (Overlay/AnimLayer/ASC태그 만지기 전에)
 	if (URSHeroComponent* Hero = CachedHeroComponent.Get())
 	{
-		// URSCombatStyleData에 OverlayInputConfig 같은 멤버가 있다고 가정
-		// 네 프로젝트 실제 멤버명으로 치환해서 쓰면 됨.
-		const URSInputConfig* OverlayConfig = nullptr;
-		if (NewStyle)
+		if (Hero && !Hero->IsInputInitialized())
 		{
-			OverlayConfig = NewStyle->OverlayInputConfig; // <-- 멤버명 다르면 여기만 바꾸기
+			UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] Input not ready -> skip"));
+			return;
 		}
-
-		Hero->ApplyOverlayInputConfig(OverlayConfig);
-
-		UE_LOG(LogTemp, Warning,
-			TEXT("[EquipMgr] Overlay(AbilityOnly) applied = %s"),
-			*GetNameSafe(OverlayConfig));
 	}
 
-	// 4) AbilitySet/태그/AnimLayer 적용은 다음 단계에서 확장
-	//    (지금은 “보인다 + 입력이 살아있다”를 먼저 완성하는 단계)
+	// 1) 이전 적용 전부 정리 (항상 Clear가 먼저)
+	ClearItemPassiveAbilitySets();
+	ClearCurrentCombatStyle();
+
+	// 2) 새 스타일 결정
+	const URSCombatStyleData* NewStyle = ResolveCombatStyleForWeapon(NewItem);
+
+	// 3) 스타일 적용 (AbilitySets / Overlay / AnimTags / AnimLayer)
+	ApplyCombatStyle(NewStyle);
+
+	// 4) 활성 무기만 패시브 적용 (정책)
+	if (bApplyItemAbilitySetsAsPassive)
+	{
+		ApplyItemPassiveAbilitySets(NewItem);
+	}
 }
 
 void URSEquipManagerComponent::EquipWeaponFromSlot(ERSWeaponSlot Slot)
