@@ -65,7 +65,7 @@ URSItemInstance* URSItemTemplate::CreateItemInstance(AActor* OwningActor, int32 
 		return nullptr;
 	}
 
-	NewInstance->Initialize(const_cast<URSItemTemplate*>(this), Count, OwningActor);
+	NewInstance->InitializeFromTemplate(this, Count, OwningActor);
 
 	// Fragment들에게 "인스턴스가 만들어졌다" 알림 (D1 스타일)
 	for (URSItemFragment* Fragment : Fragments)

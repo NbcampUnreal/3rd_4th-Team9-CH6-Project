@@ -48,7 +48,7 @@ public:
 	 * - 내부에서 Template->CreateItemInstance()로 인스턴스를 만들어 슬롯에 넣는다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "RS|Inventory")
-	bool AddItemByTemplate(URSItemTemplate* ItemTemplate, int32 Count, int32& OutAddedCount);
+	bool AddItemByTemplate(const URSItemTemplate* ItemTemplate, int32 Count, int32& OutAddedCount);
 
 	/**
 	 * 외부 ItemInstance의 "Count만" 인벤토리에 흡수한다.
@@ -83,10 +83,13 @@ public:
 	/** 인벤토리 전체 슬롯 배열 조회 (BP에서 ForEach 돌리기 용도) */
 	const TArray<TObjectPtr<URSItemInstance>>& GetAllSlots() const { return Slots; }
 
+	URSItemInstance* CreateItemInstance(const URSItemTemplate* Template, int32 Count, AActor* OwningActor);
+
+
 private:
 	// YKJ Annotation : 외부에서 직접 슬롯을 만지지 못하게 막고, API로만 조작한다. (팀 협업 안정성)
-	int32 AddToExistingStacks(URSItemTemplate* Template, int32 Count);
-	int32 AddToEmptySlots(URSItemTemplate* Template, int32 Count);
+	int32 AddToExistingStacks(const URSItemTemplate* Template, int32 Count);
+	int32 AddToEmptySlots(const URSItemTemplate* Template, int32 Count);
 	int32 RemoveFromStacksByTemplate(URSItemTemplate* Template, int32 CountToRemove);
 	int32 RemoveFromInstance(URSItemInstance* Instance, int32 CountToRemove);
 

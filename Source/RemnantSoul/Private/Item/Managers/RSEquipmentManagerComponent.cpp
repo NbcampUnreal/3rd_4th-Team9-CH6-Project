@@ -34,6 +34,16 @@ void URSEquipmentManagerComponent::BeginPlay()
 
 	CacheReferences();
 
+
+	if (URSCosmeticManagerComponent* Cos = CachedCosmeticManager.Get())
+	{
+		OnActiveWeaponChanged.AddLambda([Cos](FGameplayTag OldSlot, FGameplayTag NewSlot, URSItemInstance* OldItem, URSItemInstance* NewItem)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("[Eq->Cos] ActiveWeaponChanged NewItem=%s"), *GetNameSafe(NewItem));
+				Cos->ApplyWeaponFromItem(NewItem);
+			});
+	}
+
 	// DefaultSlots 기반으로 초기 슬롯 세팅
 	for (const FGameplayTag& SlotTag : DefaultSlots)
 	{
@@ -42,6 +52,13 @@ void URSEquipmentManagerComponent::BeginPlay()
 			EquippedItems.Add(SlotTag, nullptr);
 		}
 	}
+
+	// 2) 안전장치: 무기 슬롯은 항상 존재
+	if (!EquippedItems.Contains(Tags.Slot_Weapon_Main))
+		EquippedItems.Add(Tags.Slot_Weapon_Main, nullptr);
+
+	if (!EquippedItems.Contains(Tags.Slot_Weapon_Sub))
+		EquippedItems.Add(Tags.Slot_Weapon_Sub, nullptr);
 }
 
 void URSEquipmentManagerComponent::CacheReferences()
@@ -197,6 +214,11 @@ bool URSEquipmentManagerComponent::CheckSlotCompatibility(const FGameplayTag& Sl
 		return true;
 	}
 
+	if (SlotTag.MatchesTag(Template->SlotTag))
+	{
+		return true;
+	}
+
 	// 2. 필요 시 계층 비교로 확장 가능
 	// if (Template->SlotTag.MatchesTag(SlotTag) || SlotTag.MatchesTag(Template->SlotTag))
 	// {
@@ -220,6 +242,7 @@ bool URSEquipmentManagerComponent::CheckEquipRequirements(const URSItemTemplate*
 	const URSItemFragment_EquipRequirement* ReqFrag = Template->FindFragment<URSItemFragment_EquipRequirement>();
 	if (!ReqFrag)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("[EqReq] No EquipRequirement Fragment -> PASS"));
 		return true;
 	}
 
@@ -251,6 +274,9 @@ bool URSEquipmentManagerComponent::CheckEquipRequirements(const URSItemTemplate*
 
 	if (!bOK)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("[EqReq] Requirements NOT met. FailedTags=%s"),
+			*FailedReasonTags.ToString());
+
 		// 상세한 실패 이유 텍스트를 만들려면 FailedReasonTags를 해석하는 테이블을 두면 좋다.
 		// 지금은 일단 공통 메시지로 정리.
 		OutFailReason = NSLOCTEXT("RS", "Equip_RequirementsNotMet", "Equip requirements not met.");
@@ -501,42 +527,54 @@ URSItemInstance* URSEquipmentManagerComponent::GetActiveWeaponItem() const
 	return GetItemInSlot(ActiveWeaponSlotTag);
 }
 
-void URSEquipmentManagerComponent::SetActiveWeaponSlot(const FGameplayTag& NewActiveSlotTag)
+void URSEquipmentManagerComponent::SetActiveWeaponSlot(const FGameplayTag& NewSlot)
 {
-	if (!NewActiveSlotTag.IsValid())
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+	const FGameplayTag Main = Tags.Slot_Weapon_Main;
+
+	if (!NewSlot.IsValid())
 	{
 		return;
 	}
 
-	if (!IsWeaponSlot(NewActiveSlotTag))
+	if (!IsWeaponSlot(NewSlot))
 	{
 		return;
 	}
 
-	if (ActiveWeaponSlotTag == NewActiveSlotTag)
+	// 정책상 Active는 항상 Main으로 강제
+	const FGameplayTag DesiredActive = Main;
+
+	if (ActiveWeaponSlotTag == DesiredActive)
 	{
+		// 이미 Main이면, 그래도 아이템이 바뀐 경우 갱신이 필요할 수 있다면 여기서 Broadcast를 할지 정책 결정.
+		// 지금은 “슬롯 변경 이벤트”만 쏘는 구조라면 return 유지 가능.
 		return;
 	}
 
 	const FGameplayTag OldSlot = ActiveWeaponSlotTag;
-	ActiveWeaponSlotTag = NewActiveSlotTag;
+	URSItemInstance* OldItem = GetItemInSlot(OldSlot);
 
-	BroadcastActiveWeaponChanged(OldSlot, ActiveWeaponSlotTag);
+	ActiveWeaponSlotTag = DesiredActive;
+	URSItemInstance* NewItem = GetItemInSlot(ActiveWeaponSlotTag);
+
+	UE_LOG(LogTemp, Warning, TEXT("[Eq] SetActiveWeaponSlot Old=%s New=%s OldItem=%s NewItem=%s"),
+		*OldSlot.ToString(), *ActiveWeaponSlotTag.ToString(),
+		*GetNameSafe(OldItem), *GetNameSafe(NewItem));
+
+	BroadcastActiveWeaponChanged(OldSlot, ActiveWeaponSlotTag, OldItem, NewItem);
+
+	UE_LOG(LogTemp, Warning, TEXT("[Eq] ActiveChanged -> should call Cosmetic. ActiveItem=%s"),
+		*GetNameSafe(GetItemInSlot(ActiveWeaponSlotTag)));
 }
 
 void URSEquipmentManagerComponent::BroadcastActiveWeaponChanged(
 	const FGameplayTag& OldSlot,
-	const FGameplayTag& NewSlot)
+	const FGameplayTag& NewSlot,
+	URSItemInstance* OldItem,
+	URSItemInstance* NewItem
+)
 {
-	URSItemInstance* OldItem = GetItemInSlot(OldSlot);
-	URSItemInstance* NewItem = GetItemInSlot(NewSlot);
-
-	UE_LOG(LogTemp, Warning, TEXT("[Equip][ActiveWeaponChanged] %s -> %s | %s -> %s"),
-		*OldSlot.ToString(),
-		*NewSlot.ToString(),
-		*GetNameSafe(OldItem),
-		*GetNameSafe(NewItem));
-
 	OnActiveWeaponChanged.Broadcast(OldSlot, NewSlot, OldItem, NewItem);
 }
 
@@ -566,16 +604,35 @@ bool URSEquipmentManagerComponent::TryPickupWeaponToSlots(URSItemInstance* NewWe
 	const FGameplayTag Main = Tags.Slot_Weapon_Main;
 	const FGameplayTag Sub = Tags.Slot_Weapon_Sub;
 
+	UE_LOG(LogTemp, Warning, TEXT("[Eq] TryPickupWeaponToSlots ENTER Item=%s AutoEquip=%d"),
+		*GetNameSafe(NewWeaponItem), bAutoEquip);
+
+	UE_LOG(LogTemp, Warning, TEXT("[Eq] Before Main=%s Sub=%s"),
+		*GetNameSafe(GetItemInSlot(Main)),
+		*GetNameSafe(GetItemInSlot(Sub)));
+
 	// Main이 비어있으면 Main
 	if (!GetItemInSlot(Main))
 	{
 		FText Fail;
-		if (!EquipItemToSlot(Main, NewWeaponItem, Fail)) return false;
+		if (!EquipItemToSlot(Main, NewWeaponItem, Fail))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Eq] EquipItemToSlot(Main) FAILED: %s"), *Fail.ToString());
+			return false;
+		}
 
 		if (bAutoEquip)
 		{
 			SetActiveWeaponSlot(Main);
 		}
+
+		// 여기! return true 직전
+		UE_LOG(LogTemp, Warning, TEXT("[Eq] After(MainPath) Main=%s Sub=%s Active=%s ActiveItem=%s"),
+			*GetNameSafe(GetItemInSlot(Main)),
+			*GetNameSafe(GetItemInSlot(Sub)),
+			*ActiveWeaponSlotTag.ToString(),
+			*GetNameSafe(GetActiveWeaponItem()));
+
 		return true;
 	}
 
@@ -583,33 +640,55 @@ bool URSEquipmentManagerComponent::TryPickupWeaponToSlots(URSItemInstance* NewWe
 	if (!GetItemInSlot(Sub))
 	{
 		FText Fail;
-		if (!EquipItemToSlot(Sub, NewWeaponItem, Fail)) return false;
-
-		if (bAutoEquip)
+		if (!EquipItemToSlot(Sub, NewWeaponItem, Fail))
 		{
-			RequestActivateWeaponSlot(Sub); // 정책상 손=Main이라 스왑 후 Main 활성
+			UE_LOG(LogTemp, Warning, TEXT("[Eq] EquipItemToSlot(Sub) FAILED: %s"), *Fail.ToString());
+			return false;
 		}
-		return true;
-	}
-
-	// 둘 다(Main, Sub 슬롯 말하는것.) 차있을 때 정책): Sub 교체(현재 단계에서 가장 단순하고 체감 좋음)
-	{
-		URSItemInstance* OldSub = GetItemInSlot(Sub);
-
-		UE_LOG(LogTemp, Warning, TEXT("[Equip][Pickup] Both slots occupied. Policy=ReplaceSub OldSub=%s New=%s"),
-			*GetNameSafe(OldSub),
-			*GetNameSafe(NewWeaponItem));
-
-		// TODO (RS정체성): OldSub 처리(인벤 이동/드랍)는 EquipmentManager가 아니라
-		// RSItemManagerComponent(혹은 InventoryManager)에서 결정/실행하게 훅을 연결한다.
-
-		FText Fail;
-		if (!EquipItemToSlot(Sub, NewWeaponItem, Fail)) return false;
 
 		if (bAutoEquip)
 		{
 			RequestActivateWeaponSlot(Sub);
 		}
+
+		// 여기! return true 직전
+		UE_LOG(LogTemp, Warning, TEXT("[Eq] After(SubPath) Main=%s Sub=%s Active=%s ActiveItem=%s"),
+			*GetNameSafe(GetItemInSlot(Main)),
+			*GetNameSafe(GetItemInSlot(Sub)),
+			*ActiveWeaponSlotTag.ToString(),
+			*GetNameSafe(GetActiveWeaponItem()));
+
+		return true;
+	}
+
+	// 둘 다 차있으면 Sub 교체
+	{
+		URSItemInstance* OldSub = GetItemInSlot(Sub);
+
+		UE_LOG(LogTemp, Warning,
+			TEXT("[Eq][Pickup] Both occupied. Policy=ReplaceSub OldSub=%s New=%s"),
+			*GetNameSafe(OldSub),
+			*GetNameSafe(NewWeaponItem));
+
+		FText Fail;
+		if (!EquipItemToSlot(Sub, NewWeaponItem, Fail))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Eq] ReplaceSub EquipItemToSlot(Sub) FAILED: %s"), *Fail.ToString());
+			return false;
+		}
+
+		if (bAutoEquip)
+		{
+			RequestActivateWeaponSlot(Sub);
+		}
+
+		// 여기! return true 직전
+		UE_LOG(LogTemp, Warning, TEXT("[Eq] After(ReplaceSubPath) Main=%s Sub=%s Active=%s ActiveItem=%s"),
+			*GetNameSafe(GetItemInSlot(Main)),
+			*GetNameSafe(GetItemInSlot(Sub)),
+			*ActiveWeaponSlotTag.ToString(),
+			*GetNameSafe(GetActiveWeaponItem()));
+
 		return true;
 	}
 }
@@ -620,25 +699,23 @@ void URSEquipmentManagerComponent::RequestActivateWeaponSlot(FGameplayTag Reques
 	const FGameplayTag Main = Tags.Slot_Weapon_Main;
 	const FGameplayTag Sub = Tags.Slot_Weapon_Sub;
 
+	UE_LOG(LogTemp, Warning, TEXT("[Eq] RequestActivateWeaponSlot Requested=%s"),
+		*RequestedSlot.ToString());
+
 	if (!RequestedSlot.IsValid() || !IsWeaponSlot(RequestedSlot))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("[Eq] RequestActivate INVALID slot"));
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("[Equip][ReqActivate][Before] Requested=%s Active=%s Main=%s Sub=%s"),
-		*RequestedSlot.ToString(),
-		*ActiveWeaponSlotTag.ToString(),
-		*GetNameSafe(GetItemInSlot(Main)),
-		*GetNameSafe(GetItemInSlot(Sub)));
-
-	// 비어있는 슬롯이면 무시(정책). 원하면 여기서 Unarmed로 바꿀 수도 있음.
-	if (!GetItemInSlot(RequestedSlot))
+	URSItemInstance* RequestedItem = GetItemInSlot(RequestedSlot);
+	if (!RequestedItem)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[Equip][ReqActivate] Requested slot is empty. Skip."));
+		UE_LOG(LogTemp, Warning, TEXT("[Eq] RequestActivate slot empty -> ignore"));
 		return;
 	}
 
-	// 정책: "손에 드는 무기 = 항상 Main 슬롯"
+	// 정책: 손에 드는 무기 = 항상 Main
 	if (RequestedSlot == Sub)
 	{
 		SwapWeaponSlots(Main, Sub);
@@ -649,8 +726,52 @@ void URSEquipmentManagerComponent::RequestActivateWeaponSlot(FGameplayTag Reques
 		SetActiveWeaponSlot(Main);
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("[Equip][ReqActivate][After ] Active=%s Main=%s Sub=%s"),
+	// 타입 안전화: UObject*로 미리 떨구기
+	URSItemInstance* MainItem = GetItemInSlot(Main);
+	URSItemInstance* SubItem = GetItemInSlot(Sub);
+
+	UE_LOG(LogTemp, Warning, TEXT("[Eq] After RequestActivate Active=%s Main=%s Sub=%s"),
 		*ActiveWeaponSlotTag.ToString(),
-		*GetNameSafe(GetItemInSlot(Main)),
-		*GetNameSafe(GetItemInSlot(Sub)));
+		*GetNameSafe(MainItem),
+		*GetNameSafe(SubItem));
+
+	if (AActor* OwnerActor = GetOwner())
+	{
+		if (URSCosmeticManagerComponent* Cos = OwnerActor->FindComponentByClass<URSCosmeticManagerComponent>())
+		{
+			URSItemInstance* ActiveItem = GetItemInSlot(ActiveWeaponSlotTag);
+
+			UE_LOG(LogTemp, Warning, TEXT("[Eq->Cos] ApplyWeaponFromItem ActiveItem=%s"),
+				*GetNameSafe(ActiveItem));
+
+			Cos->ApplyWeaponFromItem(ActiveItem);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Eq->Cos] CosmeticManager NOT FOUND on Owner=%s"),
+				*GetNameSafe(OwnerActor));
+		}
+	}
 }
+
+void URSEquipmentManagerComponent::SwapMainAndSubIfNeeded(const FGameplayTag& NewSlot)
+{
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+
+	if (NewSlot != Tags.Slot_Weapon_Sub)
+	{
+		return;
+	}
+
+	URSItemInstance* SubItem = GetItemInSlot(Tags.Slot_Weapon_Sub);
+	if (!SubItem)
+	{
+		return;
+	}
+
+	URSItemInstance* MainItem = GetItemInSlot(Tags.Slot_Weapon_Main);
+
+	EquippedItems.FindOrAdd(Tags.Slot_Weapon_Main) = SubItem;
+	EquippedItems.FindOrAdd(Tags.Slot_Weapon_Sub) = MainItem;
+}
+

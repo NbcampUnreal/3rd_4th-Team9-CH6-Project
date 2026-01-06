@@ -54,6 +54,11 @@ void URSCosmeticManagerComponent::CacheOwnerCharacter()
 // YKJ Annotation : 
 void URSCosmeticManagerComponent::ApplyWeaponFromItem(URSItemInstance* ItemInstance)
 {
+	UE_LOG(LogTemp, Warning, TEXT("[Cos] ApplyWeaponFromItem Item=%s"), *GetNameSafe(ItemInstance));
+	const URSItemTemplate* T = ItemInstance ? ItemInstance->GetTemplate() : nullptr;
+	UE_LOG(LogTemp, Warning, TEXT("[Cos] Template=%s"), *GetNameSafe(T));
+
+
 	// Owner 캐시 시도
 	if (!CachedCharacter.IsValid())
 	{
@@ -192,4 +197,10 @@ void URSCosmeticManagerComponent::SpawnAndAttachWeaponActor(
 	//   (예 : RSChar->OnWeaponAnimLayerChanged.Broadcast(CosFrag->WeaponAnimLayer);)
 
 	CurrentWeaponActor = NewWeapon;
+
+	UE_LOG(LogTemp, Warning,
+		TEXT("[Cosmetic] Weapon attached. Actor=%s Socket=%s Mesh=%s"),
+		*GetNameSafe(NewWeapon),
+		*SocketName.ToString(),
+		*GetNameSafe(CosFrag->WeaponMesh));
 }

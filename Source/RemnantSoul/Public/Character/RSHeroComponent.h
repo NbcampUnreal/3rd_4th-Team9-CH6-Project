@@ -50,6 +50,8 @@ protected:
 	
 	ARSCharacter* GetOwnerCharacter() const;
 
+	void HandleEquipInput(FGameplayTag InputTag);
+
 protected:
 	UPROPERTY()
 	TObjectPtr<URSEquipManagerComponent> EquipManager;
