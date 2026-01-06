@@ -21,7 +21,9 @@ public:
 	virtual void Interact_Implementation(AActor* Interactor) override;
 	virtual URSItemData* GetItemData_Implementation() const override;
 	
-	void SetHighlight(bool bEnable);
+	
+	virtual void OnFocusBegin_Implementation(AActor* FocusActor) override;
+	virtual void OnFocusEnd_Implementation(AActor* FocusActor) override;
 
 protected:
 	UPROPERTY(VisibleAnywhere)
