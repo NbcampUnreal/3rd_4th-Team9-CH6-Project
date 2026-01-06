@@ -7,9 +7,12 @@
 
 class ARSCharacter;
 class ARSWeaponActor;
+class ARSWeaponPickupActor;
 class URSItemInstance;
 class URSItemTemplate;
 class URSItemFragment_WeaponCosmetic;
+
+
 
 /**
  * - "보이는 것만"(외형이라고 생각하면 됨.) 책임지는 코스메틱 매니저

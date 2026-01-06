@@ -281,3 +281,4 @@ void ARSPlayerController::UpdateQuickSlotUI()
 	const FInventoryItem& Item = InventoryComp->GetSlots()[SlotIndex];
 	QuickSlotWidget->SetItem(Item);
 }
+

@@ -36,3 +36,4 @@ private:
 	void SetupDamageSpec(FGameplayEffectSpecHandle& SpecHandle) const;
 
 };
+

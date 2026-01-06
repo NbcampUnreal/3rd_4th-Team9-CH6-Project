@@ -58,6 +58,8 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.Event_Unequip_Weapon, "Event.Unequip.Weapon", "Unequip weapon event");
 	AddTag(Manager, GameplayTags.Event_Skill_CheckHit, "Event.Skill.CheckHit", "Skill check hit event");
 	AddTag(Manager, GameplayTags.Event_Roll_End, "Event.Roll.End", "Roll End check hit event");
+	AddTag(Manager, GameplayTags.Event_Sprint_Active, "Event.Sprint.Active", "Event: Sprint Active request");
+
 
 	// GameplayCue
 	AddTag(Manager, GameplayTags.GameplayCue_Attack_Hit, "GameplayCue.Attack.Hit", "Attack hit cue");

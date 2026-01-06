@@ -63,7 +63,9 @@ public:
 	FGameplayTag Event_Unequip_Weapon;
 	FGameplayTag Event_Skill_CheckHit;
 	FGameplayTag Event_Roll_End;
+	FGameplayTag Event_Sprint_Active;
 
+	
 	// =========================================================
 	// GameplayCue (기존)
 	// =========================================================
