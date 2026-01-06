@@ -1,6 +1,5 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Character/PlayerController/RSPlayerController.h"
 #include "Blueprint/UserWidget.h"
 
@@ -10,21 +9,46 @@
 #include "GameFramework/Pawn.h"
 #include "IngameUI/inventory//RSQuickSlotWidget.h"
 #include "ItemDataAsset/RSItemData.h"
-static const float PickupRange = 250.0f;
 
+// ============================
+// [MENU 추가] : ESC 키 바인딩용
+// ============================
+#include "InputCoreTypes.h"
+// ============================
+
+static const float PickupRange = 250.0f;
 
 ARSPlayerController::ARSPlayerController()
 {
 	bShowMouseCursor = false;
-}
 
+	// [MENU 추가] 기본값(선언부에서도 false지만 명시)
+	bMenuOpen = false;
+}
 
 void ARSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	
 }
+
+// ============================
+// [MENU 추가] : ESC를 C++에서 강제로 바인딩
+// ============================
+void ARSPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	if (!InputComponent)
+	{
+		return;
+	}
+
+	// ESC -> ToggleMenu
+	FInputKeyBinding& KeyBind = InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ThisClass::ToggleMenu);
+	KeyBind.bConsumeInput = true;
+	KeyBind.bExecuteWhenPaused = true; // 메뉴 열고 Pause 상태에서도 ESC로 닫히게
+}
+// ============================
 
 void ARSPlayerController::OnPossess(APawn* InPawn)
 {
@@ -45,7 +69,6 @@ void ARSPlayerController::UseItemFromSlot(int32 SlotIndex)
 	{
 		return;
 	}
-	
 
 	InventoryComp->UseItem(SlotIndex, Pawnd);
 }
@@ -60,9 +83,7 @@ void ARSPlayerController::EnsureInventoryWidgetCreated()
 
 	InventoryWidget->AddToViewport(10);
 	InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
-	
 
-	
 	if (InventoryComp)
 	{
 		InventoryWidget->Init(InventoryComp);
@@ -71,7 +92,6 @@ void ARSPlayerController::EnsureInventoryWidgetCreated()
 		InventoryWidget->OnUseRequested.AddUObject(this, &ThisClass::UseItemFromSlot);
 		UE_LOG(LogTemp, Warning, TEXT("[PC] Bound OK. InventoryWidget=%s"), *GetNameSafe(InventoryWidget));
 		bInventoryWidgetInited = true;
-		
 	}
 }
 
@@ -111,7 +131,7 @@ void ARSPlayerController::OpenInventoryUI()
 
 void ARSPlayerController::CloseInventoryUI()
 {
-	if (!InventoryWidget) 
+	if (!InventoryWidget)
 	{
 		bInventoryOpen = false;
 		ApplyInventoryInputMode(false);
@@ -134,7 +154,6 @@ void ARSPlayerController::ToggleInventoryUI()
 	}
 
 	OpenInventoryUI();
-	
 }
 
 void ARSPlayerController::OnPlayerDeath()
@@ -151,8 +170,6 @@ void ARSPlayerController::OnPlayerDeath()
 void ARSPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
-	
 }
 
 void ARSPlayerController::ShowGameOverUI()
@@ -177,8 +194,155 @@ void ARSPlayerController::ShowGameOverUI()
 			SetInputMode(InputMode);
 		}
 	}
-	
 }
+
+// ============================
+// [MENU 추가] : 메뉴 입력 모드 처리 (GameAndUI + 이동/시점 입력 차단)
+// ============================
+void ARSPlayerController::ApplyMenuInputMode(bool bOpen)
+{
+	if (bOpen)
+	{
+		bShowMouseCursor = true;
+
+		// 게임 입력(이동/시점) 차단
+		SetIgnoreMoveInput(true);
+		SetIgnoreLookInput(true);
+
+		FInputModeGameAndUI Mode;
+		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		Mode.SetHideCursorDuringCapture(false);
+
+		if (MenuWidgetInstance)
+		{
+			// 포커스 에러 방지용(가능하면)
+			MenuWidgetInstance->SetIsFocusable(true);
+			Mode.SetWidgetToFocus(MenuWidgetInstance->TakeWidget());
+		}
+
+		SetInputMode(Mode);
+	}
+	else
+	{
+		bShowMouseCursor = false;
+
+		SetIgnoreMoveInput(false);
+		SetIgnoreLookInput(false);
+
+		FInputModeGameOnly Mode;
+		SetInputMode(Mode);
+
+		FlushPressedKeys();
+	}
+}
+// ============================
+
+// ============================
+// [MENU 추가] : ESC 토글
+// ============================
+void ARSPlayerController::ToggleMenu()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[Menu] ToggleMenu called. bMenuOpen=%d"), bMenuOpen ? 1 : 0);
+
+	if (bMenuOpen)
+	{
+		CloseMenu();
+	}
+	else
+	{
+		OpenMenu();
+	}
+}
+// ============================
+
+// ============================
+// [MENU 추가] : 메뉴 열기
+// ============================
+void ARSPlayerController::OpenMenu()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[Menu] OpenMenu called"));
+
+	// 게임오버가 떠있으면 메뉴 열지 않음(원하면 이 조건 제거 가능)
+	if (GameOverWidget && GameOverWidget->IsInViewport())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Menu] GameOver is visible -> skip OpenMenu"));
+		return;
+	}
+
+	// 인벤이 열려있으면 닫기 (충돌 방지)
+	if (bInventoryOpen)
+	{
+		CloseInventoryUI();
+	}
+
+	if (!MenuWidgetInstance)
+	{
+		if (!MenuWidgetClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Menu] MenuWidgetClass is null (BP에서 지정 필요)"));
+			return;
+		}
+
+		MenuWidgetInstance = CreateWidget<UUserWidget>(this, MenuWidgetClass);
+		if (!MenuWidgetInstance)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Menu] Failed to CreateWidget"));
+			return;
+		}
+	}
+
+	if (!MenuWidgetInstance->IsInViewport())
+	{
+		MenuWidgetInstance->AddToViewport(200); // 다른 UI 위로 확실히
+	}
+
+	MenuWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+
+	// Pause
+	SetPause(true);
+
+	ApplyMenuInputMode(true);
+
+	bMenuOpen = true;
+	UE_LOG(LogTemp, Warning, TEXT("[Menu] OpenMenu done"));
+}
+// ============================
+
+// ============================
+// [MENU 추가] : 메뉴 닫기
+// ============================
+void ARSPlayerController::CloseMenu()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[Menu] CloseMenu called"));
+
+	if (MenuWidgetInstance && MenuWidgetInstance->IsInViewport())
+	{
+		MenuWidgetInstance->RemoveFromParent();
+	}
+
+	SetPause(false);
+	ApplyMenuInputMode(false);
+
+	bMenuOpen = false;
+
+	UE_LOG(LogTemp, Warning, TEXT("[Menu] CloseMenu done"));
+}
+// ============================
 
 void ARSPlayerController::HandleInventoryChanged()
 {
@@ -213,9 +377,9 @@ void ARSPlayerController::RebuildQuickPotionSlots()
 		QuickPotionIndex = FMath::Clamp(QuickPotionIndex, 0, QuickPotionSlots.Num() - 1);
 	}
 }
+
 void ARSPlayerController::EnsureQuickSlotWidgetCreated()
 {
-
 	if (!IsLocalController() || QuickSlotWidget)
 	{
 		return;
@@ -236,10 +400,7 @@ void ARSPlayerController::EnsureQuickSlotWidgetCreated()
 	QuickSlotWidget->AddToViewport(5);
 	QuickSlotWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 
-	
-
 	UE_LOG(LogTemp, Log, TEXT("[QuickSlot] Created & AddedToViewport"));
-	
 }
 
 void ARSPlayerController::QuickSlotCycle()
@@ -261,7 +422,6 @@ void ARSPlayerController::QuickSlotUse()
 
 	const int32 SlotIndex = QuickPotionSlots[QuickPotionIndex];
 	InventoryComp->UseItem(SlotIndex, P);
-	// 성공/소비/정리 -> OnInventoryChanged.Broadcast()가 이미 불리니까 UI는 자동 갱신됨
 }
 
 void ARSPlayerController::UpdateQuickSlotUI()
