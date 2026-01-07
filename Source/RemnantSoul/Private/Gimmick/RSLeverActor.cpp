@@ -1,5 +1,7 @@
 ﻿#include "Gimmick/RSLeverActor.h"
-
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
+#include "Sound/SoundAttenuation.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "AbilitySystemInterface.h"
@@ -116,13 +118,12 @@ void ARSLeverActor::StartLeverAnim()
 {
 	AnimElapsed = 0.0f;
 	bAnimating = true;
-
+	PlaySFX(SFX_PullStart);
 	const FVector Axis = LocalAxis.GetSafeNormal();
 	const float Rad = FMath::DegreesToRadians(AngleDegrees);
 
 	StartQuat = Pivot->GetRelativeRotation().Quaternion();
 
-	// 로컬축 기준 회전 Δ를 "현재 회전"에 곱해서 목표 회전 생성
 	const FQuat Delta = FQuat(Axis, Rad);
 	TargetQuat = (Delta * StartQuat);
 	TargetQuat.Normalize();
@@ -147,6 +148,7 @@ void ARSLeverActor::UpdateLeverAnim(float DeltaSeconds)
 	FQuat NewQuat = FQuat::Slerp(StartQuat, TargetQuat, SmoothAlpha);
 	NewQuat.Normalize();
 	Pivot->SetRelativeRotation(NewQuat.Rotator());
+	PlaySFX(SFX_PullEnd);
 
 	if (Alpha >= 1.0f)
 	{
@@ -179,6 +181,35 @@ void ARSLeverActor::TriggerLinkedTargets(AActor* Interactor)
 			}
 		}
 	}
+}
+
+FVector ARSLeverActor::GetSFXLocation() const
+{
+	if (HandleMesh)
+	{
+		return HandleMesh->GetComponentLocation();
+	}
+	if (Pivot)
+	{
+		return Pivot->GetComponentLocation();
+	}
+	return GetActorLocation();
+}
+
+void ARSLeverActor::PlaySFX(USoundBase* Sound) const
+{
+	if (!Sound) return;
+
+	UGameplayStatics::PlaySoundAtLocation(
+		this,
+		Sound,
+		GetSFXLocation(),
+		FRotator::ZeroRotator,
+		SFX_Volume,
+		SFX_Pitch,
+		0.0f,
+		SFX_Attenuation
+	);
 }
 
 void ARSLeverActor::OnFocusBegin_Implementation(AActor* Interactor)
