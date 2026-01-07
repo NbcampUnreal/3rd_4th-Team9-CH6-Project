@@ -250,7 +250,7 @@ protected:
 	float InteractTraceRadius = 30.0f;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Interaction", meta=(ClampMin="0.0"))
-	float InteractCameraTraceRadius = 8.0f;
+	float InteractCameraTraceRadius = 10.0f;
 
 	
 
