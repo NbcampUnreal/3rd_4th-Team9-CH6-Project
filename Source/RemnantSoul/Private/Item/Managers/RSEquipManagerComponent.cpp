@@ -106,22 +106,19 @@ void URSEquipManagerComponent::BindDelegates()
 	// 애님 노티파이 기반 Attach/Detach를 EquipManager에서 코스메틱 처리
 	Eq->OnEquipAnimAction.AddLambda([this](ERSAnimEquipAction Action, URSItemInstance* Item)
 		{
-			if (URSCosmeticManagerComponent* Cos = CachedCosmeticManager.Get())
+			URSEquipmentManagerComponent* EqLocal = CachedEquipmentManager.Get();
+			URSCosmeticManagerComponent* Cos = CachedCosmeticManager.Get();
+			if (!EqLocal || !Cos)
 			{
-				switch (Action)
-				{
-				case ERSAnimEquipAction::AttachWeapon:
-					Cos->ApplyWeaponFromItem(Item);
-					LastCosmeticAppliedItem = Item;
-					break;
-				case ERSAnimEquipAction::DetachWeapon:
-					Cos->ApplyWeaponFromItem(nullptr);
-					LastCosmeticAppliedItem = nullptr;
-					break;
-				default:
-					break;
-				}
+				return;
 			}
+
+			const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+			URSItemInstance* MainItem = EqLocal->GetItemInSlot(Tags.Slot_Weapon_Main);
+			URSItemInstance* SubItem = EqLocal->GetItemInSlot(Tags.Slot_Weapon_Sub);
+
+			// Action에 따라 분기할 필요도 사실 없다. "그 순간 슬롯상태"를 다시 그리면 끝.
+			Cos->SyncWeaponCosmetics(MainItem, SubItem);
 		});
 
 	bDelegatesBound = true;
