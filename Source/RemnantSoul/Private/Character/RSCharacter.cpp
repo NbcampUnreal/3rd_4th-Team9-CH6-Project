@@ -393,7 +393,6 @@ bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) co
 	const bool bDebug = (CVarInteractDebug.GetValueOnGameThread() != 0);
 	const float Life  = FMath::Max(InteractTraceInterval * 1.2f, 0.15f);
 
-	// 1) 카메라 기준 스피어 스윕
 	const bool bHit = World->SweepSingleByChannel(
 		OutHit,
 		Start,
@@ -404,13 +403,11 @@ bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) co
 		Params
 	);
 
-	// ---- 화면 디버그(라인트레이스처럼) ----
 	if (bDebug)
 	{
-		// 쏘는 방향 라인
+		
 		DrawDebugLine(World, Start, End, FColor::Cyan, false, Life, 0, 1.5f);
 
-		// 스윕 반경 표시(끝점에 구)
 		DrawDebugSphere(World, End, InteractTraceRadius, 12, FColor::Cyan, false, Life, 0, 0.5f);
 
 		if (bHit)
@@ -425,7 +422,6 @@ bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) co
 	AActor* HitActor = OutHit.GetActor();
 	if (!IsValid(HitActor)) return false;
 
-	// 2) Interactable 필터
 	if (!HitActor->Implements<UInteractable>())
 	{
 		if (bDebug)
@@ -442,7 +438,6 @@ bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) co
 		return false;
 	}
 
-	// 3) (선택) 코너 억지/가림 방지용 LoS 검증
 	const bool bRequireLineOfSight = true;
 	if (bRequireLineOfSight)
 	{
