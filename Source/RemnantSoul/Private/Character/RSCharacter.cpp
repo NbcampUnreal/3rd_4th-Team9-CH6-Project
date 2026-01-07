@@ -9,6 +9,7 @@
 #include "Character/PlayerController/RSPlayerController.h"
 
 #include "GAS/AS/RSAttributeSet_Character.h"
+#include "GAS/AS/RSAttributeSet_Stamina.h"
 #include "GAS/AS/RSAttributeSet_Skill.h"
 #include "GAS/AS/RSAbilitySet.h"
 
@@ -76,6 +77,7 @@ ARSCharacter::ARSCharacter()
 	HeroComponent = CreateDefaultSubobject<URSHeroComponent>(TEXT("HeroComponent"));
 	ASC = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("ASC"));
 	AttributeSet = CreateDefaultSubobject<URSAttributeSet_Character>(TEXT("AttributeSet"));
+	AttributeSet_Stamina = CreateDefaultSubobject<URSAttributeSet_Stamina>(TEXT("StaminaSet"));
 	SkillAttributeSet = CreateDefaultSubobject<URSAttributeSet_Skill>(TEXT("SkillAttributeSet"));
 
 	// Item 관련 매니저 컴포넌트들
