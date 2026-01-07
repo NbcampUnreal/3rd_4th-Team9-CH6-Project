@@ -91,4 +91,17 @@ FGameplayAbilityTargetDataHandle ARSTargetActor_SweepSingleCapsule::MakeTargetDa
 #endif
 
 	return DataHandle;
+
+
+	UE_LOG(LogTemp, Warning,
+		TEXT("[TargetActor] Sweep Result=%s Hit=%d Start=%s End=%s Range=%.1f Radius=%.1f HitActor=%s Channel=ECC_Pawn"),
+		*GetNameSafe(SourceActor),
+		bHitDetected ? 1 : 0,
+		*Start.ToString(),
+		*End.ToString(),
+		AttackRange,
+		AttackRadius,
+		bHitDetected ? *GetNameSafe(OutHitResult.GetActor()) : TEXT("None")
+	);
+
 }

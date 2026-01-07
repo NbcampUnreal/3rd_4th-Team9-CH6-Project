@@ -204,3 +204,183 @@ void URSCosmeticManagerComponent::SpawnAndAttachWeaponActor(
 		*SocketName.ToString(),
 		*GetNameSafe(CosFrag->WeaponMesh));
 }
+
+// 여기서 부터 아래까지 다 Holster내용
+void URSCosmeticManagerComponent::SyncWeaponCosmetics(URSItemInstance* MainItem, URSItemInstance* SubItem)
+{
+	if (!CachedCharacter.IsValid())
+	{
+		CacheOwnerCharacter();
+	}
+
+	// Main(손)
+	ApplyWeaponToSlot(/*bIsMain=*/true, MainItem);
+
+	// Sub(홀스터)
+	ApplyWeaponToSlot(/*bIsMain=*/false, SubItem);
+}
+
+void URSCosmeticManagerComponent::ClearAllWeapons()
+{
+	DestroyWeaponActor(true);
+	DestroyWeaponActor(false);
+}
+
+static const URSItemFragment_WeaponCosmetic* FindWeaponCosFrag(const URSItemInstance* Item)
+{
+	const URSItemTemplate* T = Item ? Item->GetTemplate() : nullptr;
+	return T ? T->FindFragment<URSItemFragment_WeaponCosmetic>() : nullptr;
+}
+
+void URSCosmeticManagerComponent::ApplyWeaponToSlot(bool bIsMain, URSItemInstance* ItemInstance)
+{
+	TObjectPtr<ARSWeaponActor>& SlotActor = bIsMain ? MainWeaponActor : SubWeaponActor;
+
+	if (!CachedCharacter.IsValid())
+	{
+		CacheOwnerCharacter();
+	}
+	ARSCharacter* RSChar = CachedCharacter.Get();
+	if (!RSChar)
+	{
+		return;
+	}
+
+	USkeletalMeshComponent* CharMesh = RSChar->GetMesh();
+	if (!CharMesh)
+	{
+		return;
+	}
+
+	// 아이템 없음 -> 액터 정리
+	if (!ItemInstance)
+	{
+		DestroyWeaponActor(bIsMain);
+		return;
+	}
+
+	const URSItemTemplate* ItemTemplate = ItemInstance->GetTemplate();
+	const URSItemFragment_WeaponCosmetic* CosFrag = FindWeaponCosFrag(ItemInstance);
+
+	// 코스메틱 정보 없으면 해당 슬롯은 비움
+	if (!ItemTemplate || !CosFrag || !CosFrag->WeaponActorClass)
+	{
+		DestroyWeaponActor(bIsMain);
+		return;
+	}
+
+	// 기존 액터가 있으면, "같은 클래스"면 재사용 / 아니면 교체
+	const bool bNeedRespawn = (!SlotActor) || (SlotActor->GetClass() != CosFrag->WeaponActorClass);
+	if (bNeedRespawn)
+	{
+		DestroyWeaponActor(bIsMain);
+		SlotActor = SpawnWeaponActor(ItemTemplate, CosFrag);
+		if (!SlotActor)
+		{
+			return;
+		}
+	}
+
+	// 소켓 결정
+	const FName SocketName = bIsMain ? ResolveEquippedSocket(CosFrag) : ResolveHolsterSocket(CosFrag);
+
+	// Attach
+	FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
+	SlotActor->AttachToComponent(CharMesh, AttachRules, SocketName);
+
+	// Mesh 세팅(옵션)
+	if (CosFrag->WeaponMesh)
+	{
+		if (USkeletalMeshComponent* WeaponMeshComp = SlotActor->GetMesh())
+		{
+			WeaponMeshComp->SetSkeletalMesh(CosFrag->WeaponMesh);
+		}
+	}
+
+	// 표시 상태
+	SlotActor->SetActorHiddenInGame(false);
+	SlotActor->SetActorEnableCollision(false);
+	SlotActor->SetActorTickEnabled(false);
+
+	UE_LOG(LogTemp, Verbose, TEXT("[Cos] %s slot updated. Item=%s Actor=%s Socket=%s"),
+		bIsMain ? TEXT("MAIN") : TEXT("SUB"),
+		*GetNameSafe(ItemInstance),
+		*GetNameSafe(SlotActor),
+		*SocketName.ToString());
+}
+
+ARSWeaponActor* URSCosmeticManagerComponent::SpawnWeaponActor(
+	const URSItemTemplate* ItemTemplate,
+	const URSItemFragment_WeaponCosmetic* CosFrag)
+{
+	if (!CachedCharacter.IsValid() || !CosFrag || !CosFrag->WeaponActorClass)
+	{
+		return nullptr;
+	}
+
+	ARSCharacter* RSChar = CachedCharacter.Get();
+	UWorld* World = GetWorld();
+	if (!RSChar || !World)
+	{
+		return nullptr;
+	}
+
+	USkeletalMeshComponent* CharMesh = RSChar->GetMesh();
+	if (!CharMesh)
+	{
+		return nullptr;
+	}
+
+	// 스폰 위치는 일단 손 소켓 기준(스폰 후 Attach로 이동하므로 크게 중요하지 않음)
+	const FTransform SpawnTransform = CharMesh->GetSocketTransform(DefaultEquippedSocketName);
+
+	FActorSpawnParameters Params;
+	Params.Owner = RSChar;
+	Params.Instigator = RSChar;
+	Params.SpawnCollisionHandlingOverride = SpawnCollisionHandlingMethod;
+
+	return World->SpawnActor<ARSWeaponActor>(CosFrag->WeaponActorClass, SpawnTransform, Params);
+}
+
+void URSCosmeticManagerComponent::DestroyWeaponActor(bool bIsMain)
+{
+	TObjectPtr<ARSWeaponActor>& SlotActor = bIsMain ? MainWeaponActor : SubWeaponActor;
+	if (!SlotActor)
+	{
+		return;
+	}
+
+	if (bDestroyWeaponOnUnequip)
+	{
+		SlotActor->Destroy();
+	}
+	else
+	{
+		SlotActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		SlotActor->SetActorHiddenInGame(true);
+		SlotActor->SetActorEnableCollision(false);
+		SlotActor->SetActorTickEnabled(false);
+	}
+
+	SlotActor = nullptr;
+}
+
+FName URSCosmeticManagerComponent::ResolveEquippedSocket(const URSItemFragment_WeaponCosmetic* CosFrag) const
+{
+	if (CosFrag && !CosFrag->AttachSocketName.IsNone())
+	{
+		return CosFrag->AttachSocketName;
+	}
+	return DefaultEquippedSocketName;
+}
+
+FName URSCosmeticManagerComponent::ResolveHolsterSocket(const URSItemFragment_WeaponCosmetic* CosFrag) const
+{
+	if (CosFrag && !CosFrag->HolsterSocketName.IsNone())
+	{
+		return CosFrag->HolsterSocketName;
+	}
+	return DefaultHolsterSocketName;
+}
+
+
