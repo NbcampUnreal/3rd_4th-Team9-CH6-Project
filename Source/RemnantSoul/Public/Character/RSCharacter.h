@@ -231,10 +231,10 @@ protected:
 	// Interaction state
 	// -------------------------
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Interaction")
-	float InteractTraceDistance = 900.0f;
+	float InteractTraceDistance = 3000.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Interaction")
-	float InteractDistance = 900.f;
+	float InteractDistance = 3000.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Interaction")
 	float InteractTraceInterval = 0.1f;
