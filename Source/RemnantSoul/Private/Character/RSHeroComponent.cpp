@@ -153,8 +153,6 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot1, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot1);
 
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot2, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot2);
-
-	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Interaction,ETriggerEvent::Started, this, &ThisClass::Input_Interaction);
 	
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Started, this, &ThisClass::Input_InventoryToggle);
 
@@ -406,7 +404,12 @@ void URSHeroComponent::Input_Interaction(const FInputActionValue& Value)
 	ARSCharacter* Char = GetOwnerCharacter();
 	if (!Char) return;
 
-	Char->TryInteract();
+	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Char);
+	if (!ASC) return;
+
+	FGameplayTagContainer Tags;
+	Tags.AddTag(FRSGameplayTags::Get().Ability_Interact); // Ability.Interact
+	ASC->TryActivateAbilitiesByTag(Tags, /*bAllowRemoteActivation*/ true);
 }
 
 void URSHeroComponent::Input_QuickSlotCycle(const FInputActionValue& Value)
