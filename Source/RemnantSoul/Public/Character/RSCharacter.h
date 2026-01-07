@@ -18,6 +18,7 @@ class URSInputConfig;
 class URSCombatStyleData;
 
 class URSAttributeSet_Character;
+class URSAttributeSet_Stamina;
 class URSAttributeSet_Skill;
 
 class URSWidgetComponent;
@@ -150,6 +151,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ARSCharacter|Component")
 	TObjectPtr<URSAttributeSet_Character> AttributeSet;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "ARSCharacter|Component")
+	TObjectPtr<URSAttributeSet_Stamina> AttributeSet_Stamina;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ARSCharacter|Component")
 	TObjectPtr<URSAttributeSet_Skill> SkillAttributeSet;
