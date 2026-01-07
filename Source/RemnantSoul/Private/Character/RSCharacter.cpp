@@ -53,6 +53,16 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/UserWidget.h"
 
+#include "HAL/IConsoleManager.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogRSInteract, Log, All);
+
+static TAutoConsoleVariable<int32> CVarInteractDebug(
+	TEXT("rs.InteractDebug"),
+	0,
+	TEXT("0: off, 1: on"),
+	ECVF_Default
+);
 ARSCharacter::ARSCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -348,26 +358,16 @@ void ARSCharacter::UpdateInteractFocus()
 
 void ARSCharacter::TryInteract()
 {
-	if (!CurrentInteractTarget) return;
-	if (!CurrentInteractTarget->Implements<UInteractable>()) return;
-	if (!Camera) return;
+	AActor* Target = nullptr;
+	FHitResult Hit;
+	if (!TraceInteractTarget(Target, Hit)) return;
 
-	const float Distance = FVector::Distance(Camera->GetComponentLocation(), CurrentInteractHit.ImpactPoint);
+	const float Dist = FVector::Dist(GetActorLocation(), Hit.ImpactPoint);
+	if (Dist > InteractDistance) return;
 
-	DrawDebugString(
-		GetWorld(),
-		CurrentInteractTarget->GetActorLocation() + FVector(0, 0, 40),
-		FString::Printf(TEXT("%.0f cm"), Distance),
-		nullptr,
-		FColor::White,
-		0.1f
-	);
-
-	if (Distance > InteractDistance) return;
-
-	if (IInteractable::Execute_CanInteract(CurrentInteractTarget, this))
+	if (IInteractable::Execute_CanInteract(Target, this))
 	{
-		IInteractable::Execute_Interact(CurrentInteractTarget, this);
+		IInteractable::Execute_Interact(Target, this);
 	}
 }
 
@@ -377,59 +377,111 @@ bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) co
 	OutHit = FHitResult();
 
 	if (!Camera) return false;
+
 	UWorld* World = GetWorld();
 	if (!World) return false;
+
+	const FVector Start = Camera->GetComponentLocation();
+	const FVector Dir   = Camera->GetForwardVector();
+	const FVector End   = Start + Dir * InteractTraceDistance;
 
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(InteractTrace), false);
 	Params.AddIgnoredActor(this);
 
-	// 1) 카메라 시선: Sphere Sweep
-	const FVector CamStart = Camera->GetComponentLocation();
-	const FVector CamDir = Camera->GetForwardVector();
-	const FVector CamEnd = CamStart + CamDir * InteractTraceDistance;
+	const FCollisionShape Sphere = FCollisionShape::MakeSphere(InteractTraceRadius);
 
-	FHitResult CamHit;
-	const FCollisionShape CamSphere = FCollisionShape::MakeSphere(InteractCameraTraceRadius);
+	const bool bDebug = (CVarInteractDebug.GetValueOnGameThread() != 0);
+	const float Life  = FMath::Max(InteractTraceInterval * 1.2f, 0.15f);
 
-	const bool bCamHit = World->SweepSingleByChannel(
-		CamHit,
-		CamStart,
-		CamEnd,
+	const bool bHit = World->SweepSingleByChannel(
+		OutHit,
+		Start,
+		End,
 		FQuat::Identity,
 		ECC_Visibility,
-		CamSphere,
+		Sphere,
 		Params
 	);
 
-	const FVector AimPoint = bCamHit ? CamHit.ImpactPoint : CamEnd;
+	if (bDebug)
+	{
+		
+		DrawDebugLine(World, Start, End, FColor::Cyan, false, Life, 0, 1.5f);
 
-	// 2) 캐릭터 -> AimPoint: Sphere Sweep
-	const FVector CharStart = GetActorLocation() + FVector(0.f, 0.f, BaseEyeHeight);
-	const FVector CharEnd = AimPoint;
+		DrawDebugSphere(World, End, InteractTraceRadius, 12, FColor::Cyan, false, Life, 0, 0.5f);
 
-	FHitResult CharHit;
-	const FCollisionShape CharSphere = FCollisionShape::MakeSphere(InteractTraceRadius);
+		if (bHit)
+		{
+			DrawDebugPoint(World, OutHit.ImpactPoint, 12.f, FColor::Green, false, Life);
+			DrawDebugLine(World, Start, OutHit.ImpactPoint, FColor::Green, false, Life, 0, 2.0f);
+		}
+	}
 
-	const bool bCharHit = World->SweepSingleByChannel(
-		CharHit,
-		CharStart,
-		CharEnd,
-		FQuat::Identity,
-		ECC_Visibility,
-		CharSphere,
-		Params
-	);
+	if (!bHit) return false;
 
-	if (!bCharHit) return false;
+	AActor* HitActor = OutHit.GetActor();
+	if (!IsValid(HitActor)) return false;
 
-	OutActor = CharHit.GetActor();
-	OutHit = CharHit;
+	if (!HitActor->Implements<UInteractable>())
+	{
+		if (bDebug)
+		{
+			DrawDebugString(
+				World,
+				OutHit.ImpactPoint + FVector(0, 0, 12.f),
+				FString::Printf(TEXT("Non-Interactable: %s"), *GetNameSafe(HitActor)),
+				nullptr,
+				FColor::Red,
+				Life
+			);
+		}
+		return false;
+	}
 
-	if (!OutActor) return false;
-	if (!OutActor->Implements<UInteractable>()) return false;
+	const bool bRequireLineOfSight = true;
+	if (bRequireLineOfSight)
+	{
+		FHitResult LoSHit;
+		const bool bLoSHit = World->LineTraceSingleByChannel(
+			LoSHit,
+			Start,
+			OutHit.ImpactPoint,
+			ECC_Visibility,
+			Params
+		);
+
+		if (bLoSHit && LoSHit.GetActor() != HitActor)
+		{
+			if (bDebug)
+			{
+				DrawDebugString(
+					World,
+					OutHit.ImpactPoint + FVector(0, 0, 24.f),
+					FString::Printf(TEXT("LoS Blocked By: %s"), *GetNameSafe(LoSHit.GetActor())),
+					nullptr,
+					FColor::Red,
+					Life
+				);
+			}
+			return false;
+		}
+	}
+
+	OutActor = HitActor;
+
+	if (bDebug)
+	{
+		DrawDebugString(
+			World,
+			OutHit.ImpactPoint + FVector(0, 0, 36.f),
+			FString::Printf(TEXT("Interactable: %s"), *GetNameSafe(OutActor)),
+			nullptr,
+			FColor::Green,
+			Life
+		);
+	}
 
 	return true;
-	
 }
 
 bool ARSCharacter::TryAddItem_Implementation(URSItemData* ItemData, int32 Count)
