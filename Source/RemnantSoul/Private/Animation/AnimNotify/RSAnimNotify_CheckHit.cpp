@@ -18,19 +18,47 @@ FString URSAnimNotify_CheckHit::GetNotifyName_Implementation() const
 
 void URSAnimNotify_CheckHit::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-	Super::Notify(MeshComp, Animation, EventReference);
+    Super::Notify(MeshComp, Animation, EventReference);
 
-	if (IsValid(MeshComp) == true)
-	{
-		AActor* OwnerActor = MeshComp->GetOwner();
-		UAbilitySystemComponent* AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OwnerActor);
-		if (IsValid(OwnerActor) == true && IsValid(AbilitySystemComponent) == true)
-		{
-			FGameplayEventData PayloadData;
-			PayloadData.EventTag = TriggerGameplayTag;
-			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(OwnerActor, TriggerGameplayTag, PayloadData);
-			PayloadData.EventMagnitude = ComboAttackLevel;
-			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(OwnerActor, TriggerGameplayTag, PayloadData);
-		}
-	}
+    if (!IsValid(MeshComp))
+    {
+        return;
+    }
+
+    AActor* OwnerActor = MeshComp->GetOwner();
+    if (!IsValid(OwnerActor))
+    {
+        return;
+    }
+
+    // 멀티/서버 기준(원치 않으면 주석 처리)
+    if (!OwnerActor->HasAuthority())
+    {
+        return;
+    }
+
+    if (!TriggerGameplayTag.IsValid())
+    {
+        UE_LOG(LogTemp, Error, TEXT("[AnimNotify_CheckHit] TriggerGameplayTag is INVALID (None). Owner=%s Anim=%s"),
+            *GetNameSafe(OwnerActor), *GetNameSafe(Animation));
+        return;
+    }
+
+    UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OwnerActor);
+    if (!IsValid(ASC))
+    {
+        UE_LOG(LogTemp, Error, TEXT("[AnimNotify_CheckHit] ASC is NULL. Owner=%s"), *GetNameSafe(OwnerActor));
+        return;
+    }
+
+    FGameplayEventData Payload;
+    Payload.EventTag = TriggerGameplayTag;
+    Payload.EventMagnitude = ComboAttackLevel;
+    Payload.Instigator = OwnerActor;
+
+    UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(OwnerActor, TriggerGameplayTag, Payload);
+
+    UE_LOG(LogTemp, Verbose, TEXT("[AnimNotify_CheckHit] Sent Event=%s Mag=%.2f Owner=%s"),
+        *TriggerGameplayTag.ToString(), ComboAttackLevel, *GetNameSafe(OwnerActor));
 }
+
