@@ -51,7 +51,7 @@ private:
 
 	// 설정값: (1) 고정 SprintSpeed
 	UPROPERTY(EditDefaultsOnly, Category = "RS|Sprint")
-	float SprintWalkSpeed = 600.f;
+	float SprintWalkSpeed = 850.f;
 
 	// 설정값: (2) 배수 방식도 가능 (지금은 사용하고 있지 않음.)
 	UPROPERTY(EditDefaultsOnly, Category = "RS|Sprint")

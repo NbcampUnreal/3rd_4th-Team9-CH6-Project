@@ -11,7 +11,4 @@ class REMNANTSOUL_API ARSTargetActor_OverlapMultiSphere : public ARSTargetActor_
 protected:
 	virtual FGameplayAbilityTargetDataHandle MakeTargetData() const override;
 
-protected:
-	bool bShowDebug = false;
-
 };
