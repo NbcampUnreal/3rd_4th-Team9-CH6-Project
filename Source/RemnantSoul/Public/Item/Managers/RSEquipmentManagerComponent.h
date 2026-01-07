@@ -42,6 +42,12 @@ DECLARE_MULTICAST_DELEGATE_FourParams(
 	URSItemInstance*
 );
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(
+	FOnRSEquipAnimAction,
+	ERSAnimEquipAction /*Action*/,
+	URSItemInstance*   /*PendingItem*/
+);
+
 UCLASS(ClassGroup = (RS), meta = (BlueprintSpawnableComponent))
 class REMNANTSOUL_API URSEquipmentManagerComponent : public UActorComponent
 {
@@ -203,6 +209,8 @@ public:
 
 public:
 	FOnRSActiveWeaponChanged OnActiveWeaponChanged;
+
+	FOnRSEquipAnimAction OnEquipAnimAction;
 
 	URSItemInstance* GetItemInSlot(const FGameplayTag& SlotTag) const;
 

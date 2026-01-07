@@ -80,7 +80,7 @@ void URSAbilityTask_SweepSingleCapsule::SpawnAndInitializeTargetActor()
 		return;
 	}
 
-	TargetActorInstance->SetShowDebug(true);
+	TargetActorInstance->SetShowDebug(false);
 
 	// 태스크가 먼저 죽을 수 있으니, OnDestroy에서 반드시 해제할 수 있게 AddUObject 유지 + Cleanup에서 RemoveAll 처리
 	TargetActorInstance->TargetDataReadyDelegate.AddUObject(this, &ThisClass::OnTargetDataReady);

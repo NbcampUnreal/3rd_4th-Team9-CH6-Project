@@ -347,12 +347,10 @@ void URSHeroComponent::ClearOverlayInputConfig()
 	// Overlay 바인딩만 제거
 	if (EIC)
 	{
-		// RS 공용 유틸로 정리: RemoveBindingByHandle 반복 제거 + Reset까지 일괄 처리
 		EIC->RemoveBindingsByHandleArray(OverlayBindHandles);
 	}
 	else
 	{
-		// 기존 동작과 동일하게: EIC가 없더라도 핸들 배열은 비워서 상태 정합성 유지
 		OverlayBindHandles.Reset();
 	}
 
@@ -362,6 +360,7 @@ void URSHeroComponent::ClearOverlayInputConfig()
 
 	UE_LOG(LogTemp, Log, TEXT("[HeroInput] Overlay cleared (Ability only)."));
 }
+
 
 
 
