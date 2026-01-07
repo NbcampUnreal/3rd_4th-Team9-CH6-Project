@@ -8,6 +8,8 @@
 
 class USceneComponent;
 class UStaticMeshComponent;
+class USoundBase;
+class USoundAttenuation;
 
 UCLASS()
 class REMNANTSOUL_API ARSMetalDoor : public AActor, public IInteractable
@@ -19,6 +21,25 @@ public:
 
 	virtual bool CanInteract_Implementation(AActor* Interactor) const override;
 	virtual void Interact_Implementation(AActor* Interactor) override;
+	
+	// ===== SFX =====
+	UPROPERTY(EditAnywhere, Category="Door|SFX")
+	TObjectPtr<USoundBase> SFX_OpenStart = nullptr;
+
+	UPROPERTY(EditAnywhere, Category="Door|SFX")
+	TObjectPtr<USoundBase> SFX_OpenEnd = nullptr;
+
+	UPROPERTY(EditAnywhere, Category="Door|SFX")
+	TObjectPtr<USoundAttenuation> SFX_Attenuation = nullptr;
+
+	UPROPERTY(EditAnywhere, Category="Door|SFX")
+	float SFX_Volume = 1.0f;
+
+	UPROPERTY(EditAnywhere, Category="Door|SFX")
+	float SFX_Pitch = 1.0f;
+
+	void PlaySFX(USoundBase* Sound) const;
+	FVector GetSFXLocation() const;
 
 protected:
 	virtual void BeginPlay() override;

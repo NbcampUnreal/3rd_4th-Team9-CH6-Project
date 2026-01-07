@@ -1,5 +1,7 @@
 #include "Gimmick/RSMetalDoor.h"
-
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
+#include "Sound/SoundAttenuation.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "AbilitySystemInterface.h"
@@ -66,15 +68,16 @@ void ARSMetalDoor::Interact_Implementation(AActor* Interactor)
 		return;
 	}
 
-	if (!bToggleable)
+	// 이미 열려있거나 이동 중이면 무시
+	if (bIsOpen || bMoving)
 	{
-		bIsOpen = true;
-		StartMoveTo(true);
 		return;
 	}
 
-	bIsOpen = !bIsOpen;
-	StartMoveTo(bIsOpen);
+	bIsOpen = true;
+
+	PlaySFX(SFX_OpenStart);
+	StartMoveTo(true); // "위로 올라가는" 타겟으로 이동 시작
 }
 
 void ARSMetalDoor::StartMoveTo(bool bOpen)
@@ -109,6 +112,9 @@ void ARSMetalDoor::UpdateMove(float DeltaSeconds)
 		DoorPanel->SetRelativeLocation(Target);
 		bMoving = false;
 		SetActorTickEnabled(false);
+		PlaySFX(SFX_OpenEnd);
+
+		
 	}
 }
 
@@ -142,4 +148,29 @@ bool ARSMetalDoor::PassesTagGate(AActor* Interactor) const
 	}
 
 	return true;
+}
+
+FVector ARSMetalDoor::GetSFXLocation() const
+{
+	if (DoorMesh)
+	{
+		return DoorMesh->GetComponentLocation();
+	}
+	return GetActorLocation();
+}
+
+void ARSMetalDoor::PlaySFX(USoundBase* Sound) const
+{
+	if (!Sound) return;
+
+	UGameplayStatics::PlaySoundAtLocation(
+		this,
+		Sound,
+		GetSFXLocation(),
+		FRotator::ZeroRotator,
+		SFX_Volume,
+		SFX_Pitch,
+		0.0f,
+		SFX_Attenuation
+	);
 }

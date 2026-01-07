@@ -8,7 +8,8 @@
 
 class USceneComponent;
 class UStaticMeshComponent;
-
+class USoundBase;
+class USoundAttenuation;
 UCLASS()
 class REMNANTSOUL_API ARSLeverActor : public AActor, public IInteractable
 {
@@ -20,6 +21,24 @@ public:
 	virtual bool CanInteract_Implementation(AActor* Interactor) const override;
 	virtual void Interact_Implementation(AActor* Interactor) override;
 
+	// ===== SFX =====
+	UPROPERTY(EditAnywhere, Category="Lever|SFX")
+	TObjectPtr<USoundBase> SFX_PullStart = nullptr;
+
+	UPROPERTY(EditAnywhere, Category="Lever|SFX")
+	TObjectPtr<USoundBase> SFX_PullEnd = nullptr; // 딸깍(선택)
+
+	UPROPERTY(EditAnywhere, Category="Lever|SFX")
+	TObjectPtr<USoundAttenuation> SFX_Attenuation = nullptr;
+
+	UPROPERTY(EditAnywhere, Category="Lever|SFX")
+	float SFX_Volume = 1.0f;
+
+	UPROPERTY(EditAnywhere, Category="Lever|SFX")
+	float SFX_Pitch = 1.0f;
+
+	void PlaySFX(USoundBase* Sound) const;
+	FVector GetSFXLocation() const;
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;

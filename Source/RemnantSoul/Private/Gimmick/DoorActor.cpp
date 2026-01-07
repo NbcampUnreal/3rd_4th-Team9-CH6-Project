@@ -2,9 +2,11 @@
 
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
-
+#include "Sound/SoundBase.h"
+#include "Sound/SoundAttenuation.h"
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ADoorActor::ADoorActor()
 {
@@ -32,7 +34,6 @@ void ADoorActor::BeginPlay()
 
 	ClosedRot = Hinge->GetRelativeRotation();
 
-	// 시작 열림이면 기본적으로 +OpenYaw 방향(원하면 BP에서 bInvertChosenDirection로 뒤집기)
 	OpenRot = ClosedRot + FRotator(0.0f, OpenYaw, 0.0f);
 
 	bIsOpen = bStartOpen;
@@ -43,6 +44,27 @@ void ADoorActor::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	UpdateRotate(DeltaSeconds);
+}
+
+void ADoorActor::PlaySFX(USoundBase* Sound)
+{
+	if (!Sound) return;
+
+	UGameplayStatics::PlaySoundAtLocation(
+		this,
+		Sound,
+		GetSFXLocation(),
+		FRotator::ZeroRotator,
+		SFX_Volume,
+		SFX_Pitch,
+		0.0f,
+		SFX_Attenuation
+	);
+}
+
+FVector ADoorActor::GetSFXLocation() const
+{
+	return DoorMesh ? DoorMesh->GetComponentLocation() : GetActorLocation();
 }
 
 bool ADoorActor::CanInteract_Implementation(AActor* Interactor) const
@@ -65,11 +87,13 @@ void ADoorActor::Interact_Implementation(AActor* Interactor)
 	if (bIsOpen)
 	{
 		bIsOpen = false;
+		bTargetOpenForSFX = false;
+		PlaySFX(SFX_CloseStart);
+		
 		StartRotateTo(ClosedRot);
 		return;
 	}
 
-	// 닫힘 -> 열림: 내적으로 방향 결정
 	bIsOpen = true;
 
 	float Sign = 1.0f;
@@ -79,6 +103,8 @@ void ADoorActor::Interact_Implementation(AActor* Interactor)
 	}
 
 	OpenRot = ClosedRot + FRotator(0.0f, OpenYaw * Sign, 0.0f);
+	bTargetOpenForSFX = true;
+	PlaySFX(SFX_OpenStart);
 	StartRotateTo(OpenRot);
 }
 
@@ -129,7 +155,6 @@ void ADoorActor::UpdateRotate(float DeltaSeconds)
 	const float Duration = FMath::Max(RotateTime, 0.01f);
 	const float Alpha = FMath::Clamp(RotateElapsed / Duration, 0.0f, 1.0f);
 
-	// SmoothStep(가감속)
 	const float SmoothAlpha = Alpha * Alpha * (3.0f - 2.0f * Alpha);
 
 	FQuat NewQuat = FQuat::Slerp(StartQuat, TargetQuat, SmoothAlpha);
@@ -142,6 +167,7 @@ void ADoorActor::UpdateRotate(float DeltaSeconds)
 		Hinge->SetRelativeRotation(TargetQuat.Rotator());
 		bRotating = false;
 		SetActorTickEnabled(false);
+		PlaySFX(bTargetOpenForSFX ? SFX_OpenEnd : SFX_CloseEnd);
 	}
 	
 }
