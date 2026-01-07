@@ -8,6 +8,8 @@
 
 class USceneComponent;
 class UStaticMeshComponent;
+class USoundBase;
+class USoundAttenuation;
 
 UCLASS()
 class REMNANTSOUL_API ADoorActor : public AActor, public IInteractable
@@ -27,10 +29,35 @@ public:
 	UPROPERTY(EditAnywhere, Category="Door|TagGate")
 	FGameplayTagContainer InteractorBlockedTags;
 
+	UPROPERTY(EditAnywhere, Category="SFX")
+	TObjectPtr<USoundBase> SFX_OpenStart = nullptr;
 
+	UPROPERTY(EditAnywhere, Category="SFX")
+	TObjectPtr<USoundBase> SFX_OpenEnd = nullptr;
+
+	UPROPERTY(EditAnywhere, Category="SFX")
+	TObjectPtr<USoundBase> SFX_CloseStart = nullptr;
+
+	UPROPERTY(EditAnywhere, Category="SFX")
+	TObjectPtr<USoundBase> SFX_CloseEnd = nullptr;
+
+	UPROPERTY(EditAnywhere, Category="SFX")
+	TObjectPtr<USoundAttenuation> SFX_Attenuation = nullptr;
+
+	UPROPERTY(EditAnywhere, Category="SFX")
+	float SFX_Volume = 1.0f;
+
+	UPROPERTY(EditAnywhere, Category="SFX")
+	float SFX_Pitch = 1.0f;
+
+	bool bTargetOpenForSFX = false;
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+	
+	void PlaySFX(USoundBase* Sound);
+	FVector GetSFXLocation() const;
 
 private:
 	void StartRotateTo(const FRotator& NewTarget);
@@ -79,6 +106,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Door|Settings", meta = (ClampMin = "0.01"))
 	float RotateTime = 0.25f;
 
+	
 	
 	// ===== Runtime =====
 	bool bIsOpen = false;
