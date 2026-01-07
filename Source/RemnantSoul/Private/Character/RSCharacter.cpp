@@ -57,8 +57,8 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogRSInteract, Log, All);
 
-static TAutoConsoleVariable<int32> CVarInteractLog(
-	TEXT("rs.InteractLog"),
+static TAutoConsoleVariable<int32> CVarInteractDebug(
+	TEXT("rs.InteractDebug"),
 	0,
 	TEXT("0: off, 1: on"),
 	ECVF_Default
@@ -377,67 +377,116 @@ bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) co
 	OutHit = FHitResult();
 
 	if (!Camera) return false;
+
 	UWorld* World = GetWorld();
 	if (!World) return false;
 
-	const bool bDebug = (CVarInteractDebug.GetValueOnGameThread() != 0);
-	const float Life = FMath::Max(InteractTraceInterval * 1.2f, 0.15f);
+	const FVector Start = Camera->GetComponentLocation();
+	const FVector Dir   = Camera->GetForwardVector();
+	const FVector End   = Start + Dir * InteractTraceDistance;
 
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(InteractTrace), false);
 	Params.AddIgnoredActor(this);
 
-	// 1) 카메라 시선 트레이스
-	const FVector CamStart = Camera->GetComponentLocation();
-	const FVector CamDir   = Camera->GetForwardVector();
-	const FVector CamEnd   = CamStart + CamDir * InteractTraceDistance;
+	const FCollisionShape Sphere = FCollisionShape::MakeSphere(InteractTraceRadius);
 
-	FHitResult CamHit;
-	const bool bCamHit = World->LineTraceSingleByChannel(CamHit, CamStart, CamEnd, ECC_Visibility, Params);
+	const bool bDebug = (CVarInteractDebug.GetValueOnGameThread() != 0);
+	const float Life  = FMath::Max(InteractTraceInterval * 1.2f, 0.15f);
 
+	// 1) 카메라 기준 스피어 스윕
+	const bool bHit = World->SweepSingleByChannel(
+		OutHit,
+		Start,
+		End,
+		FQuat::Identity,
+		ECC_Visibility,
+		Sphere,
+		Params
+	);
+
+	// ---- 화면 디버그(라인트레이스처럼) ----
 	if (bDebug)
 	{
-		DrawDebugLine(World, CamStart, CamEnd, FColor::Cyan, false, Life, 0, 1.5f);
-		if (bCamHit)
+		// 쏘는 방향 라인
+		DrawDebugLine(World, Start, End, FColor::Cyan, false, Life, 0, 1.5f);
+
+		// 스윕 반경 표시(끝점에 구)
+		DrawDebugSphere(World, End, InteractTraceRadius, 12, FColor::Cyan, false, Life, 0, 0.5f);
+
+		if (bHit)
 		{
-			DrawDebugPoint(World, CamHit.ImpactPoint, 12.f, FColor::Green, false, Life);
+			DrawDebugPoint(World, OutHit.ImpactPoint, 12.f, FColor::Green, false, Life);
+			DrawDebugLine(World, Start, OutHit.ImpactPoint, FColor::Green, false, Life, 0, 2.0f);
 		}
 	}
 
-	const FVector AimPoint = bCamHit ? CamHit.ImpactPoint : CamEnd;
+	if (!bHit) return false;
 
-	// 2) 캐릭터에서 AimPoint로 트레이스
-	const FVector CharStart = GetActorLocation() + FVector(0.f, 0.f, BaseEyeHeight);
-	const FVector CharEnd   = AimPoint;
+	AActor* HitActor = OutHit.GetActor();
+	if (!IsValid(HitActor)) return false;
 
-	FHitResult CharHit;
-	const bool bCharHit = World->LineTraceSingleByChannel(CharHit, CharStart, CharEnd, ECC_Visibility, Params);
-
-	if (bDebug)
+	// 2) Interactable 필터
+	if (!HitActor->Implements<UInteractable>())
 	{
-		DrawDebugLine(World, CharStart, CharEnd, FColor::Magenta, false, Life, 0, 1.5f);
-		if (bCharHit)
+		if (bDebug)
 		{
-			DrawDebugPoint(World, CharHit.ImpactPoint, 12.f, FColor::Yellow, false, Life);
 			DrawDebugString(
 				World,
-				CharHit.ImpactPoint + FVector(0,0,10),
-				FString::Printf(TEXT("Hit: %s"), *GetNameSafe(CharHit.GetActor())),
+				OutHit.ImpactPoint + FVector(0, 0, 12.f),
+				FString::Printf(TEXT("Non-Interactable: %s"), *GetNameSafe(HitActor)),
 				nullptr,
-				FColor::White,
+				FColor::Red,
 				Life
 			);
 		}
+		return false;
 	}
 
-	if (!bCharHit) return false;
+	// 3) (선택) 코너 억지/가림 방지용 LoS 검증
+	const bool bRequireLineOfSight = true;
+	if (bRequireLineOfSight)
+	{
+		FHitResult LoSHit;
+		const bool bLoSHit = World->LineTraceSingleByChannel(
+			LoSHit,
+			Start,
+			OutHit.ImpactPoint,
+			ECC_Visibility,
+			Params
+		);
 
-	OutActor = CharHit.GetActor();
-	OutHit   = CharHit;
-	if (!OutActor) return false;
-	if (!OutActor->Implements<UInteractable>()) return false;
+		if (bLoSHit && LoSHit.GetActor() != HitActor)
+		{
+			if (bDebug)
+			{
+				DrawDebugString(
+					World,
+					OutHit.ImpactPoint + FVector(0, 0, 24.f),
+					FString::Printf(TEXT("LoS Blocked By: %s"), *GetNameSafe(LoSHit.GetActor())),
+					nullptr,
+					FColor::Red,
+					Life
+				);
+			}
+			return false;
+		}
+	}
+
+	OutActor = HitActor;
+
+	if (bDebug)
+	{
+		DrawDebugString(
+			World,
+			OutHit.ImpactPoint + FVector(0, 0, 36.f),
+			FString::Printf(TEXT("Interactable: %s"), *GetNameSafe(OutActor)),
+			nullptr,
+			FColor::Green,
+			Life
+		);
+	}
 
 	return true;
-	
 }
 
 bool ARSCharacter::TryAddItem_Implementation(URSItemData* ItemData, int32 Count)
