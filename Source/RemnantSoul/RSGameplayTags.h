@@ -31,6 +31,7 @@ public:
 	FGameplayTag Ability_Sprint_Check;
 	FGameplayTag Ability_Crouch;
 	FGameplayTag Ability_Roll;
+	FGameplayTag Ability_Interact;
 
 	// =========================================================
 	// State (기존)
@@ -78,7 +79,6 @@ public:
 	// =========================================================
 	FGameplayTag InputTag_Native_Move;
 	FGameplayTag InputTag_Native_Look;
-	FGameplayTag InputTag_Native_Interaction;
 	FGameplayTag InputTag_Native_InventoryToggle;
 
 	FGameplayTag InputTag_Native_EquipSlot1;
@@ -94,6 +94,7 @@ public:
 	FGameplayTag InputTag_Ability_Sprint;
 	FGameplayTag InputTag_Ability_Crouch;
 	FGameplayTag InputTag_Ability_Roll;
+	FGameplayTag InputTag_Ability_Interact;
 
 
 

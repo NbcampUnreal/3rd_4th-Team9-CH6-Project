@@ -33,6 +33,7 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.Ability_Sprint, "Ability.Sprint", "Sprint Activate ability");
 	AddTag(Manager, GameplayTags.Ability_Crouch, "Ability.Crouch", "Crouch Activate ability");
 	AddTag(Manager, GameplayTags.Ability_Roll, "Ability.Roll", "Roll Activate ability");
+	AddTag(Manager, GameplayTags.Ability_Interact, "Ability.Interact", "Interact ability");
 
 	// State
 	AddTag(Manager, GameplayTags.State_Activated_SteamParticle, "State.Activated.SteamParticle", "Steam particle state");
@@ -69,7 +70,7 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	// InputTag.*
 	AddTag(Manager, GameplayTags.InputTag_Native_Move, "InputTag.Native.Move", "Native move input");
 	AddTag(Manager, GameplayTags.InputTag_Native_Look, "InputTag.Native.Look", "Native look input");
-	AddTag(Manager, GameplayTags.InputTag_Native_Interaction, "InputTag.Native.Interaction", "Native interaction input");
+	
 
 	AddTag(Manager, GameplayTags.InputTag_Native_InventoryToggle, "InputTag.Native.InventoryToggle", "Inventory Toggle input");
 	AddTag(Manager, GameplayTags.InputTag_Native_EquipSlot1, "InputTag.Native.EquipSlot1", "Native EquipSlot1 input");
@@ -86,7 +87,7 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.InputTag_Ability_Sprint, "InputTag.Ability.Sprint", "Ability input: Sprint");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Crouch, "InputTag.Ability.Crouch", "Ability input: Crouch");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Roll, "InputTag.Ability.Roll", "Ability input: Roll");
-
+	AddTag(Manager, GameplayTags.InputTag_Ability_Interact, "InputTag.Ability.Interact", "Ability input: interaction ");
 
 
 	// Slot.*

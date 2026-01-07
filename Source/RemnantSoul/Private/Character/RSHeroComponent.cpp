@@ -436,7 +436,12 @@ void URSHeroComponent::Input_Interaction(const FInputActionValue& Value)
 	ARSCharacter* Char = GetOwnerCharacter();
 	if (!Char) return;
 
-	Char->TryInteract();
+	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Char);
+	if (!ASC) return;
+
+	FGameplayTagContainer Tags;
+	Tags.AddTag(FRSGameplayTags::Get().Ability_Interact); // Ability.Interact
+	ASC->TryActivateAbilitiesByTag(Tags, /*bAllowRemoteActivation*/ true);
 }
 
 void URSHeroComponent::Input_QuickSlotCycle(const FInputActionValue& Value)
