@@ -51,4 +51,21 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FRSInputMappingContextAndPriority> DefaultMappings;
+
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
+private:
+	// 캐시 준비(필요할 때 1회 빌드)
+	void EnsureCachesBuilt() const;
+
+	// 캐시를 다시 만들기
+	void RebuildCaches() const;
+
+private:
+	// Const DataAsset이라도, 런타임 캐시는 mutable로 유지 가능
+	mutable bool bCacheBuilt = false;
+	mutable TMap<FGameplayTag, TObjectPtr<const UInputAction>> NativeActionMap;
+	mutable TMap<FGameplayTag, TObjectPtr<const UInputAction>> AbilityActionMap;
 };

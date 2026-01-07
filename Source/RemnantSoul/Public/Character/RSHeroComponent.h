@@ -31,6 +31,9 @@ protected:
 public:
 	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
 
+	UFUNCTION(BlueprintCallable, Category = "RS|Hero|Input")
+	bool IsInputInitialized() const { return bInputInitialized; }
+
 protected:
 	void InitializePlayerInput(UInputComponent* PlayerInputComponent, APlayerController* PlayerController);
 
@@ -49,6 +52,11 @@ protected:
 	void Input_QuickSlotUse(const FInputActionValue& Value);
 	
 	ARSCharacter* GetOwnerCharacter() const;
+
+	void HandleEquipInput(FGameplayTag InputTag);
+
+	// Base Ability 바인딩만 제거 (Overlay는 별도)
+	void ClearBaseAbilityBindings();
 
 protected:
 	UPROPERTY()

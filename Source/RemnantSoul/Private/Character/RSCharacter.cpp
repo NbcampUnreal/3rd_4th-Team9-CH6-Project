@@ -32,7 +32,9 @@
 #include "Item/Managers/RSInventoryManagerComponent.h"
 #include "Item/Managers/RSItemManagerComponent.h"
 #include "Interface/RSItemSource.h"
+#include "Item/RSItemTemplate.h"
 #include "Item/RSItemInstance.h"
+#include "Item/RSWeaponPickupActor.h"
 
 // Animation
 #include "Animation/AnimInstance.h"
@@ -711,4 +713,67 @@ URSItemInstance* ARSCharacter::GetEquippedWeaponByInputTag(FGameplayTag InputTag
 
 	return EqMgr->GetItemInSlot(SlotTag);
 }
+
+bool ARSCharacter::PickupWeaponTemplate(URSItemTemplate* WeaponTemplate, int32 Count, bool bAutoEquip)
+{
+	if (!WeaponTemplate || Count <= 0)
+	{
+		return false;
+	}
+
+	URSEquipmentManagerComponent* Eq = FindComponentByClass<URSEquipmentManagerComponent>();
+	if (!Eq)
+	{
+		return false;
+	}
+
+	URSItemInstance* NewInst = NewObject<URSItemInstance>(this);
+	if (!NewInst)
+	{
+		return false;
+	}
+
+	// Initialize는 (Template, Count, OwningActor) 3개 인수다
+	NewInst->InitializeFromTemplate(WeaponTemplate, Count, this);
+
+	UE_LOG(LogTemp, Warning, TEXT("[Pickup] Template=%s Count=%d"),
+		*GetNameSafe(WeaponTemplate), Count);
+
+	return Eq->TryPickupWeaponToSlots(NewInst, bAutoEquip);
+}
+
+bool ARSCharacter::PickupFromActor(ARSWeaponPickupActor* Pickup, bool bAutoEquip)
+{
+	UE_LOG(LogTemp, Warning, TEXT("[Char] PickupFromActor ENTER Pickup=%s AutoEquip=%d"),
+		*GetNameSafe(Pickup), bAutoEquip);
+
+	if (!Pickup) return false;
+
+	const URSItemTemplate* Template = Pickup->GetPickupTemplate();
+	UE_LOG(LogTemp, Warning, TEXT("[Char] Pickup Template=%s"), *GetNameSafe(Template));
+	if (!Template) return false;
+
+	URSInventoryManagerComponent* Inv = FindComponentByClass<URSInventoryManagerComponent>();
+	URSEquipmentManagerComponent* Eq = FindComponentByClass<URSEquipmentManagerComponent>();
+
+	UE_LOG(LogTemp, Warning, TEXT("[Char] Inv=%s Eq=%s"),
+		*GetNameSafe(Inv), *GetNameSafe(Eq));
+
+	if (!Inv || !Eq) return false;
+
+	URSItemInstance* NewInst = Inv->CreateItemInstance(Template, 1, this);
+	UE_LOG(LogTemp, Warning, TEXT("[Char] CreateItemInstance NewInst=%s"), *GetNameSafe(NewInst));
+	if (!NewInst) return false;
+
+	const bool bOK = Eq->TryPickupWeaponToSlots(NewInst, bAutoEquip);
+	UE_LOG(LogTemp, Warning, TEXT("[Char] TryPickupWeaponToSlots result=%s"), bOK ? TEXT("TRUE") : TEXT("FALSE"));
+
+	if (bOK)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Char] Destroy pickup actor"));
+		Pickup->Destroy();
+	}
+	return bOK;
+}
+
 

@@ -213,7 +213,7 @@ bool URSItemManagerComponent::DropItemFromInventory(int32 InventoryIndex, int32 
 		return false;
 	}
 
-	URSItemTemplate* Template = Instance->GetTemplate();
+	const URSItemTemplate* Template = Instance->GetTemplate();
 	if (!Template)
 	{
 		return false;
@@ -243,7 +243,7 @@ bool URSItemManagerComponent::DropItemFromInventory(int32 InventoryIndex, int32 
 	return true;
 }
 
-AActor* URSItemManagerComponent::SpawnDropActor(URSItemTemplate* ItemTemplate, int32 CountToSpawn)
+AActor* URSItemManagerComponent::SpawnDropActor(const URSItemTemplate* ItemTemplate, int32 CountToSpawn)
 {
 	if (!ItemTemplate || CountToSpawn <= 0)
 	{

@@ -30,6 +30,8 @@ enum class ERSAnimEquipAction : uint8;
 
 class URSItemData;
 class URSItemInstance;
+class ARSWeaponPickupActor;
+class URSItemTemplate;
 
 class UAnimMontage;
 class USpringArmComponent;
@@ -98,6 +100,11 @@ public:
 	URSItemInstance* GetEquippedWeaponByInputTag(FGameplayTag InputTag) const;
 	FGameplayTag ResolveWeaponSlotFromInputTag(FGameplayTag InputTag) const;
 
+public:
+	UFUNCTION(BlueprintCallable, Category = "RS|Pickup")
+	bool PickupWeaponTemplate(URSItemTemplate* WeaponTemplate, int32 Count, bool bAutoEquip);
+
+	bool PickupFromActor(ARSWeaponPickupActor* Pickup, bool bAutoEquip);
 
 protected:
 	// replication/possession

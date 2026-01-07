@@ -131,6 +131,24 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 
 	UE_LOG(LogTemp, Warning, TEXT("[Hero] Cast URSEnhancedInputComponent = %s"), IC ? TEXT("OK") : TEXT("FAIL"));
 
+	// =========================
+	// 재초기화 안정화 패치(A)
+	// - SetupPIC/InitializePlayerInput이 여러 번 호출될 수 있으므로
+	//   기존 바인딩(특히 Base Ability)을 반드시 정리하고 다시 구축한다.
+	// - IMC는 아래에서 ClearAllMappings + AddMappingContext로 재구성되므로 여기서 손대지 않는다.
+	// =========================
+	ClearBaseAbilityBindings();
+
+	// Overlay는 Base가 완성된 이후에만 의미가 있으므로,
+	// 여기서는 "남아있을 수 있는 바인딩"만 안전하게 제거한다.
+	// (EquipManager는 OnInputReady 이후 ApplyOverlayInputConfig를 다시 호출하게 설계)
+	ClearOverlayInputConfig();
+
+	// 재초기화 시작이므로 InputReady 상태는 다시 false로 리셋
+	// (이후 정상적으로 끝나면 아래에서 true로 세팅되고 OnInputReady Broadcast 됨)
+	bInputInitialized = false;
+
+
 	// Ability 태그 바인딩
 	//TArray<uint32> Handles;
 	//IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityTagPressed, &ThisClass::Input_AbilityTagReleased, Handles);
@@ -150,15 +168,17 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 
 	UE_LOG(LogTemp, Warning, TEXT("[Hero] BindNativeAction: Look OK"));
 	
+
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Started, this, &ThisClass::Input_InventoryToggle);
+
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_QuickSlotCycle, ETriggerEvent::Started, this, &ThisClass::Input_QuickSlotCycle);
+
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_QuickSlotUse, ETriggerEvent::Started, this, &ThisClass::Input_QuickSlotUse);
+
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot1, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot1);
 
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot2, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot2);
 	
-	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Started, this, &ThisClass::Input_InventoryToggle);
-
-	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_QuickSlotCycle, ETriggerEvent::Started,this,&ThisClass::Input_QuickSlotCycle);
-	 
-	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_QuickSlotUse,ETriggerEvent::Started,this,&ThisClass::Input_QuickSlotUse);
 
 
 
@@ -212,6 +232,16 @@ void URSHeroComponent::Input_AbilityTagReleased(FGameplayTag InputTag)
 ARSCharacter* URSHeroComponent::GetOwnerCharacter() const
 {
 	return Cast<ARSCharacter>(GetOwner());
+}
+
+void URSHeroComponent::HandleEquipInput(FGameplayTag InputTag)
+{
+	if (!EquipManager)
+	{
+		return;
+	}
+
+	EquipManager->HandleEquipSlotInput(InputTag);
 }
 
 void URSHeroComponent::Input_Move(const FInputActionValue& InputActionValue)
@@ -317,12 +347,14 @@ void URSHeroComponent::ClearOverlayInputConfig()
 	// Overlay 바인딩만 제거
 	if (EIC)
 	{
-		for (uint32 Handle : OverlayBindHandles)
-		{
-			EIC->RemoveBindingByHandle(Handle);
-		}
+		// RS 공용 유틸로 정리: RemoveBindingByHandle 반복 제거 + Reset까지 일괄 처리
+		EIC->RemoveBindingsByHandleArray(OverlayBindHandles);
 	}
-	OverlayBindHandles.Reset();
+	else
+	{
+		// 기존 동작과 동일하게: EIC가 없더라도 핸들 배열은 비워서 상태 정합성 유지
+		OverlayBindHandles.Reset();
+	}
 
 	// IMC는 건드리지 않는다 (Base 입력 안전 보장)
 	OverlayAddedIMCs.Reset();
@@ -330,6 +362,7 @@ void URSHeroComponent::ClearOverlayInputConfig()
 
 	UE_LOG(LogTemp, Log, TEXT("[HeroInput] Overlay cleared (Ability only)."));
 }
+
 
 
 
@@ -450,5 +483,22 @@ void URSHeroComponent::Input_InventoryToggle(const FInputActionValue& Value)
 
 }
 
+void URSHeroComponent::ClearBaseAbilityBindings()
+{
+	URSEnhancedInputComponent* EIC = GetRSEnhancedInputComponent();
+
+	if (EIC)
+	{
+		// RS 공용 유틸 사용: RemoveBindingByHandle 반복 제거 + Reset까지 일괄 처리
+		EIC->RemoveBindingsByHandleArray(BaseAbilityBindHandles);
+	}
+	else
+	{
+		// InputComponent가 아직 없더라도 상태 정합성 유지
+		BaseAbilityBindHandles.Reset();
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[HeroInput] Base ability bindings cleared. Handles reset."));
+}
 
 
