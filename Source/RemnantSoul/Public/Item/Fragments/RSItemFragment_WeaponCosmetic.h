@@ -58,6 +58,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Item|Weapon|Cosmetic")
 	FName HolsterSocketName;
 
+	// 장착 오프셋(무기별 보정)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Weapon|Cosmetic")
+	FTransform EquippedRelativeTransform = FTransform::Identity;
+
+	// 홀스터 오프셋(무기별 보정)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Weapon|Cosmetic")
+	FTransform HolsterRelativeTransform = FTransform::Identity;
+
 	/**
 	 * 장착 모션 (Equip)
 	 * - 예: 검 뽑는 모션, 스태프 들어올리는 모션

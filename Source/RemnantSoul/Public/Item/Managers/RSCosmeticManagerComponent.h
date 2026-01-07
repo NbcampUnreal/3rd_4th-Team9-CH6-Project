@@ -25,11 +25,7 @@ protected:
 	void CacheOwnerCharacter();
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "RS|Cosmetic")
-	void ApplyWeaponFromItem(URSItemInstance* ItemInstance);
 
-	UFUNCTION(BlueprintCallable, Category = "RS|Cosmetic")
-	void ClearWeapon();
 
 protected:
 	void SpawnAndAttachWeaponActor(const URSItemTemplate* ItemTemplate, const URSItemFragment_WeaponCosmetic* CosFrag);
@@ -45,8 +41,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "RS|Cosmetic|Weapon")
 	FName DefaultWeaponAttachSocketName = TEXT("hand_rSocket");
 
-	UPROPERTY(EditDefaultsOnly, Category = "RS|Cosmetic|Weapon")
-	bool bDestroyWeaponOnUnequip = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RS|Cosmetic")
 	ESpawnActorCollisionHandlingMethod SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -62,8 +56,14 @@ public:
 
 private:
 	void ApplyWeaponToSlot(bool bIsMain, URSItemInstance* ItemInstance);
+	void ApplyWeaponVisual(bool bMain, class URSItemInstance* Item);
+
 	void DestroyWeaponActor(bool bIsMain);
-	ARSWeaponActor* SpawnWeaponActor(const URSItemTemplate* ItemTemplate, const URSItemFragment_WeaponCosmetic* CosFrag);
+
+	const URSItemFragment_WeaponCosmetic* FindWeaponCosmeticFragment(const URSItemInstance* Item) const;
+
+	//ARSWeaponActor* SpawnWeaponActor(const URSItemTemplate* ItemTemplate, const URSItemFragment_WeaponCosmetic* CosFrag);
+	ARSWeaponActor* SpawnWeaponActor(TSubclassOf<ARSWeaponActor> WeaponActorClass);
 
 	FName ResolveEquippedSocket(const URSItemFragment_WeaponCosmetic* CosFrag) const;
 	FName ResolveHolsterSocket(const URSItemFragment_WeaponCosmetic* CosFrag) const;
@@ -76,7 +76,10 @@ private:
 	FName DefaultEquippedSocketName = TEXT("hand_rSocket");
 
 	UPROPERTY(EditDefaultsOnly, Category = "RS|Cosmetic|Weapon")
-	FName DefaultHolsterSocketName = TEXT("spine_03Socket");
+	FName DefaultHolsterSocketName = TEXT("spine_05_Socket_Holster");
+
+	UPROPERTY(EditDefaultsOnly, Category = "RS|Cosmetic|Policy")
+	bool bDestroyWeaponOnUnequip = true;
 
 #pragma endregion
 };

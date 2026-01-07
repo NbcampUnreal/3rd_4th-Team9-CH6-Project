@@ -114,9 +114,6 @@ private:
 	// AnimStyleTags 캐시 (CPP에서 CachedAppliedAnimTags 사용 중)
 	UPROPERTY(Transient) FGameplayTagContainer CachedAppliedAnimTags;
 
-	// Anim notify cosmetic 추적 (CPP에서 LastCosmeticAppliedItem 사용 중)
-	UPROPERTY(Transient) TWeakObjectPtr<URSItemInstance> LastCosmeticAppliedItem;
-
 	UPROPERTY(EditDefaultsOnly, Category = "RS|Equip|Anim")
 	bool bApplyAnimStyleTagsToASC = true;
 
