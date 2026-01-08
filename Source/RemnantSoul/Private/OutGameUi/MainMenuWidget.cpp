@@ -170,7 +170,7 @@ void UMainMenuWidget::SetRayTracingQuality(int32 QualityLevel)
 	//모든 설정 초기화
 	PC->ConsoleCommand("r.Lumen.HardwareRayTracing 0");
 	PC->ConsoleCommand("r.RayTracing.ForceAllRayTracingEffects 0");
-	PC->ConsoleCommand("r.PathTracing 0");
+
 	
 	switch (QualityLevel)
 	{
@@ -186,8 +186,11 @@ void UMainMenuWidget::SetRayTracingQuality(int32 QualityLevel)
 		PC->ConsoleCommand("r.RayTracing.ForceAllRayTracingEffects 1");
 		break;
 
-	case 3: // 패스 트레이싱
-		PC->ConsoleCommand("r.PathTracing 1");
+	case 3: // 최고 옵션 레이 트레이싱 + 루멘
+		PC->ConsoleCommand("r.Lumen.HardwareRayTracing 1");
+		PC->ConsoleCommand("r.RayTracing.ForceAllRayTracingEffects 1");
+		PC->ConsoleCommand("sg.GlobalIlluminationQuality 4"); 
+		PC->ConsoleCommand("sg.ReflectionQuality 4");
 		break; 
 
 	}
@@ -199,16 +202,17 @@ int32 UMainMenuWidget::GetRayTracingQuality() const
 	//현재 상태 역추적 후 단계 반환
 	IConsoleManager& IConsole = IConsoleManager::Get();
 
+	static const auto CVarGI = IConsole.FindConsoleVariable(TEXT("sg.GlobalIlluminationQuality"));
+	static const auto CVarFull = IConsole.FindConsoleVariable(TEXT("r.RayTracing.ForceAllRayTracingEffects"));
+	static const auto CVarHW = IConsole.FindConsoleVariable(TEXT("r.Lumen.HardwareRayTracing"));
 
-	// 패스 트레이싱 켠 상태인가? 리턴 3
-	static const auto CVarPath = IConsole.FindConsoleVariable(TEXT("r.PathTracing"));
-	if (CVarPath && CVarPath->GetInt() > 0) return 3;
+	// 최고 옵션인가? 리턴 3
+	if (CVarGI && CVarGI->GetInt() >= 4 && CVarFull && CVarFull->GetInt() > 0) return 3;
 
 	//풀 RT 켠 상태인가? 리턴 2
-	static const auto CVarFull = IConsole.FindConsoleVariable(TEXT("r.RayTracing.ForceAllRayTracingEffects"));
 	if (CVarFull && CVarFull->GetInt() > 0) return 2;
+
 	//하드웨어 루멘 켠 상태인가? 1
-	static const auto CVarHW = IConsole.FindConsoleVariable(TEXT("r.Lumen.HardwareRayTracing"));
 	if (CVarHW && CVarHW->GetInt() > 0) return 1;
 
 	//전부 아니면 리턴 0 (기본 소프트웨어 상태)
