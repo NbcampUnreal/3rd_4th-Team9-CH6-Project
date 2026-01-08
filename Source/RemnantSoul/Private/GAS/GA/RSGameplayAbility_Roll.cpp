@@ -2,6 +2,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
+#include "GameplayEffect.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
@@ -68,6 +69,12 @@ void URSGameplayAbility_Roll::ActivateAbility(
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
+	}
+
+	if (RollInvincibleEffectClass)
+	{
+		const UGameplayEffect* GE = RollInvincibleEffectClass->GetDefaultObject<UGameplayEffect>();
+		ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, GE, 1);
 	}
 
 	// (추천) 롤 중 이동 입력 누적을 막아 "툭" 전진을 원천 차단

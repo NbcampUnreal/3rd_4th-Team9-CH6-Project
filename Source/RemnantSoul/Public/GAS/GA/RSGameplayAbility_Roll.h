@@ -49,6 +49,11 @@ private:
 	// 롤 종료 순간 "툭" 전진 제거
 	void FlushMovementAfterRoll(ACharacter* Char);
 
+protected:
+	// Roll 시작 순간에 잠깐 무적을 주는 GE (Duration 기반)
+	UPROPERTY(EditDefaultsOnly, Category = "RS|Roll")
+	TSubclassOf<UGameplayEffect> RollInvincibleEffectClass;
+
 private:
 	// 롤 중에만 켜고 끄는 입력 무시 컨트롤러 캐시
 	TWeakObjectPtr<APlayerController> CachedPC;
