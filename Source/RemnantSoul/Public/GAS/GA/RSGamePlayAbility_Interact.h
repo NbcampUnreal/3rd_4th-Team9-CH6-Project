@@ -33,7 +33,7 @@ private:
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Interact|Trace", meta=(ClampMin="50.0"))
-	float TraceDistance = 600.0f;
+	float TraceDistance = 900.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Interact|Trace")
 	TEnumAsByte<ECollisionChannel> TraceChannel = ECC_Visibility;

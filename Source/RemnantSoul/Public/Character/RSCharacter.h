@@ -67,8 +67,8 @@ public:
 	void AbilityInputTagPressed(const FGameplayTag& InputTag);
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);
 
-	// Interaction
-	void TryInteract();
+	
+	 
 
 	// CombatStyle -> Anim
 	UFUNCTION(BlueprintCallable, Category = "RS|CombatStyle")
@@ -106,6 +106,7 @@ public:
 	bool PickupWeaponTemplate(URSItemTemplate* WeaponTemplate, int32 Count, bool bAutoEquip);
 
 	bool PickupFromActor(ARSWeaponPickupActor* Pickup, bool bAutoEquip);
+	
 
 protected:
 	// replication/possession
@@ -122,7 +123,7 @@ protected:
 	void UnequipWeapon(const FGameplayEventData* EventData);
 
 	// Interaction helpers
-	void UpdateInteractFocus();
+	
 	bool TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) const;
 
 	// IInventoryOwner interface implementation
@@ -230,15 +231,27 @@ protected:
 	// -------------------------
 	// Interaction state
 	// -------------------------
+	//void InteractFocused();
+	
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Interaction")
-	float InteractTraceDistance = 3000.0f;
+	float InteractTraceDistance = 900.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Interaction")
-	float InteractDistance = 3000.f;
+	float InteractDistance = 900.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Interaction")
 	float InteractTraceInterval = 0.1f;
 
+	UPROPERTY(EditDefaultsOnly, Category="ARSCharacter|Interaction|Focus", meta=(ClampMin="1"))
+	int32 FocusConfirmCount = 2;           
+
+	UPROPERTY(EditDefaultsOnly, Category="ARSCharacter|Interaction|Focus", meta=(ClampMin="0.0"))
+	float FocusLoseGraceTime = 0.15f;      
+
+	TWeakObjectPtr<AActor> PendingFocusActor;
+	int32 PendingFocusHits = 0;
+	float LastFocusSeenTime = 0.f;
+	
 	UPROPERTY(VisibleInstanceOnly, Category = "ARSCharacter|Interaction")
 	FHitResult CurrentInteractHit;
 
@@ -254,9 +267,8 @@ protected:
 	float InteractTraceRadius = 30.0f;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Interaction", meta=(ClampMin="0.0"))
-	float InteractCameraTraceRadius = 10.0f;
-
-	
+	float InteractCameraTraceRadius = 30.0f;
+	void UpdateInteractFocus();
 
 	// -------------------------
 	// Roll Degrees
