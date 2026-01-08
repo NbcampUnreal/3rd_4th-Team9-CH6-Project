@@ -20,6 +20,8 @@ class URSItemInstance;
 class URSItemInstance_Weapon;
 class URSEquipmentManagerComponent;
 class URSCosmeticManagerComponent;
+class ARSPlayerState;
+
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnRSCombatStyleResolved, const URSCombatStyleData*);
 
@@ -83,9 +85,6 @@ private:
 	void ClearAnimStyleTags();
 	void ApplyAnimStyleLayers(const URSCombatStyleData* Style);
 
-	// ===== default style gate =====
-	void ApplyDefaultStyleIfNeeded();
-
 	// ===== slots =====
 	bool IsWeaponSlot(const FGameplayTag& SlotTag) const;
 	bool IsMainWeaponSlot(const FGameplayTag& SlotTag) const;
@@ -96,6 +95,22 @@ private:
 	// ===== utility =====
 	void HandleInputReady();
 	ARSCharacter* GetOwnerCharacter() const;
+
+	void RefreshCombatStateFromEquipment();
+
+	void TryApplyInitialCombatState();
+
+	void HandleHeroDataReady(const URSHeroData* InHeroData);
+
+	
+
+
+
+private:
+	FTimerHandle InitialGateTimer;
+	void TryApplyInitialCombatState_Poll();
+
+
 
 private:
 	// Cached refs
@@ -122,4 +137,7 @@ private:
 
 	bool bDelegatesBound = false;
 	bool bDefaultStyleApplied = false;
+
+	bool bInputReady = false;
+	bool bHeroDataReady = false;
 };

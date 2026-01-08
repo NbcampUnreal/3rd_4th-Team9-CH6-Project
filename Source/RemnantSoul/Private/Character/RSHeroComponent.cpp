@@ -303,11 +303,17 @@ void URSHeroComponent::Input_EquipSlot2()
 	);
 }
 
-void URSHeroComponent::ApplyOverlayInputConfig(const URSInputConfig* OverlayConfig)
+void URSHeroComponent::ApplyOverlayInputConfig(const URSInputConfig* NewConfig)
 {
-	if (!OverlayConfig)
+	if (!NewConfig)
 	{
 		ClearOverlayInputConfig();
+		return;
+	}
+
+	// 같은 오버레이면 재적용 금지 (중복 Apply 방지)
+	if (CurrentOverlayConfig == NewConfig)
+	{
 		return;
 	}
 
@@ -320,12 +326,11 @@ void URSHeroComponent::ApplyOverlayInputConfig(const URSInputConfig* OverlayConf
 	// 기존 Overlay 바인딩만 제거 후 새로 적용
 	ClearOverlayInputConfig();
 
-	CurrentOverlayConfig = OverlayConfig;
+	CurrentOverlayConfig = NewConfig;
 
-	// Overlay는 Ability 액션만 바인딩
 	OverlayBindHandles.Reset();
 	EIC->BindAbilityActions(
-		OverlayConfig,
+		NewConfig,
 		this,
 		&ThisClass::Input_AbilityTagPressed,
 		&ThisClass::Input_AbilityTagReleased,
@@ -342,10 +347,13 @@ void URSHeroComponent::ApplyOverlayInputConfig(const URSInputConfig* OverlayConf
 
 void URSHeroComponent::ClearOverlayInputConfig()
 {
-	URSEnhancedInputComponent* EIC = GetRSEnhancedInputComponent();
+	// 이미 비어있으면 조용히 return (중복 clear 로그 제거)
+	if (OverlayBindHandles.Num() == 0 && CurrentOverlayConfig == nullptr)
+	{
+		return;
+	}
 
-	// Overlay 바인딩만 제거
-	if (EIC)
+	if (URSEnhancedInputComponent* EIC = GetRSEnhancedInputComponent())
 	{
 		EIC->RemoveBindingsByHandleArray(OverlayBindHandles);
 	}
@@ -354,12 +362,12 @@ void URSHeroComponent::ClearOverlayInputConfig()
 		OverlayBindHandles.Reset();
 	}
 
-	// IMC는 건드리지 않는다 (Base 입력 안전 보장)
 	OverlayAddedIMCs.Reset();
 	CurrentOverlayConfig = nullptr;
 
 	UE_LOG(LogTemp, Log, TEXT("[HeroInput] Overlay cleared (Ability only)."));
 }
+
 
 
 
