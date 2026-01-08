@@ -133,8 +133,12 @@ protected:
 	// Input
 	virtual UInputComponent* CreatePlayerInputComponent() override;
 
+
+
+
 private:
 	bool HasValidPlayerHeroData() const;
+	void DebugLogAbilityMatchesForInputTag(const FGameplayTag& InputTag) const;
 
 protected:
 	// Components

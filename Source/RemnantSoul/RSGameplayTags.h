@@ -125,7 +125,7 @@ public:
 	// =========================================================
 	FGameplayTag State_AnimStyle_Unarmed; // "State.AnimStyle.Unarmed"
 	FGameplayTag State_AnimStyle_Sword1H; // "State.AnimStyle.Sword1H"
-	FGameplayTag State_AnimStyle_Staff2H; // "State.AnimStyle.Staff2H"
+	FGameplayTag State_AnimStyle_Staff1H; // "State.AnimStyle.Staff2H"
 
 	// =========================================================
 	// Status.* (ASC : RSGameplay_Crouch, RSGameplay_Sprint_Action, RSGameplay_Sprint_Check)

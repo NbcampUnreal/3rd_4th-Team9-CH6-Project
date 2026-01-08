@@ -335,6 +335,10 @@ void ARSCharacter::OnCombatStyleChanged(const URSCombatStyleData* NewStyle)
 
 void ARSCharacter::AbilityInputTagPressed(const FGameplayTag& InputTag)
 {
+	UE_LOG(LogTemp, Warning, TEXT("[Char][Ability] Pressed Tag=%s"), *InputTag.ToString());
+
+	DebugLogAbilityMatchesForInputTag(InputTag);
+
 	if (!InputTag.IsValid())
 	{
 		UE_LOG(LogTemp, Error,
@@ -729,3 +733,47 @@ bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) co
 	return true;
 }
 
+void ARSCharacter::DebugLogAbilityMatchesForInputTag(const FGameplayTag& InputTag) const
+{
+	const UAbilitySystemComponent* LocalASC = FindComponentByClass<UAbilitySystemComponent>();
+	if (!LocalASC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Char][AbilityDbg] ASC missing. Owner=%s"), *GetNameSafe(this));
+		return;
+	}
+
+	// UE 버전/프로젝트 구성에 따라 반환 타입이 TArray인 경우가 흔함
+	const TArray<FGameplayAbilitySpec>& Specs = LocalASC->GetActivatableAbilities();
+
+	int32 MatchCount = 0;
+
+	for (const FGameplayAbilitySpec& Spec : Specs)
+	{
+		if (!Spec.Ability)
+		{
+			continue;
+		}
+
+		// RS 규칙: AbilitySet이 Spec.DynamicAbilityTags에 InputTag를 주입해야 함
+		const bool bMatch = Spec.DynamicAbilityTags.HasTagExact(InputTag);
+		if (!bMatch)
+		{
+			continue;
+		}
+
+		++MatchCount;
+
+		UE_LOG(LogTemp, Warning,
+			TEXT("  [MatchSpec] Ability=%s Level=%d InputTag=%s DynamicTags=%s"),
+			*GetNameSafe(Spec.Ability),
+			Spec.Level,
+			*InputTag.ToString(),
+			*Spec.DynamicAbilityTags.ToStringSimple());
+	}
+
+	UE_LOG(LogTemp, Warning,
+		TEXT("[Char][AbilityDbg] InputTag=%s MatchedSpecs=%d Activatable=%d"),
+		*InputTag.ToString(),
+		MatchCount,
+		Specs.Num());
+}
