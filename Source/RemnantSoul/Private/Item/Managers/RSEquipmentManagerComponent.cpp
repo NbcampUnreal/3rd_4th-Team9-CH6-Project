@@ -395,11 +395,11 @@ void URSEquipmentManagerComponent::HandleEquipAnimAction(ERSAnimEquipAction Acti
 //		PendingOldItem = OldItem;
 //		PendingNewItem = NewItem;
 //
-//		// 여기서 몽타주 재생은 네 정책에 따라:
+//		// 여기서 몽타주 재생은 이미 만든 몽타주 따라해야할듯
 //		// (A) 아이템 템플릿의 EquipMontage를 Character가 재생
 //		// (B) GA로 Equip 능력을 만들어서 재생
 //		// 지금 메시지에서는 “Notify 라우팅”이 목적이니까,
-//		// 몽타주 재생부는 네가 이미 만들어둔 방식에 연결만 하면 됨.
+//		// 몽타주 재생부는 내가 이미 만들어둔 방식에 연결만 하면 됨.
 //
 //		// 장비 변경 브로드캐스트를 "즉시" 할지 "몽타주 종료 후" 할지는 정책.
 //		// 일단 UI가 빨리 반응하게 하려면 지금처럼 즉시 쏴도 된다.
@@ -526,96 +526,98 @@ void URSEquipmentManagerComponent::SwapWeaponSlots(const FGameplayTag& SlotA, co
 
 bool URSEquipmentManagerComponent::TryPickupWeaponToSlots(URSItemInstance* NewWeaponItem, bool bAutoEquip)
 {
-	if (!NewWeaponItem) return false;
-
-	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
-	const FGameplayTag Main = Tags.Slot_Weapon_Main;
-	const FGameplayTag Sub = Tags.Slot_Weapon_Sub;
+	if (!NewWeaponItem)
+	{
+		return false;
+	}
 
 	UE_LOG(LogTemp, Warning, TEXT("[Eq] TryPickupWeaponToSlots ENTER Item=%s AutoEquip=%d"),
 		*GetNameSafe(NewWeaponItem), bAutoEquip);
 
-	UE_LOG(LogTemp, Warning, TEXT("[Eq] Before Main=%s Sub=%s"),
-		*GetNameSafe(GetItemInSlot(Main)),
-		*GetNameSafe(GetItemInSlot(Sub)));
+	UE_LOG(LogTemp, Warning, TEXT("[Eq] Before Quick0=%s Quick1=%s ActiveIndex=%d"),
+		*GetNameSafe(GetWeaponQuickSlotItem(0)),
+		*GetNameSafe(GetWeaponQuickSlotItem(1)),
+		ActiveQuickSlotIndex);
 
-	// Main이 비어있으면 Main
-	if (!GetItemInSlot(Main))
+	// (중요) 기존 EquipItemToSlot이 해주던 검증을 유지
+	// 무기는 결국 Slot.Weapon.* 규칙을 따라야 하므로 Main을 기준으로 호환성/요구조건 체크만 수행
 	{
+		const FRSGameplayTags& Tags = FRSGameplayTags::Get();
 		FText Fail;
-		if (!EquipItemToSlot(Main, NewWeaponItem, Fail))
+		if (!CanEquipItemToSlot(Tags.Slot_Weapon_Main, NewWeaponItem, Fail))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("[Eq] EquipItemToSlot(Main) FAILED: %s"), *Fail.ToString());
+			UE_LOG(LogTemp, Warning, TEXT("[Eq] Pickup weapon rejected by requirements: %s"), *Fail.ToString());
 			return false;
 		}
+	}
+
+	// 1) 1번 비었으면 1번
+	if (!GetWeaponQuickSlotItem(0))
+	{
+		SetWeaponQuickSlotItem(0, NewWeaponItem);
 
 		if (bAutoEquip)
 		{
-			RequestActivateWeaponSlot(Main);
+			ActiveQuickSlotIndex = 0;
 		}
 
-		// 여기! return true 직전
-		UE_LOG(LogTemp, Warning, TEXT("[Eq] After(MainPath) Main=%s Sub=%s Active=%s ActiveItem=%s"),
-			*GetNameSafe(GetItemInSlot(Main)),
-			*GetNameSafe(GetItemInSlot(Sub)),
-			*ActiveWeaponSlotTag.ToString(),
-			*GetNameSafe(GetActiveWeaponItem()));
+		RebuildWeaponMainSubFromQuickSlots(/*bBroadcast=*/true);
+
+		UE_LOG(LogTemp, Warning, TEXT("[Eq] After(Pickup->Quick0) Quick0=%s Quick1=%s ActiveIndex=%d Main=%s Sub=%s"),
+			*GetNameSafe(GetWeaponQuickSlotItem(0)),
+			*GetNameSafe(GetWeaponQuickSlotItem(1)),
+			ActiveQuickSlotIndex,
+			*GetNameSafe(GetItemInSlot(FRSGameplayTags::Get().Slot_Weapon_Main)),
+			*GetNameSafe(GetItemInSlot(FRSGameplayTags::Get().Slot_Weapon_Sub)));
 
 		return true;
 	}
 
-	// Sub가 비어있으면 Sub
-	if (!GetItemInSlot(Sub))
+	// 2) 2번 비었으면 2번
+	if (!GetWeaponQuickSlotItem(1))
 	{
-		FText Fail;
-		if (!EquipItemToSlot(Sub, NewWeaponItem, Fail))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[Eq] EquipItemToSlot(Sub) FAILED: %s"), *Fail.ToString());
-			return false;
-		}
+		SetWeaponQuickSlotItem(1, NewWeaponItem);
 
 		if (bAutoEquip)
 		{
-			RequestActivateWeaponSlot(Sub);
+			ActiveQuickSlotIndex = 1;
 		}
 
-		// 여기! return true 직전
-		UE_LOG(LogTemp, Warning, TEXT("[Eq] After(SubPath) Main=%s Sub=%s Active=%s ActiveItem=%s"),
-			*GetNameSafe(GetItemInSlot(Main)),
-			*GetNameSafe(GetItemInSlot(Sub)),
-			*ActiveWeaponSlotTag.ToString(),
-			*GetNameSafe(GetActiveWeaponItem()));
+		RebuildWeaponMainSubFromQuickSlots(/*bBroadcast=*/true);
+
+		UE_LOG(LogTemp, Warning, TEXT("[Eq] After(Pickup->Quick1) Quick0=%s Quick1=%s ActiveIndex=%d Main=%s Sub=%s"),
+			*GetNameSafe(GetWeaponQuickSlotItem(0)),
+			*GetNameSafe(GetWeaponQuickSlotItem(1)),
+			ActiveQuickSlotIndex,
+			*GetNameSafe(GetItemInSlot(FRSGameplayTags::Get().Slot_Weapon_Main)),
+			*GetNameSafe(GetItemInSlot(FRSGameplayTags::Get().Slot_Weapon_Sub)));
 
 		return true;
 	}
 
-	// 둘 다 차있으면 Sub 교체
+	// 3) 둘 다 찼으면 정책적으로 2번 교체
 	{
-		URSItemInstance* OldSub = GetItemInSlot(Sub);
+		URSItemInstance* OldQuick1 = GetWeaponQuickSlotItem(1);
 
-		UE_LOG(LogTemp, Warning,
-			TEXT("[Eq][Pickup] Both occupied. Policy=ReplaceSub OldSub=%s New=%s"),
-			*GetNameSafe(OldSub),
+		UE_LOG(LogTemp, Warning, TEXT("[Eq][Pickup] Both occupied. Policy=ReplaceQuick1 Old=%s New=%s"),
+			*GetNameSafe(OldQuick1),
 			*GetNameSafe(NewWeaponItem));
 
-		FText Fail;
-		if (!EquipItemToSlot(Sub, NewWeaponItem, Fail))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[Eq] ReplaceSub EquipItemToSlot(Sub) FAILED: %s"), *Fail.ToString());
-			return false;
-		}
+		SetWeaponQuickSlotItem(1, NewWeaponItem);
 
 		if (bAutoEquip)
 		{
-			RequestActivateWeaponSlot(Sub);
+			ActiveQuickSlotIndex = 1;
 		}
 
-		// 여기! return true 직전
-		UE_LOG(LogTemp, Warning, TEXT("[Eq] After(ReplaceSubPath) Main=%s Sub=%s Active=%s ActiveItem=%s"),
-			*GetNameSafe(GetItemInSlot(Main)),
-			*GetNameSafe(GetItemInSlot(Sub)),
-			*ActiveWeaponSlotTag.ToString(),
-			*GetNameSafe(GetActiveWeaponItem()));
+		RebuildWeaponMainSubFromQuickSlots(/*bBroadcast=*/true);
+
+		UE_LOG(LogTemp, Warning, TEXT("[Eq] After(ReplaceQuick1) Quick0=%s Quick1=%s ActiveIndex=%d Main=%s Sub=%s"),
+			*GetNameSafe(GetWeaponQuickSlotItem(0)),
+			*GetNameSafe(GetWeaponQuickSlotItem(1)),
+			ActiveQuickSlotIndex,
+			*GetNameSafe(GetItemInSlot(FRSGameplayTags::Get().Slot_Weapon_Main)),
+			*GetNameSafe(GetItemInSlot(FRSGameplayTags::Get().Slot_Weapon_Sub)));
 
 		return true;
 	}
@@ -642,53 +644,125 @@ void URSEquipmentManagerComponent::RequestActivateWeaponSlot(FGameplayTag Reques
 		return;
 	}
 
-	// --- Old 상태 캡처(브로드캐스트용) ---
-	const FGameplayTag OldActiveSlot = ActiveWeaponSlotTag.IsValid() ? ActiveWeaponSlotTag : Main;
-	URSItemInstance* OldActiveItem = GetItemInSlot(OldActiveSlot);
+	// RS 정책: Active는 항상 Main 기준으로만 본다.
+	URSItemInstance* OldMainItem = GetItemInSlot(Main);
 
-	// --- 정책: 손에 드는 무기는 항상 Main ---
+	// Sub 선택이면 SSOT swap 후 Main이 곧 활성 무기
 	if (RequestedSlot == Sub)
 	{
-		SwapWeaponSlots(Main, Sub); // SSOT만 교체 + EquipmentChanged 쏠지 여부는 내부 정책(네 코드 유지)
+		SwapWeaponSlots(Main, Sub);
 	}
 
-	// Active는 항상 Main으로 고정
+	// Active는 항상 Main 고정
 	ActiveWeaponSlotTag = Main;
 
-	// --- New 상태 캡처 ---
-	URSItemInstance* NewActiveItem = GetItemInSlot(ActiveWeaponSlotTag);
+	URSItemInstance* NewMainItem = GetItemInSlot(Main);
 
 	UE_LOG(LogTemp, Warning, TEXT("[Eq] After RequestActivate Active=%s Main=%s Sub=%s"),
 		*ActiveWeaponSlotTag.ToString(),
 		*GetNameSafe(GetItemInSlot(Main)),
 		*GetNameSafe(GetItemInSlot(Sub)));
 
-	// --- 단 1회 브로드캐스트 ---
-	BroadcastActiveWeaponChanged(OldActiveSlot, ActiveWeaponSlotTag, OldActiveItem, NewActiveItem);
-}
-
-void URSEquipmentManagerComponent::SwapMainAndSubIfNeeded(const FGameplayTag& NewSlot)
-{
-	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
-
-	if (NewSlot != Tags.Slot_Weapon_Sub)
+	// 변화가 없으면 브로드캐스트 생략(불필요한 재적용 방지)
+	if (OldMainItem == NewMainItem)
 	{
 		return;
 	}
 
-	URSItemInstance* SubItem = GetItemInSlot(Tags.Slot_Weapon_Sub);
-	if (!SubItem)
-	{
-		return;
-	}
-
-	URSItemInstance* MainItem = GetItemInSlot(Tags.Slot_Weapon_Main);
-
-	EquippedItems.FindOrAdd(Tags.Slot_Weapon_Main) = SubItem;
-	EquippedItems.FindOrAdd(Tags.Slot_Weapon_Sub) = MainItem;
+	// OldSlot/NewSlot은 의미상 Main으로 통일 (Active는 Main이니까)
+	BroadcastActiveWeaponChanged(Main, Main, OldMainItem, NewMainItem);
 }
 
 bool URSEquipmentManagerComponent::IsWeaponSlotFilled(const FGameplayTag& SlotTag) const
 {
 	return IsWeaponSlot(SlotTag) && (GetItemInSlot(SlotTag) != nullptr);
 }
+
+void URSEquipmentManagerComponent::RequestEquipWeaponByIndex(int32 Index)
+{
+	if (Index != 0 && Index != 1)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Eq] RequestEquipWeaponByIndex invalid Index=%d"), Index);
+		return;
+	}
+
+	// 선택한 슬롯에 아이템이 없으면 무시 (정책)
+	if (!GetWeaponQuickSlotItem(Index))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Eq] RequestEquipWeaponByIndex empty slot Index=%d -> ignore"), Index);
+		return;
+	}
+
+	// “선택”의 의미를 고정: N은 항상 1번, M은 항상 2번
+	ActiveQuickSlotIndex = Index;
+
+	// 그 결과를 Main/Sub로 투영(브로드캐스트 포함)
+	RebuildWeaponMainSubFromQuickSlots(/*bBroadcast=*/true);
+}
+
+URSItemInstance* URSEquipmentManagerComponent::GetWeaponQuickSlotItem(int32 Index) const
+{
+	if (Index < 0 || Index > 1)
+	{
+		return nullptr;
+	}
+	return WeaponQuickSlots[Index];
+}
+
+bool URSEquipmentManagerComponent::SetWeaponQuickSlotItem(int32 Index, URSItemInstance* Item)
+{
+	if (Index < 0 || Index > 1)
+	{
+		return false;
+	}
+	WeaponQuickSlots[Index] = Item;
+	return true;
+}
+
+void URSEquipmentManagerComponent::RebuildWeaponMainSubFromQuickSlots(bool bBroadcast)
+{
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+	const FGameplayTag Main = Tags.Slot_Weapon_Main;
+	const FGameplayTag Sub = Tags.Slot_Weapon_Sub;
+
+	const int32 NewActiveIndex = (ActiveQuickSlotIndex == 0) ? 0 : 1;
+	const int32 OtherIndex = (NewActiveIndex == 0) ? 1 : 0;
+
+	URSItemInstance* OldMain = GetItemInSlot(Main);
+	URSItemInstance* OldSub = GetItemInSlot(Sub);
+
+	URSItemInstance* NewMain = GetWeaponQuickSlotItem(NewActiveIndex);
+	URSItemInstance* NewSub = GetWeaponQuickSlotItem(OtherIndex);
+
+	// Active는 항상 Main (정책 유지)
+	ActiveWeaponSlotTag = Main;
+
+	// SlotTag 기반 시스템(코스메틱/스타일/ABP)이 참조하는 값은 여기서 항상 갱신된다
+	EquippedItems.FindOrAdd(Main) = NewMain;
+	EquippedItems.FindOrAdd(Sub) = NewSub;
+
+	if (bBroadcast)
+	{
+		// UI 슬롯 갱신(선택): 기존 델리게이트 재사용
+		if (OldMain != NewMain)
+		{
+			OnEquipmentChanged.Broadcast(Main, OldMain, NewMain);
+		}
+		if (OldSub != NewSub)
+		{
+			OnEquipmentChanged.Broadcast(Sub, OldSub, NewSub);
+		}
+
+		// 전투/스타일/코스메틱 트리거: “Main이 바뀐 경우에만” 쏜다
+		if (OldMain != NewMain)
+		{
+			BroadcastActiveWeaponChanged(Main, Main, OldMain, NewMain);
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[Eq] RebuildMainSub ActiveIndex=%d Main=%s Sub=%s"),
+		ActiveQuickSlotIndex,
+		*GetNameSafe(NewMain),
+		*GetNameSafe(NewSub));
+}
+
