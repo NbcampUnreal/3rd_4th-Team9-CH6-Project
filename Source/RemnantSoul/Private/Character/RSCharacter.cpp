@@ -53,6 +53,16 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/UserWidget.h"
 
+#include "HAL/IConsoleManager.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogRSInteract, Log, All);
+
+static TAutoConsoleVariable<int32> CVarInteractDebug(
+	TEXT("rs.InteractDebug"),
+	0,
+	TEXT("0: off, 1: on"),
+	ECVF_Default
+);
 ARSCharacter::ARSCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -102,10 +112,7 @@ ARSCharacter::ARSCharacter()
 		HPBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 
-	// Weapon 컴포넌트를 실제로 쓸 거면 여기 CreateDefaultSubobject를 켜야 런타임에서 null이 아님.
-	// (컴파일에는 영향 없음)
-	// Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
-	// Weapon->SetupAttachment(GetMesh(), FName(TEXT("hand_rSocket")));
+
 
 	Inventory = CreateDefaultSubobject<URSInventoryComponent>(TEXT("InventoryComponent"));
 
@@ -119,18 +126,6 @@ void ARSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// GAS 디버그
-	//if (IsValid(GetController()) == true)
-	//{
-	//	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-	//	PlayerController->ConsoleCommand(TEXT("ShowDebug AbilitySystem"));
-	//}
-
-	UE_LOG(LogTemp, Warning, TEXT("[Char] BeginPlay HeroComp=%s ASC=%s"),
-		*GetNameSafe(HeroComponent),
-		*GetNameSafe(ASC));
-
-	// Player 전용 체크(기존 코드가 Player가 아닐 때 크래시 낼 수 있어서 최소 방어)
 	if (IsPlayerControlledPawn())
 	{
 		APlayerController* PC = Cast<APlayerController>(GetController());
@@ -141,17 +136,13 @@ void ARSCharacter::BeginPlay()
 		checkf(IsValid(EILPS) == true, TEXT("EnhancedInputLocalPlayerSubsystem is invalid."));
 	}
 
-	// 기존처럼 BeginPlay에서 ActorInfo 초기화(네 코드 유지)
 	if (ASC)
 	{
 		ASC->InitAbilityActorInfo(this, this);
 	}
 
-	// PawnData 기반 기본 AbilitySets 부여 (기존 동작 유지)
-	//    단, PossessedBy/OnRep에서 또 줄 수도 있으므로 "중복 부여"만 최소 차단
 	InitializeAbilitySystemAndPawnData();
 
-	UE_LOG(LogTemp, Warning, TEXT("[ASC] Activatable=%d"), ASC ? ASC->GetActivatableAbilities().Num() : -1);
 
 	if (ASC)
 	{
@@ -163,7 +154,6 @@ void ARSCharacter::BeginPlay()
 		}
 	}
 
-	// OutOfHealth 델리게이트
 	if (ASC)
 	{
 		const URSAttributeSet_Character* CurrentAttributeSet = ASC->GetSet<URSAttributeSet_Character>();
@@ -173,7 +163,6 @@ void ARSCharacter::BeginPlay()
 		}
 	}
 
-	// Equip/Unequip 이벤트 콜백(기존 유지)
 	if (ASC)
 	{
 		const FRSGameplayTags& RSTags = FRSGameplayTags::Get();
@@ -181,7 +170,6 @@ void ARSCharacter::BeginPlay()
 		ASC->GenericGameplayEventCallbacks.FindOrAdd(RSTags.Event_Unequip_Weapon).AddUObject(this, &ThisClass::UnequipWeapon);
 	}
 
-	// Interaction 타이머(기존 유지)
 	UpdateInteractFocus();
 
 	GetWorld()->GetTimerManager().SetTimer(
@@ -306,131 +294,7 @@ void ARSCharacter::UnequipWeapon(const FGameplayEventData* EventData)
 	}
 }
 
-void ARSCharacter::UpdateInteractFocus()
-{
-	AActor* HitActor = nullptr;
-	FHitResult Hit;
 
-	if (!TraceInteractTarget(HitActor, Hit))
-	{
-		if (CurrentInteractTarget && CurrentInteractTarget->Implements<UInteractable>())
-		{
-			IInteractable::Execute_OnFocusEnd(CurrentInteractTarget, this);
-		}
-		CurrentInteractTarget = nullptr;
-		CurrentInteractItemData = nullptr;
-		CurrentInteractHit = FHitResult();
-		return;
-	}
-
-	if (CurrentInteractTarget == HitActor)
-	{
-		CurrentInteractHit = Hit;
-		return;
-	}
-	
-	if (CurrentInteractTarget && CurrentInteractTarget->Implements<UInteractable>())
-	{
-		IInteractable::Execute_OnFocusEnd(CurrentInteractTarget, this);
-	}
-
-	CurrentInteractTarget = HitActor;
-	CurrentInteractHit = Hit;
-	IInteractable::Execute_OnFocusBegin(CurrentInteractTarget, this);
-	
-	CurrentInteractItemData = nullptr;
-
-	if (CurrentInteractTarget->Implements<URSItemSource>())
-	{
-		CurrentInteractItemData = IRSItemSource::Execute_GetItemData(CurrentInteractTarget);
-	}
-}
-
-void ARSCharacter::TryInteract()
-{
-	if (!CurrentInteractTarget) return;
-	if (!CurrentInteractTarget->Implements<UInteractable>()) return;
-	if (!Camera) return;
-
-	const float Distance = FVector::Distance(Camera->GetComponentLocation(), CurrentInteractHit.ImpactPoint);
-
-	DrawDebugString(
-		GetWorld(),
-		CurrentInteractTarget->GetActorLocation() + FVector(0, 0, 40),
-		FString::Printf(TEXT("%.0f cm"), Distance),
-		nullptr,
-		FColor::White,
-		0.1f
-	);
-
-	if (Distance > InteractDistance) return;
-
-	if (IInteractable::Execute_CanInteract(CurrentInteractTarget, this))
-	{
-		IInteractable::Execute_Interact(CurrentInteractTarget, this);
-	}
-}
-
-bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) const
-{
-	OutActor = nullptr;
-	OutHit = FHitResult();
-
-	if (!Camera) return false;
-	UWorld* World = GetWorld();
-	if (!World) return false;
-
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(InteractTrace), false);
-	Params.AddIgnoredActor(this);
-
-	// 1) 카메라 시선: Sphere Sweep
-	const FVector CamStart = Camera->GetComponentLocation();
-	const FVector CamDir = Camera->GetForwardVector();
-	const FVector CamEnd = CamStart + CamDir * InteractTraceDistance;
-
-	FHitResult CamHit;
-	const FCollisionShape CamSphere = FCollisionShape::MakeSphere(InteractCameraTraceRadius);
-
-	const bool bCamHit = World->SweepSingleByChannel(
-		CamHit,
-		CamStart,
-		CamEnd,
-		FQuat::Identity,
-		ECC_Visibility,
-		CamSphere,
-		Params
-	);
-
-	const FVector AimPoint = bCamHit ? CamHit.ImpactPoint : CamEnd;
-
-	// 2) 캐릭터 -> AimPoint: Sphere Sweep
-	const FVector CharStart = GetActorLocation() + FVector(0.f, 0.f, BaseEyeHeight);
-	const FVector CharEnd = AimPoint;
-
-	FHitResult CharHit;
-	const FCollisionShape CharSphere = FCollisionShape::MakeSphere(InteractTraceRadius);
-
-	const bool bCharHit = World->SweepSingleByChannel(
-		CharHit,
-		CharStart,
-		CharEnd,
-		FQuat::Identity,
-		ECC_Visibility,
-		CharSphere,
-		Params
-	);
-
-	if (!bCharHit) return false;
-
-	OutActor = CharHit.GetActor();
-	OutHit = CharHit;
-
-	if (!OutActor) return false;
-	if (!OutActor->Implements<UInteractable>()) return false;
-
-	return true;
-	
-}
 
 bool ARSCharacter::TryAddItem_Implementation(URSItemData* ItemData, int32 Count)
 {
@@ -778,4 +642,90 @@ bool ARSCharacter::PickupFromActor(ARSWeaponPickupActor* Pickup, bool bAutoEquip
 	return bOK;
 }
 
+void ARSCharacter::UpdateInteractFocus()
+{
+	AActor* HitActor = nullptr;
+	FHitResult Hit;
+
+	const bool bHasHit = TraceInteractTarget(HitActor, Hit);
+
+	// 1) 못 맞췄으면: 기존 포커스 해제
+	if (!bHasHit || !IsValid(HitActor))
+	{
+		if (IsValid(CurrentInteractTarget) && CurrentInteractTarget->Implements<UInteractable>())
+		{
+			IInteractable::Execute_OnFocusEnd(CurrentInteractTarget, this);
+		}
+
+		CurrentInteractTarget = nullptr;
+		CurrentInteractItemData = nullptr;
+		CurrentInteractHit = FHitResult();
+		return;
+	}
+
+	// 2) 같은 타겟이면 히트만 갱신
+	if (CurrentInteractTarget == HitActor)
+	{
+		CurrentInteractHit = Hit;
+		return;
+	}
+
+	// 3) 타겟이 바뀌었으면: 이전 포커스 종료
+	if (IsValid(CurrentInteractTarget) && CurrentInteractTarget->Implements<UInteractable>())
+	{
+		IInteractable::Execute_OnFocusEnd(CurrentInteractTarget, this);
+	}
+
+	// 4) 새 포커스 시작
+	CurrentInteractTarget = HitActor;
+	CurrentInteractHit = Hit;
+
+	if (IsValid(CurrentInteractTarget) && CurrentInteractTarget->Implements<UInteractable>())
+	{
+		IInteractable::Execute_OnFocusBegin(CurrentInteractTarget, this);
+	}
+
+	// 5) 아이템 데이터 캐시(있으면)
+	CurrentInteractItemData = nullptr;
+	if (IsValid(CurrentInteractTarget) && CurrentInteractTarget->Implements<URSItemSource>())
+	{
+		CurrentInteractItemData = IRSItemSource::Execute_GetItemData(CurrentInteractTarget);
+	}
+}
+
+bool ARSCharacter::TraceInteractTarget(AActor*& OutActor, FHitResult& OutHit) const
+{
+	OutActor = nullptr;
+	OutHit = FHitResult();
+
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!PC || !PC->PlayerCameraManager) return false;
+
+	const FVector Start = PC->PlayerCameraManager->GetCameraLocation();
+	const FRotator Rot  = PC->PlayerCameraManager->GetCameraRotation();
+	const FVector End   = Start + Rot.Vector() * InteractTraceDistance;
+
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(RSInteractTrace), /*bTraceComplex*/ false);
+	Params.AddIgnoredActor(this);
+
+	UWorld* World = GetWorld();
+	if (!World) return false;
+
+	const bool bHit = World->LineTraceSingleByChannel(
+		OutHit,
+		Start,
+		End,
+		ECC_Visibility,
+		Params
+	);
+
+	if (!bHit) return false;
+
+	AActor* HitActor = OutHit.GetActor();
+	if (!IsValid(HitActor)) return false;
+	if (!HitActor->Implements<UInteractable>()) return false;
+
+	OutActor = HitActor;
+	return true;
+}
 

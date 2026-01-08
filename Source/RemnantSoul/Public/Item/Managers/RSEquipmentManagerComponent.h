@@ -207,6 +207,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "RS|Equipment|Weapon")
 	void RequestActivateWeaponSlot(FGameplayTag RequestedSlot);
 
+	UFUNCTION(BlueprintCallable, Category = "RS|Equipment|Weapon")
+	void RequestEquipWeaponByIndex(int32 Index);
+
 public:
 	FOnRSActiveWeaponChanged OnActiveWeaponChanged;
 
@@ -241,12 +244,30 @@ private:
 
 
 private:
+	void RebuildWeaponMainSubFromQuickSlots(bool bBroadcast);
+	bool SetWeaponQuickSlotItem(int32 Index, URSItemInstance* Item);
+	URSItemInstance* GetWeaponQuickSlotItem(int32 Index) const;
+
+
+
+private:
 	// 1/2 슬롯 네이밍 확정: Slot.Weapon.Main / Slot.Weapon.Sub
 	UPROPERTY(Transient)
 	FGameplayTag ActiveWeaponSlotTag;
 
 	UPROPERTY(Transient)
 	FGameplayTag LastRequestedWeaponSlotTag;
+
+
+private:
+	// UI 1/2 슬롯 SSOT (먹은 순서대로 채워짐, 선택해도 인덱스는 고정)
+	UPROPERTY(Transient)
+	TObjectPtr<URSItemInstance> WeaponQuickSlots[2] = { nullptr, nullptr };
+
+	// 현재 선택된 QuickSlot 인덱스 (0=N, 1=M)
+	UPROPERTY(Transient)
+	int32 ActiveQuickSlotIndex = 0;
+
 #pragma endregion
 
 };

@@ -423,29 +423,59 @@ const URSHeroData* URSEquipManagerComponent::GetHeroData() const
 	return nullptr;
 }
 
+//void URSEquipManagerComponent::HandleEquipSlotInput(FGameplayTag InputTag)
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] HandleEquipSlotInput Tag=%s"), *InputTag.ToString());
+//
+//	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+//
+//	FGameplayTag DesiredSlot;
+//	if (InputTag == Tags.InputTag_Native_EquipSlot1)
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] RequestActivate MAIN"));
+//		DesiredSlot = Tags.Slot_Weapon_Main;
+//	}
+//	else if (InputTag == Tags.InputTag_Native_EquipSlot2)
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] RequestActivate SUB"));
+//		DesiredSlot = Tags.Slot_Weapon_Sub;
+//	}
+//	else
+//	{
+//		return;
+//	}
+//
+//	EquipWeaponFromSlotTag(DesiredSlot);
+//}
+
 void URSEquipManagerComponent::HandleEquipSlotInput(FGameplayTag InputTag)
 {
 	UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] HandleEquipSlotInput Tag=%s"), *InputTag.ToString());
 
 	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
 
-	FGameplayTag DesiredSlot;
+	int32 DesiredIndex = INDEX_NONE;
 	if (InputTag == Tags.InputTag_Native_EquipSlot1)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] RequestActivate MAIN"));
-		DesiredSlot = Tags.Slot_Weapon_Main;
+		DesiredIndex = 0; // N키
 	}
 	else if (InputTag == Tags.InputTag_Native_EquipSlot2)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] RequestActivate SUB"));
-		DesiredSlot = Tags.Slot_Weapon_Sub;
+		DesiredIndex = 1; // M키
 	}
 	else
 	{
 		return;
 	}
 
-	EquipWeaponFromSlotTag(DesiredSlot);
+	URSEquipmentManagerComponent* Eq = CachedEquipmentManager.Get();
+	if (!Eq)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[EquipMgr] EquipmentManager missing. Owner=%s"), *GetNameSafe(GetOwner()));
+		return;
+	}
+
+	Eq->RequestEquipWeaponByIndex(DesiredIndex);
 }
 
 FGameplayTag URSEquipManagerComponent::ResolveWeaponSlotFromInputTag(FGameplayTag InputTag) const
