@@ -8,6 +8,7 @@
 #include "Character/RSHeroData.h"
 #include "Character/RSCombatStyleData.h"
 //#include "RSPlayerStateStructs.h"
+#include "PlayerState/RSPlayerState.h"
 
 #include "Input/RSInputConfig.h"
 
@@ -32,30 +33,6 @@ URSEquipManagerComponent::URSEquipManagerComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-//void URSEquipManagerComponent::BeginPlay()
-//{
-//	Super::BeginPlay();
-//
-//	CacheRefs();
-//	BindDelegates();
-//
-//	ARSCharacter* Char = Cast<ARSCharacter>(GetOwner());
-//	if (!Char) return;
-//
-//	CachedASC = Char->GetAbilitySystemComponent();
-//
-//	CachedCosmeticManager = Char->FindComponentByClass<URSCosmeticManagerComponent>();
-//
-//	EquipmentManager = Char->FindComponentByClass<URSEquipmentManagerComponent>();
-//	if (!EquipmentManager) return;
-//
-//	// InputReady 이후 DefaultStyle 적용은 유지해도 됨(정책)
-//	if (URSHeroComponent* HeroComp = Char->FindComponentByClass<URSHeroComponent>())
-//	{
-//		HeroComp->OnInputReady.AddLambda([this]() { ApplyDefaultStyleIfNeeded(); });
-//	}
-//}
-
 void URSEquipManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -63,11 +40,20 @@ void URSEquipManagerComponent::BeginPlay()
 	CacheRefs();
 	BindDelegates();
 
+	// 기존 OnInputReady 바인딩은 유지해도 되지만, 이제 필수는 아님.
 	if (URSHeroComponent* HeroComp = CachedHeroComponent.Get())
 	{
 		HeroComp->OnInputReady.AddUObject(this, &ThisClass::HandleInputReady);
 	}
+
+	// HeroData 준비 여부는 폴링로 확인
+	bHeroDataReady = (GetHeroData() != nullptr);
+
+	// "InputReady + HeroDataReady" 둘 다 될 때까지 짧게 재시도
+	GetWorld()->GetTimerManager().SetTimer(InitialGateTimer, this,
+		&ThisClass::TryApplyInitialCombatState_Poll, 0.05f, true);
 }
+
 
 UAbilitySystemComponent* URSEquipManagerComponent::GetASC() const
 {
@@ -164,19 +150,14 @@ void URSEquipManagerComponent::ClearItemPassiveAbilitySets()
 void URSEquipManagerComponent::ApplyStyleInputOverlay(const URSCombatStyleData* Style)
 {
 	URSHeroComponent* HeroComp = GetHeroComponent();
-	if (!HeroComp)
-	{
-		return;
-	}
+	if (!HeroComp) return;
 
+	// 여기서 Clear하지 말고, 단순히 "적용할 게 없으면 return"
 	if (!Style || !Style->OverlayInputConfig)
 	{
-		// 스타일이 없거나 오버레이가 없으면 클리어
-		HeroComp->ClearOverlayInputConfig();
 		return;
 	}
 
-	// 중요한점 : 입력 오버레이는 HeroComponent가 실제 적용/바인딩 핸들 관리해줘야함.
 	HeroComp->ApplyOverlayInputConfig(Style->OverlayInputConfig);
 }
 
@@ -307,34 +288,10 @@ void URSEquipManagerComponent::ClearAnimStyleTags()
 
 void URSEquipManagerComponent::HandleInputReady()
 {
-	ApplyDefaultStyleIfNeeded();
-}
+	bInputReady = true;
+	TryApplyInitialCombatState();
 
-void URSEquipManagerComponent::ApplyDefaultStyleIfNeeded()
-{
-	if (bDefaultStyleApplied)
-	{
-		return;
-	}
-
-	ARSCharacter* Char = Cast<ARSCharacter>(GetOwner());
-	if (!Char) return;
-
-	const URSHeroData* HD = Char->GetHeroData();
-	if (!HD || !HD->DefaultUnarmedStyle)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[Equip] Missing HeroData/DefaultUnarmedStyle. Pawn=%s"), *GetNameSafe(Char));
-		return;
-	}
-
-	UE_LOG(LogTemp, Warning,
-		TEXT("[Equip] Apply DefaultUnarmedStyle: %s"),
-		*GetNameSafe(HD->DefaultUnarmedStyle));
-
-	// 여기서 네 EquipManager의 기존 ApplyCombatStyle을 호출해야 함
-	ApplyCombatStyle(HD->DefaultUnarmedStyle);
-
-	bDefaultStyleApplied = true;
+	UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] HandleInputReady Owner=%s"), *GetNameSafe(GetOwner()));
 }
 
 const URSCombatStyleData* URSEquipManagerComponent::ResolveCombatStyleForWeapon(const URSItemInstance* WeaponItem) const
@@ -532,32 +489,6 @@ static URSCombatStyleData* ResolveStyleFromItemOrDefault(AActor* Owner, URSItemI
 	return Resolved ? Resolved : DefaultUnarmed;
 }
 
-//void URSEquipManagerComponent::HandleActiveWeaponChanged(
-//	FGameplayTag OldSlot,
-//	FGameplayTag NewSlot,
-//	URSItemInstance* OldItem,
-//	URSItemInstance* NewItem)
-//{
-//
-//	UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] HandleActiveWeaponChanged %s->%s Old=%s New=%s"),
-//		*OldSlot.ToString(), *NewSlot.ToString(),
-//		*GetNameSafe(OldItem), *GetNameSafe(NewItem));
-//
-//	// Cosmetic (활성 무기만)
-//	if (URSCosmeticManagerComponent* CosMgr = CachedCosmeticManager.Get())
-//	{
-//		CosMgr->ApplyWeaponFromItem(NewItem);
-//	}
-//
-//	// Passive (활성 무기만)
-//	ClearItemPassiveAbilitySets();
-//	ApplyItemPassiveAbilitySets(NewItem);
-//
-//	// Style (활성 무기만)
-//	const URSCombatStyleData* NewStyle = ResolveCombatStyleForWeapon(NewItem);
-//	ApplyCombatStyle(NewStyle);
-//}
-
 void URSEquipManagerComponent::HandleActiveWeaponChanged(
 	FGameplayTag OldSlot, FGameplayTag NewSlot,
 	URSItemInstance* OldItem, URSItemInstance* NewItem)
@@ -591,7 +522,6 @@ void URSEquipManagerComponent::HandleActiveWeaponChanged(
 
 	// 2) Clear -> Apply 순서 고정
 	ClearItemPassiveAbilitySets();
-	ClearCurrentCombatStyle();
 
 	// 3) 새 스타일 결정/적용 (활성 무기 기준)
 	const URSCombatStyleData* NewStyle = ResolveCombatStyleForWeapon(NewItem);
@@ -603,126 +533,6 @@ void URSEquipManagerComponent::HandleActiveWeaponChanged(
 		ApplyItemPassiveAbilitySets(NewItem);
 	}
 }
-
-//#if RS_LEGACY_ENUM_SLOT_PIPELINE // RS_LEGACY_ENUM_SLOT_PIPELINE (SSOT 분열 방지: 현재 미사용)
-//void URSEquipManagerComponent::EquipWeaponFromSlot(ERSWeaponSlot Slot)
-//{
-//	// 1. 이전 무기 해제 (Ability/Input/Anim 전부 포함)
-//	ClearCurrentWeapon();
-//
-//	// 2. Slot → WeaponInstance
-//	URSItemInstance_Weapon* NewWeapon = GetWeaponInSlot(Slot);
-//	if (!NewWeapon)
-//	{
-//		ApplyUnarmedState();
-//		return;
-//	}
-//
-//	// 3. MainSlot SSOT 갱신
-//	CurrentMainWeapon = NewWeapon;
-//
-//	// 4. 무기 AbilitySet 적용
-//	ApplyAbilitySet(NewWeapon);
-//
-//	// 5. 무기 InputConfig Overlay 적용
-//	ApplyInputConfig(NewWeapon);
-//
-//	// 6. 상체 AnimStyle 적용 (ASC LooseTag)
-//	ApplyAnimStyle(NewWeapon);
-//}
-//
-//void URSEquipManagerComponent::OnWeaponPickedUp(URSItemInstance_Weapon* WeaponInstance)
-//{
-//	if (!WeaponInstance)
-//	{
-//		return;
-//	}
-//
-//	URSEquipmentManagerComponent* Eq = EquipmentManager ? EquipmentManager : CachedEquipmentManager.Get();
-//	if (!Eq)
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("[EquipMgr] OnWeaponPickedUp: EquipmentManager is NULL"));
-//		return;
-//	}
-//
-//	// SSOT에게 "배치 + (옵션)자동장착" 위임
-//	const bool bStored = Eq->TryPickupWeaponToSlots(WeaponInstance, /*bAutoEquip=*/true);
-//
-//	UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] OnWeaponPickedUp Item=%s Stored=%d"),
-//		*GetNameSafe(WeaponInstance), bStored ? 1 : 0);
-//}
-//
-//URSItemInstance_Weapon* URSEquipManagerComponent::GetWeaponInSlot(ERSWeaponSlot Slot) const
-//{
-//	switch (Slot)
-//	{
-//	case ERSWeaponSlot::Main:
-//		return MainSlotWeapon;
-//	case ERSWeaponSlot::Sub:
-//		return SubSlotWeapon;
-//	default:
-//		return nullptr;
-//	}
-//}
-//
-//FGameplayTag URSEquipManagerComponent::GetSlotTag(ERSWeaponSlot Slot) const
-//{
-//	const auto& Tags = FRSGameplayTags::Get();
-//
-//	return (Slot == ERSWeaponSlot::Main)
-//		? Tags.Slot_Weapon_Main
-//		: Tags.Slot_Weapon_Sub;
-//}
-//
-//void URSEquipManagerComponent::ClearCurrentWeapon()
-//{
-//	// 현재 무기 기준으로 적용된 모든 상태 제거
-//	ClearItemPassiveAbilitySets();
-//	ClearCurrentCombatStyle();
-//
-//	CurrentMainWeapon = nullptr;
-//}
-//
-//void URSEquipManagerComponent::ApplyUnarmedState()
-//{
-//	// 무기 없음 = DefaultUnarmedStyle 적용
-//	const URSCombatStyleData* DefaultStyle = GetDefaultUnarmedStyle();
-//	ApplyCombatStyle(DefaultStyle);
-//}
-//
-//void URSEquipManagerComponent::ApplyAbilitySet(URSItemInstance_Weapon* Weapon)
-//{
-//	if (!Weapon)
-//	{
-//		return;
-//	}
-//
-//	// 무기 패시브 AbilitySet 처리
-//	if (bApplyItemAbilitySetsAsPassive)
-//	{
-//		ClearItemPassiveAbilitySets();
-//		/*ApplyItemPassiveAbilitySets(Weapon);*/
-//	}
-//}
-//
-//void URSEquipManagerComponent::ApplyInputConfig(URSItemInstance_Weapon* Weapon)
-//{
-//	if (!Weapon)
-//	{
-//		return;
-//	}
-//
-//	// 입력은 CombatStyle 기준으로 이미 처리됨
-//	// (무기별 InputConfig를 쓴다면 여기서 확장)
-//}
-//
-//void URSEquipManagerComponent::ApplyAnimStyle(URSItemInstance_Weapon* Weapon)
-//{
-//	// AnimStyle은 CombatStyle 단계에서 처리
-//	// (ASC LooseTag + AnimLayer)
-//}
-//
-//#endif // RS_LEGACY_ENUM_SLOT_PIPELINE
 
 void URSEquipManagerComponent::EquipWeaponFromSlot(ERSWeaponSlot Slot)
 {
@@ -782,3 +592,95 @@ void URSEquipManagerComponent::EquipWeaponFromSlotTag(FGameplayTag SlotTag)
 	Eq->RequestActivateWeaponSlot(SlotTag);
 }
 
+void URSEquipManagerComponent::RefreshCombatStateFromEquipment()
+{
+	URSEquipmentManagerComponent* Eq = CachedEquipmentManager.Get();
+	if (!Eq)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] RefreshCombatStateFromEquipment: EquipmentManager missing"));
+		return;
+	}
+
+	// 1) 코스메틱은 SSOT(Main/Sub) 기준으로 언제든 동기화 가능
+	if (URSCosmeticManagerComponent* Cos = CachedCosmeticManager.Get())
+	{
+		const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+		Cos->SyncWeaponCosmetics(
+			Eq->GetItemInSlot(Tags.Slot_Weapon_Main),
+			Eq->GetItemInSlot(Tags.Slot_Weapon_Sub)
+		);
+	}
+
+	// 2) InputReady 이전이면 스타일/어빌리티/오버레이 금지
+	URSHeroComponent* HeroComp = CachedHeroComponent.Get();
+	if (!HeroComp || !HeroComp->IsInputInitialized())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] RefreshCombatStateFromEquipment: Input not ready -> skip style"));
+		return;
+	}
+
+	// 3) “현재 활성 무기(=Main)” 기준으로 Style 결정 (없으면 DefaultUnarmedStyle)
+	URSItemInstance* ActiveWeapon = Eq->GetActiveWeaponItem();
+	const URSCombatStyleData* Style = ResolveCombatStyleForWeapon(ActiveWeapon);
+
+	// 4) Clear -> Apply 순서 고정
+	ClearItemPassiveAbilitySets();
+	ApplyCombatStyle(Style);
+
+	// 5) 정책: 활성 무기만 패시브 AbilitySet
+	if (bApplyItemAbilitySetsAsPassive)
+	{
+		ApplyItemPassiveAbilitySets(ActiveWeapon);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] RefreshCombatStateFromEquipment Done. ActiveWeapon=%s Style=%s"),
+		*GetNameSafe(ActiveWeapon),
+		*GetNameSafe(Style));
+}
+
+void URSEquipManagerComponent::TryApplyInitialCombatState()
+{
+	if (!bInputReady || !bHeroDataReady)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] TryApplyInitialCombatState gated. InputReady=%d HeroDataReady=%d"),
+			bInputReady ? 1 : 0, bHeroDataReady ? 1 : 0);
+		return;
+	}
+
+	// 한번만 초기 적용
+	if (bDefaultStyleApplied)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] Initial gate OPEN -> Refresh once"));
+	RefreshCombatStateFromEquipment();
+
+	bDefaultStyleApplied = true;
+}
+
+
+void URSEquipManagerComponent::TryApplyInitialCombatState_Poll()
+{
+	// 1) HeroData gate
+	bHeroDataReady = (GetHeroData() != nullptr);
+
+	// 2) Input gate: HeroComponent의 실제 상태로 판정
+	URSHeroComponent* Hero = CachedHeroComponent.Get();
+	bInputReady = (Hero && Hero->IsInputInitialized());
+
+	// 3) 둘 다 된다면 1회 적용 후 타이머 종료
+	if (bInputReady && bHeroDataReady)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(InitialGateTimer);
+
+		UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] Initial gate OPEN -> apply default style"));
+		RefreshCombatStateFromEquipment();
+	}
+}
+
+void URSEquipManagerComponent::HandleHeroDataReady(const URSHeroData* InHeroData)
+{
+	bHeroDataReady = (InHeroData != nullptr);
+	TryApplyInitialCombatState();
+}

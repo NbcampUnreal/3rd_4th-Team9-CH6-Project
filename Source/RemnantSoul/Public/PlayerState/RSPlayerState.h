@@ -35,7 +35,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "RS|Hero")
 	TSoftObjectPtr<URSHeroData> DefaultHeroDataAsset;
-
+	
 	UPROPERTY(Transient)
 	TObjectPtr<const URSHeroData> LoadedHeroData = nullptr;
 

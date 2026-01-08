@@ -109,7 +109,7 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	// State.AnimStyle.*
 	AddTag(Manager, GameplayTags.State_AnimStyle_Unarmed, "State.AnimStyle.Unarmed", "Anim style: Unarmed");
 	AddTag(Manager, GameplayTags.State_AnimStyle_Sword1H, "State.AnimStyle.Sword1H", "Anim style: Sword 1H");
-	AddTag(Manager, GameplayTags.State_AnimStyle_Staff2H, "State.AnimStyle.Staff2H", "Anim style: Staff 2H");
+	AddTag(Manager, GameplayTags.State_AnimStyle_Staff1H, "State.AnimStyle.Staff1H", "Anim style: Staff 1H");
 
 	// Status.*
 	AddTag(Manager, GameplayTags.Status_Sprint, "Status.Sprint", " Status : Sprint");
