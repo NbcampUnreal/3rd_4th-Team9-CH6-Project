@@ -223,10 +223,23 @@ protected:
 
 	bool IsWeaponSlot(const FGameplayTag& SlotTag) const;
 
-
-
 	void InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem);
 	void InternalUnequip(const FGameplayTag& SlotTag);
+
+	// QuickSlot SSOT -> Slot.Main/Sub 투영(재구성)
+	void RebuildWeaponMainSubFromQuickSlots(bool bBroadcast);
+
+	// 내부 QuickSlot 저장 (SSOT)
+	void SetWeaponQuickSlotItem(int32 Index, URSItemInstance* Item);
+
+	// EquippedItems에 안전하게 쓰는 전용 setter (SetItemInSlot 오류 해결용)
+	void SetItemInSlot_Internal(const FGameplayTag& SlotTag, URSItemInstance* Item, bool bBroadcastEquipmentChanged);
+
+	// Index 선택에 따른 ActiveChanged 발생을 “단 1회”로 보장
+	bool TryEquipWeaponByIndex_Internal(int32 Index);
+
+	URSItemInstance* GetWeaponQuickSlotItem(int32 Index) const;
+
 
 private:
 	void BroadcastActiveWeaponChanged(
@@ -244,9 +257,7 @@ private:
 
 
 private:
-	void RebuildWeaponMainSubFromQuickSlots(bool bBroadcast);
-	bool SetWeaponQuickSlotItem(int32 Index, URSItemInstance* Item);
-	URSItemInstance* GetWeaponQuickSlotItem(int32 Index) const;
+
 
 
 
@@ -260,13 +271,12 @@ private:
 
 
 private:
-	// UI 1/2 슬롯 SSOT (먹은 순서대로 채워짐, 선택해도 인덱스는 고정)
-	UPROPERTY(Transient)
-	TObjectPtr<URSItemInstance> WeaponQuickSlots[2] = { nullptr, nullptr };
+	// QuickSlot SSOT
+	UPROPERTY(VisibleInstanceOnly, Category = "RS|Equipment|Weapon")
+	TArray<TObjectPtr<URSItemInstance>> WeaponQuickSlots; // size=2
 
-	// 현재 선택된 QuickSlot 인덱스 (0=N, 1=M)
-	UPROPERTY(Transient)
-	int32 ActiveQuickSlotIndex = 0;
+	UPROPERTY(VisibleInstanceOnly, Category = "RS|Equipment|Weapon")
+	int32 ActiveQuickSlotIndex = 0; // 0 or 1
 
 #pragma endregion
 
