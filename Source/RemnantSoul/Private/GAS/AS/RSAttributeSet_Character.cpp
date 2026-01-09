@@ -69,20 +69,28 @@ void URSAttributeSet_Character::PostGameplayEffectExecute(const FGameplayEffectM
 	bOutOfHealth = (GetHealth() <= 0.0f);
 }
 
-bool URSAttributeSet_Character::PreGameplayEffectExecute(struct FGameplayEffectModCallbackData& Data)
+bool URSAttributeSet_Character::PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data)
 {
-	if (Super::PreGameplayEffectExecute(Data) == false)
+	if (!Super::PreGameplayEffectExecute(Data))
 	{
 		return false;
 	}
 
-	if (Data.EvaluatedData.Attribute == GetMetaDamageAttribute() && KINDA_SMALL_NUMBER <= Data.EvaluatedData.Magnitude)
+	const bool bInv = Data.Target.HasMatchingGameplayTag(FRSGameplayTags::Get().State_Invincible);
+	if (!bInv)
 	{
-		if (Data.Target.HasMatchingGameplayTag(FRSGameplayTags::Get().State_Invincible) == true)
-		{
-			Data.EvaluatedData.Magnitude = 0.0f;
-			return false;
-		}
+		return true;
+	}
+
+	const bool bDamageToMeta = (Data.EvaluatedData.Attribute == GetMetaDamageAttribute());
+	const bool bDamageToHealth = (Data.EvaluatedData.Attribute == GetHealthAttribute());
+
+	// 데미지로 들어오는 "감소"만 막고 싶으면, 부호/연산까지 더 정밀하게 봐야 하지만
+	// 지금 핫픽스는 "무적이면 Health/MetaDamage 변경을 0"으로 만든다.
+	if ((bDamageToMeta || bDamageToHealth) && FMath::Abs(Data.EvaluatedData.Magnitude) > KINDA_SMALL_NUMBER)
+	{
+		Data.EvaluatedData.Magnitude = 0.0f;
+		return true; // false로 끊지 말고 흘려보내는 게 부작용이 적음
 	}
 
 	return true;

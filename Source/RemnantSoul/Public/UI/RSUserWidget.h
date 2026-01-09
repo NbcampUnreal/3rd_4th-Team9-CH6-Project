@@ -6,6 +6,9 @@
 #include "AbilitySystemInterface.h"
 #include "RSUserWidget.generated.h"
 
+
+class UAbilitySystemComponent;
+
 UCLASS()
 class REMNANTSOUL_API URSUserWidget
 	: public UUserWidget

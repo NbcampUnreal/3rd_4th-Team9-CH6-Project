@@ -53,55 +53,51 @@ FGameplayAbilityTargetDataHandle ARSTargetActor_SweepSingleCapsule::MakeTargetDa
 		return FGameplayAbilityTargetDataHandle();
 	}
 
-	FHitResult OutHitResult;
-	const float AttackRange = AttributeSet->GetAttackRange();
-	const float AttackRadius = AttributeSet->GetAttackRadius();
+    FHitResult OutHitResult;
+    const float AttackRange = AttributeSet->GetAttackRange();
+    const float AttackRadius = AttributeSet->GetAttackRadius();
 
-	FCollisionQueryParams Params(FName(), false, SourceCharacter);
-	const FVector Forward = SourceCharacter->GetActorForwardVector();
-	const FVector Start = SourceCharacter->GetActorLocation() + Forward * SourceCharacter->GetCapsuleComponent()->GetScaledCapsuleRadius();
-	const FVector End = Start + Forward * AttackRange;
+    FCollisionQueryParams Params(FName(), false, SourceCharacter);
+    const FVector Forward = SourceCharacter->GetActorForwardVector();
+    const FVector Start = SourceCharacter->GetActorLocation() + Forward * SourceCharacter->GetCapsuleComponent()->GetScaledCapsuleRadius();
+    const FVector End = Start + Forward * AttackRange;
 
-	const bool bHitDetected = GetWorld()->SweepSingleByChannel(
-		OutHitResult,
-		Start,
-		End,
-		FQuat::Identity,
-		ECC_Pawn,
-		FCollisionShape::MakeSphere(AttackRadius),
-		Params
-	);
-
-	FGameplayAbilityTargetDataHandle DataHandle;
-	if (bHitDetected)
-	{
-		FGameplayAbilityTargetData_SingleTargetHit* TargetData = new FGameplayAbilityTargetData_SingleTargetHit(OutHitResult);
-		DataHandle.Add(TargetData);
-	}
+    const bool bHitDetected = GetWorld()->SweepSingleByChannel(
+        OutHitResult,
+        Start,
+        End,
+        FQuat::Identity,
+        ECC_Pawn,
+        FCollisionShape::MakeSphere(AttackRadius),
+        Params
+    );
 
 #if ENABLE_DRAW_DEBUG
-	if (bShowDebug)
-	{
-		const FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-		const float CapsuleHalfHeight = AttackRange * 0.5f;
-		const FColor DrawColor = bHitDetected ? FColor::Green : FColor::Red;
-		DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius,
-			FRotationMatrix::MakeFromZ(Forward).ToQuat(), DrawColor, false, 3.0f);
-	}
+    if (bShowDebug)
+    {
+        const FColor DrawColor = bHitDetected ? FColor::Green : FColor::Red;
+        DrawDebugSphere(GetWorld(), End, AttackRadius, 16, DrawColor, false, 3.0f);
+        DrawDebugLine(GetWorld(), Start, End, DrawColor, false, 3.0f, 0, 1.0f);
+    }
 #endif
 
-	return DataHandle;
+    UE_LOG(LogTemp, Warning,
+        TEXT("[TargetActor] SweepSphere Hit=%d Start=%s End=%s Range=%.1f Radius=%.1f HitActor=%s"),
+        bHitDetected ? 1 : 0,
+        *Start.ToString(),
+        *End.ToString(),
+        AttackRange,
+        AttackRadius,
+        bHitDetected ? *GetNameSafe(OutHitResult.GetActor()) : TEXT("None")
+    );
 
+    FGameplayAbilityTargetDataHandle DataHandle;
+    if (bHitDetected)
+    {
+        auto* TargetData = new FGameplayAbilityTargetData_SingleTargetHit(OutHitResult);
+        DataHandle.Add(TargetData);
+    }
 
-	UE_LOG(LogTemp, Warning,
-		TEXT("[TargetActor] Sweep Result=%s Hit=%d Start=%s End=%s Range=%.1f Radius=%.1f HitActor=%s Channel=ECC_Pawn"),
-		*GetNameSafe(SourceActor),
-		bHitDetected ? 1 : 0,
-		*Start.ToString(),
-		*End.ToString(),
-		AttackRange,
-		AttackRadius,
-		bHitDetected ? *GetNameSafe(OutHitResult.GetActor()) : TEXT("None")
-	);
+    return DataHandle;
 
 }

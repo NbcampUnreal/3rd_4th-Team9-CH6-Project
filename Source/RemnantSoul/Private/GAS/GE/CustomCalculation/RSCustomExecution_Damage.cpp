@@ -7,7 +7,7 @@
 
 URSCustomExecution_Damage::URSCustomExecution_Damage()
 {
-	// 필요 시 Attribute 캡쳐 정의를 여기에 추가 가능 (지금은 SetByCaller 중심이므로 생략)
+
 }
 
 void URSCustomExecution_Damage::Execute_Implementation(
@@ -25,41 +25,58 @@ void URSCustomExecution_Damage::Execute_Implementation(
 	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
 	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
 
-	// 1) GA가 넣어준 “기본 데미지 BaseDamage”만 읽는다.
+	// 1) BaseDamage는 SetByCaller (수치 규칙 고정)
 	const float BaseDamage = Spec.GetSetByCallerMagnitude(Tags.Data_Damage, false, 0.f);
 	if (BaseDamage <= 0.f)
 	{
 		return;
 	}
 
-	// 2) 태그 기반 배율 결정
-	// - Spec.CapturedSourceTags / CapturedTargetTags 사용
-	const FGameplayTagContainer* SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
-	const FGameplayTagContainer* TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
+	// 2) 태그 판정은 "MergedTags"로만 한다. (전달 경로 안정화)
+	FGameplayTagContainer MergedTags;
 
+	if (const FGameplayTagContainer* Src = Spec.CapturedSourceTags.GetAggregatedTags())
+	{
+		MergedTags.AppendTags(*Src);
+	}
+	if (const FGameplayTagContainer* Tgt = Spec.CapturedTargetTags.GetAggregatedTags())
+	{
+		MergedTags.AppendTags(*Tgt);
+	}
+
+	// Spec에 직접 부여한 동적 태그(GA가 넣는 판정 태그)
+	// UE 버전에 따라 접근자가 다를 수 있다.
+	// 네 프로젝트가 컴파일되는 쪽을 남기고, 나머지는 주석 처리해라.
+
+	// (A) 멤버로 접근 가능할 때
+	MergedTags.AppendTags(Spec.DynamicGrantedTags);
+	MergedTags.AppendTags(Spec.DynamicAssetTags);
+
+	// (B) 접근자가 있을 때(프로젝트에서 이게 맞으면 A를 지우고 이걸 써라)
+	// MergedTags.AppendTags(Spec.GetDynamicGrantedTags());
+	// MergedTags.AppendTags(Spec.GetDynamicAssetTags());
+
+	// 3) 배율 결정(기존 로직 유지)
 	float Multiplier = 1.0f;
 
-	// 라이트/헤비 배율
-	if (SourceTags && SourceTags->HasTagExact(Tags.Damage_Type_Light))
+	if (MergedTags.HasTagExact(Tags.Damage_Type_Light))
 	{
-		Multiplier *= 1.0f;     // 라이트 1.0
+		Multiplier *= 1.0f;
 	}
-	if (SourceTags && SourceTags->HasTagExact(Tags.Damage_Type_Heavy))
+	if (MergedTags.HasTagExact(Tags.Damage_Type_Heavy))
 	{
-		Multiplier *= 1.4f;     // 헤비 1.4 (예시)
+		Multiplier *= 1.4f;
 	}
 
-	// 무기 타입 배율 (예시)
-	if (SourceTags && SourceTags->HasTagExact(Tags.Weapon_Sword_OneHand))
+	if (MergedTags.HasTagExact(Tags.Weapon_Sword_OneHand))
 	{
 		Multiplier *= 1.10f;
 	}
-	if (SourceTags && SourceTags->HasTagExact(Tags.Weapon_Staff_TwoHand))
+	if (MergedTags.HasTagExact(Tags.Weapon_Staff_TwoHand))
 	{
 		Multiplier *= 1.25f;
 	}
 
-	// 3) 최종 데미지
 	const float FinalDamage = BaseDamage * Multiplier;
 
 	OutExecutionOutput.AddOutputModifier(
