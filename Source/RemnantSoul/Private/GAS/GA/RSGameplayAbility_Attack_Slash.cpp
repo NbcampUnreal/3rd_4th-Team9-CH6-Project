@@ -1,15 +1,18 @@
-﻿#include "GAS/GA/RSGameplayAbility_Attack.h"
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "GAS/GA/RSGameplayAbility_Attack_Slash.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Character/RSCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 
-URSGameplayAbility_Attack::URSGameplayAbility_Attack()
+URSGameplayAbility_Attack_Slash::URSGameplayAbility_Attack_Slash()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 
-void URSGameplayAbility_Attack::ActivateAbility(
+void URSGameplayAbility_Attack_Slash::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo,
@@ -24,7 +27,7 @@ void URSGameplayAbility_Attack::ActivateAbility(
 		return;
 	}
 
-	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackComboMontage();
+	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackSlashComboMontage();
 	if (!IsValid(AttackMontage))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -77,24 +80,24 @@ void URSGameplayAbility_Attack::ActivateAbility(
 }
 
 
-void URSGameplayAbility_Attack::OnCompleted()
+void URSGameplayAbility_Attack_Slash::OnCompleted()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 
-void URSGameplayAbility_Attack::OnCanceled()
+void URSGameplayAbility_Attack_Slash::OnCanceled()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 
-FName URSGameplayAbility_Attack::GetNextAnimMontageSection()
+FName URSGameplayAbility_Attack_Slash::GetNextAnimMontageSection()
 {
 	CurrentCombo = FMath::Clamp(CurrentCombo + 1, 1, 3);
 	FName NextSection = *FString::Printf(TEXT("%s%02d"), TEXT("Attack"), CurrentCombo);
 	return NextSection;
 }
 
-void URSGameplayAbility_Attack::StartComboTimer()
+void URSGameplayAbility_Attack_Slash::StartComboTimer()
 {
 	if (ComboTimerHandle.IsValid() == true)
 	{
@@ -107,14 +110,14 @@ void URSGameplayAbility_Attack::StartComboTimer()
 	}
 }
 
-void URSGameplayAbility_Attack::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+void URSGameplayAbility_Attack_Slash::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Super::InputPressed(Handle, ActorInfo, ActivationInfo);
 
 	IsNextComboInputPressed = true;
 }
 
-void URSGameplayAbility_Attack::CheckComboInput()
+void URSGameplayAbility_Attack_Slash::CheckComboInput()
 {
 	ComboTimerHandle.Invalidate();
 
@@ -132,7 +135,7 @@ void URSGameplayAbility_Attack::CheckComboInput()
 		return;
 	}
 
-	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackComboMontage();
+	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackSlashComboMontage();
 	if (!IsValid(AttackMontage))
 	{
 		return;
@@ -154,7 +157,7 @@ void URSGameplayAbility_Attack::CheckComboInput()
 }
 
 
-void URSGameplayAbility_Attack::EndAbility(
+void URSGameplayAbility_Attack_Slash::EndAbility(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo,
@@ -178,7 +181,7 @@ void URSGameplayAbility_Attack::EndAbility(
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
-float URSGameplayAbility_Attack::GetPlayRateForCombo(uint8 Combo) const
+float URSGameplayAbility_Attack_Slash::GetPlayRateForCombo(uint8 Combo) const
 {
 	switch (Combo)
 	{
@@ -189,12 +192,12 @@ float URSGameplayAbility_Attack::GetPlayRateForCombo(uint8 Combo) const
 	}
 }
 
-FName URSGameplayAbility_Attack::GetSectionNameForCombo(uint8 Combo) const
+FName URSGameplayAbility_Attack_Slash::GetSectionNameForCombo(uint8 Combo) const
 {
 	return *FString::Printf(TEXT("Attack%02d"), Combo); // Attack01, Attack02, Attack03
 }
 
-void URSGameplayAbility_Attack::ApplyMontagePlayRate(UAnimMontage* Montage, float PlayRate)
+void URSGameplayAbility_Attack_Slash::ApplyMontagePlayRate(UAnimMontage* Montage, float PlayRate)
 {
 	if (!Montage) return;
 
