@@ -7,7 +7,8 @@
 #include "DrawDebugHelpers.h"
 
 #include "Interface/Interactable.h"
-#include "RSGameplayTags.h"        
+#include "RSGameplayTags.h"
+
 
 URSGamePlayAbility_Interact::URSGamePlayAbility_Interact()
 {
@@ -33,7 +34,6 @@ void URSGamePlayAbility_Interact::ActivateAbility(
 		return;
 	}
 
-	// 비용/쿨다운 안 쓰면 CommitAbility는 사실상 항상 true(기본값)
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
@@ -67,44 +67,45 @@ bool URSGamePlayAbility_Interact::DoInteractTrace(
 	FHitResult& OutHit
 ) const
 {
-	const AActor* Avatar = ActorInfo ? ActorInfo->AvatarActor.Get() : nullptr;
-	if (!IsValid(Avatar))
-	{
-		return false;
-	}
+	 const AActor* Avatar = ActorInfo ? ActorInfo->AvatarActor.Get() : nullptr;
+    if (!IsValid(Avatar))
+    {
+        return false;
+    }
 
-	APlayerController* PC = ActorInfo->PlayerController.Get();
-	if (!PC)
-	{
-		PC = Cast<APlayerController>(Avatar->GetInstigatorController());
-	}
-	if (!PC || !PC->PlayerCameraManager)
-	{
-		return false;
-	}
+    APlayerController* PC = ActorInfo->PlayerController.Get();
+    if (!PC)
+    {
+        PC = Cast<APlayerController>(Avatar->GetInstigatorController());
+    }
+    if (!PC || !PC->PlayerCameraManager)
+    {
+        return false;
+    }
 
-	const FVector CamLoc = PC->PlayerCameraManager->GetCameraLocation();
-	const FRotator CamRot = PC->PlayerCameraManager->GetCameraRotation();
-	const FVector Start = CamLoc;
-	const FVector End = Start + (CamRot.Vector() * TraceDistance);
+    const FVector CamLoc = PC->PlayerCameraManager->GetCameraLocation();
+    const FRotator CamRot = PC->PlayerCameraManager->GetCameraRotation();
+    const FVector Start = CamLoc;
+    const FVector End   = Start + (CamRot.Vector() * TraceDistance);
 
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(RSGA_InteractTrace), bTraceComplex);
-	Params.AddIgnoredActor(Avatar);
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(RSGA_InteractTrace), bTraceComplex);
+    Params.AddIgnoredActor(Avatar);
 
-	const UWorld* World = Avatar->GetWorld();
-	if (!World)
-	{
-		return false;
-	}
+    const UWorld* World = Avatar->GetWorld();
+    if (!World)
+    {
+        return false;
+    }
 
-	const bool bHit = World->LineTraceSingleByChannel(
-		OutHit,
-		Start,
-		End,
-		TraceChannel,
-		Params
-	);
+    const bool bHit = World->LineTraceSingleByChannel(
+        OutHit,
+        Start,
+        End,
+        TraceChannel,
+        Params
+    );
 
 
-	return bHit;
+
+    return bHit;
 }

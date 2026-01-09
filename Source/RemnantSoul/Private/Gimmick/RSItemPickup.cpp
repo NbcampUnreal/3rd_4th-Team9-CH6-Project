@@ -17,8 +17,7 @@ ARSItemPickup::ARSItemPickup()
 	Body = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Body"));
 	Body->SetupAttachment(Root);
 
-	// 기본 충돌 세팅: 월드에 놓이고 라인트레이스로 맞게 하고 싶으면 Visibility Block 필요
-	Body->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+ 	Body->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	Body->SetCollisionObjectType(ECC_WorldDynamic);
 
 	Body->SetCollisionResponseToAllChannels(ECR_Ignore);
