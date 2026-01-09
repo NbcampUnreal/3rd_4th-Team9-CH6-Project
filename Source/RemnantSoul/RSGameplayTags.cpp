@@ -106,6 +106,7 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 
 	// InputTag.Ability.Attack.*
 	AddTag(Manager, GameplayTags.InputTag_Ability_Attack_Combo, "InputTag.Ability.Attack.Combo", "Input tag: Attack Combo");
+	AddTag(Manager, GameplayTags.InputTag_Ability_Attack_Staff, "InputTag.Ability.Attack.Staff", "Input tag: Attack Staff");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Attack_Slash, "InputTag.Ability.Attack.Slash", "Input tag: Attack Slash");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Attack_ThrustCharge, "InputTag.Ability.Attack.ThrustCharge", "Input tag: Attack Thrust Charge");
 

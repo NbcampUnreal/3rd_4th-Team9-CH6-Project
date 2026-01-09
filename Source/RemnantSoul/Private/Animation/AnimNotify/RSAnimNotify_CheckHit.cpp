@@ -32,10 +32,16 @@ void URSAnimNotify_CheckHit::Notify(USkeletalMeshComponent* MeshComp, UAnimSeque
     }
 
     // 멀티/서버 기준(원치 않으면 주석 처리)
-    if (!OwnerActor->HasAuthority())
+    //if (!OwnerActor->HasAuthority())
+    //{
+    //    return;
+    //}
+    APawn* PawnOwner = Cast<APawn>(OwnerActor);
+    if (PawnOwner && !PawnOwner->IsLocallyControlled())
     {
         return;
     }
+
 
     if (!TriggerGameplayTag.IsValid())
     {

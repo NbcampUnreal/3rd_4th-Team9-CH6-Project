@@ -1,19 +1,19 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GAS/GA/RSGameplayAbility_Attack_Slash.h"
+#include "GAS/GA/RSGameplayAbility_Attack_Staff.h"
 #include "RemnantSoul.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Character/RSCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 
-URSGameplayAbility_Attack_Slash::URSGameplayAbility_Attack_Slash()
+URSGameplayAbility_Attack_Staff::URSGameplayAbility_Attack_Staff()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 
-void URSGameplayAbility_Attack_Slash::ActivateAbility(
+void URSGameplayAbility_Attack_Staff::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo,
@@ -28,7 +28,7 @@ void URSGameplayAbility_Attack_Slash::ActivateAbility(
 		return;
 	}
 
-	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackSlashComboMontage();
+	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackStaffMontage();
 	if (!IsValid(AttackMontage))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -81,24 +81,24 @@ void URSGameplayAbility_Attack_Slash::ActivateAbility(
 }
 
 
-void URSGameplayAbility_Attack_Slash::OnCompleted()
+void URSGameplayAbility_Attack_Staff::OnCompleted()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 
-void URSGameplayAbility_Attack_Slash::OnCanceled()
+void URSGameplayAbility_Attack_Staff::OnCanceled()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 
-FName URSGameplayAbility_Attack_Slash::GetNextAnimMontageSection()
+FName URSGameplayAbility_Attack_Staff::GetNextAnimMontageSection()
 {
 	CurrentCombo = FMath::Clamp(CurrentCombo + 1, 1, 3);
 	FName NextSection = *FString::Printf(TEXT("%s%02d"), TEXT("Attack"), CurrentCombo);
 	return NextSection;
 }
 
-//void URSGameplayAbility_Attack_Slash::StartComboTimer()
+//void URSGameplayAbility_Attack_Staff::StartComboTimer()
 //{
 //	if (ComboTimerHandle.IsValid() == true)
 //	{
@@ -111,7 +111,7 @@ FName URSGameplayAbility_Attack_Slash::GetNextAnimMontageSection()
 //	}
 //}
 
-void URSGameplayAbility_Attack_Slash::StartComboTimer()
+void URSGameplayAbility_Attack_Staff::StartComboTimer()
 {
 	if (ComboTimerHandle.IsValid())
 	{
@@ -151,14 +151,14 @@ void URSGameplayAbility_Attack_Slash::StartComboTimer()
 }
 
 
-void URSGameplayAbility_Attack_Slash::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+void URSGameplayAbility_Attack_Staff::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Super::InputPressed(Handle, ActorInfo, ActivationInfo);
 
 	IsNextComboInputPressed = true;
 }
 
-void URSGameplayAbility_Attack_Slash::CheckComboInput()
+void URSGameplayAbility_Attack_Staff::CheckComboInput()
 {
 	ComboTimerHandle.Invalidate();
 
@@ -198,7 +198,7 @@ void URSGameplayAbility_Attack_Slash::CheckComboInput()
 }
 
 
-void URSGameplayAbility_Attack_Slash::EndAbility(
+void URSGameplayAbility_Attack_Staff::EndAbility(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo,
@@ -222,7 +222,7 @@ void URSGameplayAbility_Attack_Slash::EndAbility(
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
-float URSGameplayAbility_Attack_Slash::GetPlayRateForCombo(uint8 Combo) const
+float URSGameplayAbility_Attack_Staff::GetPlayRateForCombo(uint8 Combo) const
 {
 	switch (Combo)
 	{
@@ -233,12 +233,12 @@ float URSGameplayAbility_Attack_Slash::GetPlayRateForCombo(uint8 Combo) const
 	}
 }
 
-FName URSGameplayAbility_Attack_Slash::GetSectionNameForCombo(uint8 Combo) const
+FName URSGameplayAbility_Attack_Staff::GetSectionNameForCombo(uint8 Combo) const
 {
 	return *FString::Printf(TEXT("Attack%02d"), Combo); // Attack01, Attack02, Attack03
 }
 
-void URSGameplayAbility_Attack_Slash::ApplyMontagePlayRate(UAnimMontage* Montage, float PlayRate)
+void URSGameplayAbility_Attack_Staff::ApplyMontagePlayRate(UAnimMontage* Montage, float PlayRate)
 {
 	if (!Montage) return;
 

@@ -280,6 +280,7 @@ public:
 	FGameplayTag InputTag_Ability_Skill_Meteor;
 	FGameplayTag InputTag_Ability_Skill_Obstacle;
 	FGameplayTag InputTag_Ability_Attack_Combo;
+	FGameplayTag InputTag_Ability_Attack_Staff;
 	FGameplayTag InputTag_Ability_Attack_Slash;
 	FGameplayTag InputTag_Ability_Attack_ThrustCharge;
 

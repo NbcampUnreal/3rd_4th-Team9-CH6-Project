@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
-#include "RSGameplayAbility_Attack_Slash.generated.h"
+#include "RSGameplayAbility_Attack_Staff.generated.h"
 
 UCLASS()
-class REMNANTSOUL_API URSGameplayAbility_Attack_Slash : public UGameplayAbility
+class REMNANTSOUL_API URSGameplayAbility_Attack_Staff : public UGameplayAbility
 {
 	GENERATED_BODY()
 
 public:
-	URSGameplayAbility_Attack_Slash();
+	URSGameplayAbility_Attack_Staff();
 
 public:
 	virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
