@@ -72,19 +72,12 @@ void URSHeroComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent, APlayerController* PlayerController)
 {
-	UE_LOG(LogTemp, Warning, TEXT("[Hero] PlayerInputComponent=%s CastRS=%s"),
-		*GetNameSafe(PlayerInputComponent),
-		Cast<URSEnhancedInputComponent>(PlayerInputComponent) ? TEXT("OK") : TEXT("FAIL"));
-
-	UE_LOG(LogTemp, Warning, TEXT("[Hero] InputCompClass=%s"),
-		*GetNameSafe(PlayerInputComponent ? PlayerInputComponent->GetClass() : nullptr));
-
-	UE_LOG(LogTemp, Warning, TEXT("[Hero] Cast URSEnhancedInputComponent=%s"),
-		Cast<URSEnhancedInputComponent>(PlayerInputComponent) ? TEXT("OK") : TEXT("FAIL"));
-
-	UE_LOG(LogTemp, Warning, TEXT("[Hero] Cast UEnhancedInputComponent=%s"),
-		Cast<UEnhancedInputComponent>(PlayerInputComponent) ? TEXT("OK") : TEXT("FAIL"));
-
+	
+	if (bInputInitialized)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero] InitializePlayerInput already done. Skip."));
+		return;
+	}
 
 	ARSCharacter* Char = GetOwnerCharacter();
 	if (!Char) return;

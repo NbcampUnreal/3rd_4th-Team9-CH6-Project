@@ -1,9 +1,12 @@
 #include "Gimmick/RSMetalDoor.h"
-#include "Kismet/GameplayStatics.h"
-#include "Sound/SoundBase.h"
-#include "Sound/SoundAttenuation.h"
+
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
+
+#include "Sound/SoundBase.h"
+#include "Sound/SoundAttenuation.h"
+
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
 
@@ -22,6 +25,7 @@ ARSMetalDoor::ARSMetalDoor()
 	DoorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorMesh"));
 	DoorMesh->SetupAttachment(DoorPanel);
 
+	// 라인트레이스(Visibility) 히트용
 	DoorMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	DoorMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	DoorMesh->SetGenerateOverlapEvents(false);
@@ -46,41 +50,67 @@ void ARSMetalDoor::Tick(float DeltaSeconds)
 	UpdateMove(DeltaSeconds);
 }
 
-bool ARSMetalDoor::CanInteract_Implementation(AActor* Interactor) const
+// ==================== Lever-only API ====================
+
+void ARSMetalDoor::OpenByLever()
 {
-	if (!IsValid(Interactor) || bLocked)
-	{
-		return false;
-	}
-
-	if (!bToggleable && bIsOpen)
-	{
-		return false;
-	}
-
-	return PassesTagGate(Interactor);
-}
-
-void ARSMetalDoor::Interact_Implementation(AActor* Interactor)
-{
-	if (!CanInteract_Implementation(Interactor))
-	{
+	if (bLocked || bMoving)
 		return;
-	}
 
-	// 이미 열려있거나 이동 중이면 무시
-	if (bIsOpen || bMoving)
-	{
+	if (bIsOpen)
 		return;
-	}
 
 	bIsOpen = true;
 
 	PlaySFX(SFX_OpenStart);
-	StartMoveTo(true); // "위로 올라가는" 타겟으로 이동 시작
+	StartMoveTo(true);
 }
 
-void ARSMetalDoor::StartMoveTo(bool bOpen)
+void ARSMetalDoor::CloseByLever()
+{
+	if (bLocked || bMoving)
+		return;
+
+	if (!bToggleable) // 토글 불가면 닫기 금지
+		return;
+
+	if (!bIsOpen)
+		return;
+
+	bIsOpen = false;
+
+	PlaySFX(SFX_CloseStart);
+	StartMoveTo(false);
+}
+
+void ARSMetalDoor::ToggleByLever()
+{
+	if (bIsOpen)
+	{
+		CloseByLever();
+	}
+	else
+	{
+		OpenByLever();
+	}
+}
+
+// ==================== IInteractable (Direct interact disabled) ====================
+
+bool ARSMetalDoor::CanInteract_Implementation(AActor* /*Interactor*/) const
+{
+	// ✅ 플레이어(Ability_Interact)로는 절대 열 수 없게 고정
+	return false;
+}
+
+void ARSMetalDoor::Interact_Implementation(AActor* /*Interactor*/)
+{
+	// 의도적으로 no-op
+}
+
+// ==================== Move ====================
+
+void ARSMetalDoor::StartMoveTo(bool /*bOpen*/)
 {
 	MoveElapsed = 0.0f;
 	bMoving = true;
@@ -101,8 +131,9 @@ void ARSMetalDoor::UpdateMove(float DeltaSeconds)
 	const float Alpha = FMath::Clamp(MoveElapsed / Duration, 0.0f, 1.0f);
 	const float SmoothAlpha = Alpha * Alpha * (3.0f - 2.0f * Alpha);
 
+	// ✅ Start는 "한 번"만 고정해둬야 보간이 안정적
+	const FVector Start = bIsOpen ? ClosedLoc : OpenLoc;
 	const FVector Target = bIsOpen ? OpenLoc : ClosedLoc;
-	const FVector Start = DoorPanel->GetRelativeLocation();
 	const FVector NewLoc = FMath::Lerp(Start, Target, SmoothAlpha);
 
 	DoorPanel->SetRelativeLocation(NewLoc);
@@ -112,51 +143,40 @@ void ARSMetalDoor::UpdateMove(float DeltaSeconds)
 		DoorPanel->SetRelativeLocation(Target);
 		bMoving = false;
 		SetActorTickEnabled(false);
-		PlaySFX(SFX_OpenEnd);
 
-		
+		PlaySFX(bIsOpen ? SFX_OpenEnd : SFX_CloseEnd);
 	}
 }
+
+// ==================== Tag Gate (optional) ====================
 
 bool ARSMetalDoor::PassesTagGate(AActor* Interactor) const
 {
 	if (InteractorRequiredTags.IsEmpty() && InteractorBlockedTags.IsEmpty())
-	{
 		return true;
-	}
 
 	const IAbilitySystemInterface* ASI = Cast<IAbilitySystemInterface>(Interactor);
 	if (!ASI)
-	{
 		return true;
-	}
 
 	UAbilitySystemComponent* ASC = ASI->GetAbilitySystemComponent();
 	if (!ASC)
-	{
 		return true;
-	}
 
 	if (!InteractorBlockedTags.IsEmpty() && ASC->HasAnyMatchingGameplayTags(InteractorBlockedTags))
-	{
 		return false;
-	}
 
 	if (!InteractorRequiredTags.IsEmpty() && !ASC->HasAllMatchingGameplayTags(InteractorRequiredTags))
-	{
 		return false;
-	}
 
 	return true;
 }
 
+// ==================== SFX ====================
+
 FVector ARSMetalDoor::GetSFXLocation() const
 {
-	if (DoorMesh)
-	{
-		return DoorMesh->GetComponentLocation();
-	}
-	return GetActorLocation();
+	return DoorMesh ? DoorMesh->GetComponentLocation() : GetActorLocation();
 }
 
 void ARSMetalDoor::PlaySFX(USoundBase* Sound) const

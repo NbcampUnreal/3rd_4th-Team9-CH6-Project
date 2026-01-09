@@ -123,4 +123,9 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.Input_Skill_Secondary, "Input.Skill.Secondary", "Input key: Secondary skill");
 	AddTag(Manager, GameplayTags.Input_Dodge, "Input.Dodge", "Input key: Dodge");
 	AddTag(Manager, GameplayTags.Input_Block, "Input.Block", "Input key: Block");
+	
+	AddTag(Manager,GameplayTags.Puzzle_Runes_PillarA, "Puzzle.Runes.PillarA","Puzzle: Runes PillarA");
+	AddTag(Manager,GameplayTags.Puzzle_Runes_PillarA_Top, "Puzzle.Runes.PillarA.Top","Puzzle: Runes PillarA Top");
+	AddTag(Manager,GameplayTags.Puzzle_Runes_PillarA_Mid, "Puzzle.Runes.PillarA.Mid","Puzzle: Runes PillarA Mid");
+	AddTag(Manager,GameplayTags.Puzzle_Runes_PillarA_Bot, "Puzzle.Runes.PillarA.Bot","Puzzle: Runes PillarA Bot");
 }

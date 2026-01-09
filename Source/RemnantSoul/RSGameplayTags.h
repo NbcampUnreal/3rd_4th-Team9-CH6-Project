@@ -143,6 +143,12 @@ public:
 	FGameplayTag Input_Skill_Secondary;  // "Input.Skill.Secondary"
 	FGameplayTag Input_Dodge;            // "Input.Dodge"
 	FGameplayTag Input_Block;            // "Input.Block"
+	
+	//Puzzle
+	FGameplayTag Puzzle_Runes_PillarA;
+	FGameplayTag Puzzle_Runes_PillarA_Top;
+	FGameplayTag Puzzle_Runes_PillarA_Mid;
+	FGameplayTag Puzzle_Runes_PillarA_Bot;
 
 private:
 	FRSGameplayTags() = default;
