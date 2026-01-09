@@ -49,5 +49,17 @@ private:
 	);
 
 	void HandleWidgetSpawn(AActor* TargetActor);
+
+	//오버랩 시 플레이어 캐릭터를 이동시키기 위한 파트로 기간 내 적당한 개발을 진행하기 버거워 임시 조치임.
+	//가장 베스트인 점은 Ability를 하나 추가해 이벤트 태그를 보내고 그 이벤트 태그를 받을 시 컷신 실행 및 보스룸 이동을 담당하는 편임.
+	//하지만 Ability를 추가 개발할 시간적 여유가 부족해 대안으로 오버랩 액터에서 직접 캐릭터를 이동시키는 대안책으로 진행.
+	//오버랩 시 컷신이 실행되고 보스룸 내부로 이동된 직후 이 액터는 Destroy 되므로 플레이어 무브먼트를 일시 중지 할 수 없음.
+	UPROPERTY(EditAnywhere, Category = "BossRoom")
+	bool bTeleportPlayer = true;
+
+	UPROPERTY(EditAnywhere, Category = "BossRoom", meta = (EditCondition="bTeleportPlayer"))
+	FTransform BossRoomTransform;
 	
+	void TeleportActorToBossRoom(AActor* TargetActor);
+
 };

@@ -1,11 +1,12 @@
 # RemnantSoul Project
 
+프로젝트 제작 기간 : 2025.12.12(금) ~ 2025.1.9(금)
 
 ## 프로젝트 소개
 
 <img width="1536" height="1024" alt="Image" src="https://github.com/user-attachments/assets/9a9353d1-eba7-4360-873c-2cc86b2464b7" />
 
-RemnantSoul은 소울라이크 기반의 액션 RPG로 실시간 전투, 캐릭터 성장, GAS 기반 다양한 스킬 사용을 경험할 수 있는 게임입니다.
+RemnantSoul은 소울라이크 기반의 액션 RPG로 실시간 전투, GAS 기반 스킬 사용을 경험할 수 있는 게임입니다.
 
 
 ---
@@ -59,7 +60,7 @@ RemnantSoul은 소울라이크 기반의 액션 RPG로 실시간 전투, 캐릭�
 - [AI의 공격 히트 시 AttributeSet 수치 조정이 발생하지 않는 문제](https://www.notion.so/teamsparta/AI-AttributeSet-2d92dc3ef51480aeaf8de7ea634ced43?source=copy_link)
 - [프레임워크 트러블 슈팅 사례](https://www.notion.so/teamsparta/Real-Problems-Solved-2d92dc3ef5148061be83f569cbb37da2?source=copy_link)
 - [기초 입력 베이스 어빌리티의 트러블슈팅](https://www.notion.so/teamsparta/2da2dc3ef51480e9a8d9d05b851e4f1e?source=copy_link)
-- [Dlss 기능 구현 오류 문제](https://www.notion.so/teamsparta/dlss-2da2dc3ef51480f18310ced88be04968?source=copy_link)
+- [DlSS 기능 구현 오류 문제](https://www.notion.so/teamsparta/dlss-2da2dc3ef51480f18310ced88be04968?source=copy_link)
 
 ## 관련 링크
 
@@ -71,7 +72,7 @@ RemnantSoul은 소울라이크 기반의 액션 RPG로 실시간 전투, 캐릭�
 |------|----------------------------------------------|
 | 김기인  | 기믹 + 레벨디자인 + 인벤토리                            |
 | 이대풍  | OutGameUI 총괄                                 |
-| 이상현  | Git 관리 + InGameUI + 인게임 컷신                   |
+| 이상현  | Git 관리 + InGameUI 일부 위젯 + 인게임 컷신 제작 + QA     |
 | 전현준  | InGameUI 총괄                                  |
 | 정영기  | 캐릭터 총괄                                       |
 | 홍사빈  | NPC(AI) + 레벨디자인(보조) + 팀 노션 관리 + 프로젝트 매니저(PM) |

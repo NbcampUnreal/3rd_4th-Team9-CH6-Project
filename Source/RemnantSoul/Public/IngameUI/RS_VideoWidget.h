@@ -1,15 +1,19 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Animation/WidgetAnimation.h"
+#include "Animation/WidgetAnimationState.h"
 #include "RS_VideoWidget.generated.h"
 
 class UMediaPlayer;
 class UMediaSource;
 class UWidgetAnimation;
 class UUMGSequencePlayer;
+class USoundBase;
+class UAudioComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnVideoWidgetFinished);
 
@@ -35,11 +39,29 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Video")
 	UMediaSource* DefaultMediaSource;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	USoundBase* VideoSound = nullptr;
+
+	UPROPERTY(Transient)
+	UAudioComponent* AudioComponent = nullptr;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* FadeOutAnim = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Fade")
+	float FadeOutDuration = 1.0f;
 
 	bool bIsPlaying = false;
 	bool bIsFadingOut = false;
 
 	UFUNCTION()
 	void OnMediaEndReached();
-	
+
+	void StartFadeOut();
+
+	UFUNCTION()
+	void HandleFadeOutFinished();
+
+	FTimerHandle FadeOutTimer;
+
 };
