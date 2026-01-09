@@ -35,6 +35,15 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.Ability_Crouch, "Ability.Crouch", "Crouch Activate ability");
 	AddTag(Manager, GameplayTags.Ability_Roll, "Ability.Roll", "Roll Activate ability");
 	AddTag(Manager, GameplayTags.Ability_Interact, "Ability.Interact", "Interact ability");
+	// Ability.Skill.*
+	AddTag(Manager, GameplayTags.Ability_Skill_Projectile, "Ability.Skill.Projectile", "Skill ability: Projectile");
+	AddTag(Manager, GameplayTags.Ability_Skill_Meteor, "Ability.Skill.Meteor", "Skill ability: Meteor");
+	AddTag(Manager, GameplayTags.Ability_Skill_Obstacle, "Ability.Skill.Obstacle", "Skill ability: Obstacle");
+
+	// Ability.Attack.*
+	AddTag(Manager, GameplayTags.Ability_Attack_Combo, "Ability.Attack.Combo", "Attack ability: Sword combo");
+	AddTag(Manager, GameplayTags.Ability_Attack_Slash_Combo, "Ability.Attack.Slash.Combo", "Attack ability: Sword slash combo");
+	AddTag(Manager, GameplayTags.Ability_Attack_ThrustCharge, "Ability.Attack.ThrustCharge", "Attack ability: Sword thrust charge");
 
 	// State
 	AddTag(Manager, GameplayTags.State_Activated_SteamParticle, "State.Activated.SteamParticle", "Steam particle state");
@@ -90,6 +99,15 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.InputTag_Ability_Roll, "InputTag.Ability.Roll", "Ability input: Roll");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Interact, "InputTag.Ability.Interact", "Ability input: interaction ");
 
+	// InputTag.Ability.Skill.*
+	AddTag(Manager, GameplayTags.InputTag_Ability_Skill_Projectile, "InputTag.Ability.Skill.Projectile", "Input tag: Skill Projectile");
+	AddTag(Manager, GameplayTags.InputTag_Ability_Skill_Meteor, "InputTag.Ability.Skill.Meteor", "Input tag: Skill Meteor");
+	AddTag(Manager, GameplayTags.InputTag_Ability_Skill_Obstacle, "InputTag.Ability.Skill.Obstacle", "Input tag: Skill Obstacle");
+
+	// InputTag.Ability.Attack.*
+	AddTag(Manager, GameplayTags.InputTag_Ability_Attack_Combo, "InputTag.Ability.Attack.Combo", "Input tag: Attack Combo");
+	AddTag(Manager, GameplayTags.InputTag_Ability_Attack_Slash, "InputTag.Ability.Attack.Slash", "Input tag: Attack Slash");
+	AddTag(Manager, GameplayTags.InputTag_Ability_Attack_ThrustCharge, "InputTag.Ability.Attack.ThrustCharge", "Input tag: Attack Thrust Charge");
 
 	// Slot.*
 	AddTag(Manager, GameplayTags.Slot_Weapon_Main, "Slot.Weapon.Main", "Equipment slot: Main weapon");
@@ -129,4 +147,27 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager,GameplayTags.Puzzle_Runes_PillarA_Top, "Puzzle.Runes.PillarA.Top","Puzzle: Runes PillarA Top");
 	AddTag(Manager,GameplayTags.Puzzle_Runes_PillarA_Mid, "Puzzle.Runes.PillarA.Mid","Puzzle: Runes PillarA Mid");
 	AddTag(Manager,GameplayTags.Puzzle_Runes_PillarA_Bot, "Puzzle.Runes.PillarA.Bot","Puzzle: Runes PillarA Bot");
+
+
+
+	// =========================================================
+	// GameplayCue.SFX.* (Sound Effects)
+	// =========================================================
+	// 
+	// GameplayCue.SFX.Skill.*
+	AddTag(Manager, GameplayTags.GameplayCue_SFX_Skill_Projectile_Fire, "GameplayCue.SFX.Skill.Projectile.Fire", "SFX: Skill projectile fire");
+	AddTag(Manager, GameplayTags.GameplayCue_SFX_Skill_Projectile_Impact, "GameplayCue.SFX.Skill.Projectile.Impact", "SFX: Skill projectile impact");
+	AddTag(Manager, GameplayTags.GameplayCue_SFX_Skill_Meteor_Launch, "GameplayCue.SFX.Skill.Meteor.Launch", "SFX: Meteor launch");
+	AddTag(Manager, GameplayTags.GameplayCue_SFX_Skill_Meteor_Impact, "GameplayCue.SFX.Skill.Meteor.Impact", "SFX: Meteor impact");
+	AddTag(Manager, GameplayTags.GameplayCue_SFX_Skill_Obstacle_Spawn, "GameplayCue.SFX.Skill.Obstacle.Spawn", "SFX: Obstacle spawn");
+
+	// GameplayCue.SFX.Attack.*
+	AddTag(Manager, GameplayTags.GameplayCue_SFX_Attack_Swing, "GameplayCue.SFX.Attack.Swing", "SFX: Attack swing");
+	AddTag(Manager, GameplayTags.GameplayCue_SFX_Attack_Punch, "GameplayCue.SFX.Attack.Punch", "SFX: Punch attack");
+	AddTag(Manager, GameplayTags.GameplayCue_SFX_Attack_Impact, "GameplayCue.SFX.Attack.Impact", "SFX: Attack impact");
+	AddTag(Manager, GameplayTags.GameplayCue_SFX_Attack_Charge_Loop, "GameplayCue.SFX.Attack.Charge.Loop", "SFX: Attack charge loop");
+	AddTag(Manager, GameplayTags.GameplayCue_SFX_Attack_Thrust_Release, "GameplayCue.SFX.Attack.Thrust.Release", "SFX: Thrust release");
+
+
+
 }
