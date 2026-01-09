@@ -1,10 +1,13 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "IngameUI/RS_VideoWidget.h"
-#include "Animation/UMGSequencePlayer.h"
 #include "MediaPlayer.h"
 #include "MediaSource.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundBase.h"
+#include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
 void URS_VideoWidget::NativeConstruct()
 {
@@ -18,12 +21,28 @@ void URS_VideoWidget::NativeConstruct()
 			this,
 			&URS_VideoWidget::OnMediaEndReached
 		);
+	}
 
-		// 생성 직후 자동 재생 (컷신용)
-		if (DefaultMediaSource)
+	if (!AudioComponent)
+	{
+		AudioComponent = NewObject<UAudioComponent>(this);
+
+		if (AudioComponent)
 		{
-			PlayVideo(DefaultMediaSource);
+			AudioComponent->bAutoActivate = false;
+			AudioComponent->bAutoDestroy = false;
+
+			if (UWorld* World = GetWorld())
+			{
+				AudioComponent->RegisterComponentWithWorld(World);
+			}
+			// World가 없어도 생성은 유지됨 (Play 시점에 다시 등록 가능)
 		}
+	}
+
+	if (DefaultMediaSource)
+	{
+		PlayVideo(DefaultMediaSource);
 	}
 }
 
@@ -34,9 +53,17 @@ void URS_VideoWidget::NativeDestruct()
 		MediaPlayer->OnEndReached.RemoveAll(this);
 		MediaPlayer->Close();
 	}
+	
+	if (AudioComponent)
+	{
+		AudioComponent->Stop();
+		AudioComponent->DestroyComponent();
+		AudioComponent = nullptr;
+	}
 
 	Super::NativeDestruct();
 }
+
 
 void URS_VideoWidget::PlayVideo(UMediaSource* InMediaSource)
 {
@@ -44,13 +71,7 @@ void URS_VideoWidget::PlayVideo(UMediaSource* InMediaSource)
 	{
 		return;
 	}
-	
-	if (bIsPlaying)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[VideoWidget] Already playing"));
-		return;
-	}
-	
+
 	bIsPlaying = true;
 	bIsFadingOut = false;
 
@@ -58,22 +79,78 @@ void URS_VideoWidget::PlayVideo(UMediaSource* InMediaSource)
 
 	MediaPlayer->OpenSource(InMediaSource);
 	MediaPlayer->Play();
+
+	if (VideoSound && AudioComponent)
+	{
+		if (!AudioComponent->IsRegistered())
+		{
+			if (UWorld* World = GetWorld())
+			{
+				AudioComponent->RegisterComponentWithWorld(World);
+			}
+		}
+
+		AudioComponent->SetSound(VideoSound);
+		AudioComponent->Play();
+	}
 }
 
 void URS_VideoWidget::OnMediaEndReached()
 {
-
-	if (!bIsPlaying)
+	if (!bIsPlaying || bIsFadingOut)
 	{
 		return;
 	}
-	
+
+	StartFadeOut();
+}
+
+void URS_VideoWidget::StartFadeOut()
+{
+	if (bIsFadingOut)
+	{
+		return;
+	}
+
+	bIsFadingOut = true;
 	bIsPlaying = false;
 
-	// 위젯 종료 이벤트 브로드캐스트
-	OnVideoWidgetFinished.Broadcast();
+	/* 오디오 페이드 */
+	if (AudioComponent && AudioComponent->IsPlaying())
+	{
+		AudioComponent->FadeOut(FadeOutDuration, 0.f);
+	}
 
-	// 위젯 제거
-	RemoveFromParent();
+	/* 비주얼 페이드 */
+	if (FadeOutAnim)
+	{
+		PlayAnimation(FadeOutAnim);
 
+		const float FadeOutLength = FadeOutAnim->GetEndTime();
+
+		GetWorld()->GetTimerManager().SetTimer(
+			FadeOutTimer,
+			this,
+			&URS_VideoWidget::HandleFadeOutFinished,
+			FadeOutLength,
+			false
+		);
+
+		return;
+	}
+
+	/* 애니메이션 없으면 즉시 종료 */
+	HandleFadeOutFinished();
 }
+
+void URS_VideoWidget::HandleFadeOutFinished()
+{
+	if (MediaPlayer)
+	{
+		MediaPlayer->Close();
+	}
+
+	OnVideoWidgetFinished.Broadcast();
+	RemoveFromParent();
+}
+

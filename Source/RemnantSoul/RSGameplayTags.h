@@ -295,13 +295,22 @@ public:
 	FGameplayTag Status_Crouch;
 	FGameplayTag Status_Roll;
 
-	// Input.*
-	FGameplayTag Input_Attack_Light;
-	FGameplayTag Input_Attack_Heavy;
-	FGameplayTag Input_Skill_Primary;
-	FGameplayTag Input_Skill_Secondary;
-	FGameplayTag Input_Dodge;
-	FGameplayTag Input_Block;
+	// =========================================================
+	// Input.* (EnhancedInput → AbilityTag 매핑 키)
+	// =========================================================
+	FGameplayTag Input_Attack_Light;     // "Input.Attack.Light"
+	FGameplayTag Input_Attack_Heavy;     // "Input.Attack.Heavy"
+	FGameplayTag Input_Skill_Primary;    // "Input.Skill.Primary"
+	FGameplayTag Input_Skill_Secondary;  // "Input.Skill.Secondary"
+	FGameplayTag Input_Dodge;            // "Input.Dodge"
+	FGameplayTag Input_Block;            // "Input.Block"
+	
+	//Puzzle
+	FGameplayTag Puzzle_Runes_PillarA;
+	FGameplayTag Puzzle_Runes_PillarA_Top;
+	FGameplayTag Puzzle_Runes_PillarA_Mid;
+	FGameplayTag Puzzle_Runes_PillarA_Bot;
+
 
 private:
 	FRSGameplayTags() = default;
