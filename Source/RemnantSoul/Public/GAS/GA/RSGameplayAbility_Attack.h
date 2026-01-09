@@ -6,6 +6,8 @@
 #include "Abilities/GameplayAbility.h"
 #include "RSGameplayAbility_Attack.generated.h"
 
+class UGameplayEffect;
+
 UCLASS()
 class REMNANTSOUL_API URSGameplayAbility_Attack : public UGameplayAbility
 {
@@ -48,4 +50,13 @@ protected:
 
 	void ApplyMontagePlayRate(UAnimMontage* Montage, float PlayRate);
 #pragma endregion
+
+#pragma region StaminaCost
+	UPROPERTY(EditDefaultsOnly, Category = "RS|Cost")
+	TSubclassOf<UGameplayEffect> StaminaCostEffectClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "RS|Cost")
+	float StaminaCost = 15.0f;
+#pragma endregion
+
 };

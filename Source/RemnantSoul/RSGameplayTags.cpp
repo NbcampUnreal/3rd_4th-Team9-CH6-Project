@@ -47,6 +47,7 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 
 	// Data
 	AddTag(Manager, GameplayTags.Data_Damage, "Data.Damage", "SetByCaller / Damage meta value");
+	AddTag(Manager, GameplayTags.Data_StaminaCost, "Data.StaminaCost", "SetByCaller / Stamina cost");
 
 	// Damage.* (데미지 의미/종류)
 	AddTag(Manager, GameplayTags.Damage_Type_Light, "Damage.Type.Light", "Damage type: Light attack");

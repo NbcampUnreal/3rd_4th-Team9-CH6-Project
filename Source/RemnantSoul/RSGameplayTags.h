@@ -231,6 +231,7 @@ public:
 
 	// Data
 	FGameplayTag Data_Damage;
+	FGameplayTag Data_StaminaCost;
 
 	// Damage.*
 	FGameplayTag Damage_Type_Light;

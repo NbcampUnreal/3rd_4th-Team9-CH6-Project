@@ -6,6 +6,7 @@
 
 class ACharacter;
 class UCharacterMovementComponent;
+class UGameplayEffect;
 
 UCLASS()
 class REMNANTSOUL_API URSGameplayAbility_Sprint : public UGameplayAbility
@@ -60,4 +61,17 @@ private:
 	// 정책: 고정값 사용 여부
 	UPROPERTY(EditDefaultsOnly, Category = "RS|Sprint")
 	bool bUseFixedSprintSpeed = true;
+
+#pragma region StaminaCost
+	UPROPERTY(EditDefaultsOnly, Category = "RS|Cost")
+	TSubclassOf<UGameplayEffect> SprintStaminaTickEffectClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "RS|Cost")
+	float SprintDrainInterval = 0.15f;
+
+	FTimerHandle TimerHandle_SprintDrain;
+
+	void TickSprintDrain();
+#pragma endregion
+
 };

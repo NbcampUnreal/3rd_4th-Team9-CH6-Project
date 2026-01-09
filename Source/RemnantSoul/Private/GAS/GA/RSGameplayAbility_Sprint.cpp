@@ -52,6 +52,17 @@ void URSGameplayAbility_Sprint::ActivateAbility(
 
 	CachedWalkSpeed = MoveComp->MaxWalkSpeed;
 	ApplySprintSpeed(MoveComp);
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(TimerHandle_SprintDrain);
+		World->GetTimerManager().SetTimer(
+			TimerHandle_SprintDrain,
+			this,
+			&ThisClass::TickSprintDrain,
+			SprintDrainInterval,
+			true);
+	}
 }
 
 void URSGameplayAbility_Sprint::InputReleased(
@@ -79,6 +90,11 @@ void URSGameplayAbility_Sprint::EndAbility(
 	CachedWalkSpeed = 0.f;
 
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(TimerHandle_SprintDrain);
+	}
 }
 
 bool URSGameplayAbility_Sprint::CanSprintNow() const
@@ -147,4 +163,15 @@ void URSGameplayAbility_Sprint::RestoreWalkSpeed(UCharacterMovementComponent* Mo
 	{
 		MoveComp->MaxWalkSpeed = CachedWalkSpeed;
 	}
+}
+
+void URSGameplayAbility_Sprint::TickSprintDrain()
+{
+	if (!SprintStaminaTickEffectClass)
+	{
+		return;
+	}
+
+	const UGameplayEffect* GE = SprintStaminaTickEffectClass->GetDefaultObject<UGameplayEffect>();
+	ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GE, 1);
 }

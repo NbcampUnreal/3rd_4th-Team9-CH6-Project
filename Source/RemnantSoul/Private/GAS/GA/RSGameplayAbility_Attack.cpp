@@ -37,6 +37,12 @@ void URSGameplayAbility_Attack::ActivateAbility(
 		return;
 	}
 
+	if (StaminaCostEffectClass)
+	{
+		const UGameplayEffect* GE = StaminaCostEffectClass->GetDefaultObject<UGameplayEffect>();
+		ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, GE, 1);
+	}
+
 	if (UCharacterMovementComponent* MoveComp = AvatarCharacter->GetCharacterMovement())
 	{
 		MoveComp->SetMovementMode(EMovementMode::MOVE_None);
