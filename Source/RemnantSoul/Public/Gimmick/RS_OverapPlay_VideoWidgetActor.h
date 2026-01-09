@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -9,6 +9,7 @@
 
 class UBoxComponent;
 class UUserWidget;
+class URS_VideoWidget;
 
 UCLASS()
 class REMNANTSOUL_API ARS_OverapPlay_VideoWidgetActor : public AActor
@@ -61,5 +62,12 @@ private:
 	FTransform BossRoomTransform;
 	
 	void TeleportActorToBossRoom(AActor* TargetActor);
+
+	// 컷신 위젯 쪽 영상 종료를 콜백하는 함수
+	UFUNCTION()
+	void OnVideoWidgetFinishedCallback();
+
+	UPROPERTY()
+	AActor* CachedTargetActor = nullptr;
 
 };
