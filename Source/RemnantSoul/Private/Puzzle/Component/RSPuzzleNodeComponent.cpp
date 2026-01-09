@@ -8,6 +8,16 @@ void URSPuzzleNodeComponent::AdvanceStateAndSubmit(AActor* InstigatorActor)
 		return;
 	}
 
+	if (UWorld* World = GetWorld())
+	{
+		if (URSPuzzleManagerSubsystem* Manager = World->GetSubsystem<URSPuzzleManagerSubsystem>())
+		{
+			if (Manager->IsPuzzleActive(PuzzleTag))
+			{
+				LocalState = Manager->GetNodeState(PuzzleTag, NodeTag, LocalState);
+			}
+		}
+	}
 	LocalState = (LocalState + 1) % MaxState;
 	Submit(InstigatorActor);
 }

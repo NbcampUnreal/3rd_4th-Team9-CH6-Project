@@ -27,10 +27,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	int32 GetLocalState() const { return LocalState; }
-
-private:
+	
 	UPROPERTY(VisibleAnywhere)
 	int32 LocalState = 0;
+
+private:
+	
 
 	void Submit(AActor* InstigatorActor);
 };

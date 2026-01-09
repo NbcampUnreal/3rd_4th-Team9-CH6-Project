@@ -25,12 +25,10 @@ APP_LightZone::APP_LightZone()
 	PostProcess = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcess"));
 	PostProcess->SetupAttachment(RootComponent);
 
-	// "존 안에서만" 켜고 끌 거라서, 전역(Unbound) + BlendWeight 제어가 제일 안정적
 	PostProcess->bUnbound = true;
 	PostProcess->BlendWeight = 0.0f;
 	CurrentPPBlend = 0.0f;
 
-	// 오버랩 바인딩
 	Trigger->OnComponentBeginOverlap.AddDynamic(this, &APP_LightZone::OnTriggerBeginOverlap);
 	Trigger->OnComponentEndOverlap.AddDynamic(this, &APP_LightZone::OnTriggerEndOverlap);
 }
@@ -73,7 +71,6 @@ bool APP_LightZone::IsPlayerActor(const AActor* Actor) const
 	APawn* Pawn = Cast<APawn>(const_cast<AActor*>(Actor));
 	if (!Pawn) return false;
 
-	// 로컬/싱글 기준: 플레이어 0의 Pawn인지 확인
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
 	return (Pawn == PlayerPawn);
 }
@@ -117,7 +114,6 @@ void APP_LightZone::ApplyLight(float DeltaSeconds)
 
 	if (bToggleVisibility)
 	{
-		// 완전히 0 근처면 시각적으로/성능적으로 아예 꺼버림
 		const bool bShouldBeVisible = (CurrentLightIntensity > 0.05f);
 		LightComp->SetVisibility(bShouldBeVisible);
 	}
