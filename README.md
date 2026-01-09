@@ -1,11 +1,12 @@
 # RemnantSoul Project
 
+프로젝트 제작 기간 : 2025.12.12(금) ~ 2025.1.9(금)
 
 ## 프로젝트 소개
 
 <img width="1536" height="1024" alt="Image" src="https://github.com/user-attachments/assets/9a9353d1-eba7-4360-873c-2cc86b2464b7" />
 
-RemnantSoul은 소울라이크 기반의 액션 RPG로 실시간 전투, 캐릭터 성장, GAS 기반 다양한 스킬 사용을 경험할 수 있는 게임입니다.
+RemnantSoul은 소울라이크 기반의 액션 RPG로 실시간 전투, GAS 기반 스킬 사용을 경험할 수 있는 게임입니다.
 
 
 ---
