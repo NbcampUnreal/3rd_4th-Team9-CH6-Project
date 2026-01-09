@@ -1,9 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Gimmick/RS_OverapPlay_VideoWidgetActor.h"
 #include "Components/BoxComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "IngameUI/RS_VideoWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -48,11 +49,7 @@ void ARS_OverapPlay_VideoWidgetActor::OnOverlapBegin(
 
 	HandleWidgetSpawn(OtherActor);
 
-	if (bOneShot)
-	{
-		bTriggered = true;
-		Destroy();
-	}
+
 }
 
 void ARS_OverapPlay_VideoWidgetActor::HandleWidgetSpawn(AActor* TargetActor)
@@ -74,16 +71,25 @@ void ARS_OverapPlay_VideoWidgetActor::HandleWidgetSpawn(AActor* TargetActor)
 	{
 		return;
 	}
+	//타 비디오 위젯에 재사용 가능한 버전이나 당장 구현에 알맞지 않음.
+	//UUserWidget* Widget = CreateWidget<UUserWidget>(PC, WidgetClass);
 
-	UUserWidget* Widget = CreateWidget<UUserWidget>(PC, WidgetClass);
-	if (!Widget)
+	URS_VideoWidget* VideoWidget = CreateWidget<URS_VideoWidget>(PC, WidgetClass);
+	if (!VideoWidget)
 	{
 		return;
 	}
 
-	Widget->AddToViewport(ZOrder);
+	if (!VideoWidget)
+	{
+		return;
+	}
 
-	TeleportActorToBossRoom(TargetActor);
+	CachedTargetActor = TargetActor;
+
+	VideoWidget->OnVideoWidgetFinished.AddDynamic(this,&ARS_OverapPlay_VideoWidgetActor::OnVideoWidgetFinishedCallback);
+
+	VideoWidget->AddToViewport(ZOrder);
 
 	UE_LOG(LogTemp, Log, TEXT("[OverlapUI] Widget spawned and added to viewport"));
 
@@ -139,4 +145,13 @@ void ARS_OverapPlay_VideoWidgetActor::TeleportActorToBossRoom(AActor* TargetActo
 	MoveComp->SetMovementMode(MOVE_Walking);
 
 	Destroy();
+}
+
+void ARS_OverapPlay_VideoWidgetActor::OnVideoWidgetFinishedCallback()
+{
+	if (CachedTargetActor)
+	{
+		TeleportActorToBossRoom(CachedTargetActor);
+		CachedTargetActor = nullptr;
+	}
 }
