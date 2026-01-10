@@ -3,8 +3,10 @@
 
 #include "GAS/GA/RSGameplayAbility_Attack_Staff.h"
 #include "RemnantSoul.h"
+#include "RSGameplayTags.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Character/RSCharacter.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 
@@ -34,6 +36,8 @@ void URSGameplayAbility_Attack_Staff::ActivateAbility(
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
+
+	CachedAttackMontage = AttackMontage;
 
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
@@ -76,6 +80,8 @@ void URSGameplayAbility_Attack_Staff::ActivateAbility(
 	PlayAttackTask->OnCompleted.AddDynamic(this, &ThisClass::OnCompleted);
 	PlayAttackTask->OnInterrupted.AddDynamic(this, &ThisClass::OnCanceled);
 	PlayAttackTask->ReadyForActivation();
+
+	SendCheckHitEvent(1);
 
 	StartComboTimer();
 }
@@ -143,11 +149,15 @@ void URSGameplayAbility_Attack_Staff::StartComboTimer()
 
 	const float SectionLength = CachedAttackMontage->GetSectionLength(SectionIndex);
 
-	// 콤보 입력을 받는 시점(윈도우)을 섹션 길이에 비례하게 설정
-	// 너무 길거나 짧지 않게 클램프
-	const float ComboWindowTime = FMath::Clamp(SectionLength * 0.65f, 0.12f, 0.55f);
+	// 현재 콤보의 재생 속도 반영
+	const float CurrentRate = GetPlayRateForCombo(CurrentCombo);
+	const float EffectiveLength = (CurrentRate > 0.f) ? (SectionLength / CurrentRate) : SectionLength;
 
-	GetWorld()->GetTimerManager().SetTimer(ComboTimerHandle, this, &ThisClass::CheckComboInput, ComboWindowTime, false);
+	// 콤보 입력 윈도우: 섹션 체감 길이에 비례
+	const float ComboWindowTime = FMath::Clamp(EffectiveLength * 0.65f, 0.12f, 0.55f);
+
+	GetWorld()->GetTimerManager().SetTimer(
+		ComboTimerHandle, this, &ThisClass::CheckComboInput, ComboWindowTime, false);
 }
 
 
@@ -176,7 +186,7 @@ void URSGameplayAbility_Attack_Staff::CheckComboInput()
 		return;
 	}
 
-	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackSlashComboMontage();
+	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackStaffMontage();
 	if (!IsValid(AttackMontage))
 	{
 		return;
@@ -226,9 +236,9 @@ float URSGameplayAbility_Attack_Staff::GetPlayRateForCombo(uint8 Combo) const
 {
 	switch (Combo)
 	{
-	case 1: return 1.10f;
-	case 2: return 1.40f;
-	case 3: return 1.55f;
+	case 1: return 0.85f;
+	case 2: return 0.95f;
+	case 3: return 1.05f;
 	default: return 1.0f;
 	}
 }
@@ -249,4 +259,21 @@ void URSGameplayAbility_Attack_Staff::ApplyMontagePlayRate(UAnimMontage* Montage
 	if (!AnimInst) return;
 
 	AnimInst->Montage_SetPlayRate(Montage, PlayRate);
+}
+
+void URSGameplayAbility_Attack_Staff::SendCheckHitEvent(int32 ComboIndex) const
+{
+	AActor* Avatar = GetAvatarActorFromActorInfo();
+	if (!IsValid(Avatar))
+	{
+		return;
+	}
+
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+
+	FGameplayEventData Data;
+	Data.EventTag = Tags.Event_Attack_CheckHit;   // 여기만 변경
+	Data.EventMagnitude = (float)ComboIndex;
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Avatar, Data.EventTag, Data);
 }

@@ -30,6 +30,9 @@ protected:
 
 	void CheckComboInput();
 
+	void SendCheckHitEvent(int32 ComboIndex) const;
+
+
 public:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
