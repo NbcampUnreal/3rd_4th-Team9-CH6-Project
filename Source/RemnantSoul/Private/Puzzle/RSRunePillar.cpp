@@ -88,18 +88,12 @@ void ARSRunePillar::Interact_Implementation(AActor* Interactor)
 
 	if (!bSolved && IsSolved())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[RunePillar] SOLVED! T/M/B=%d/%d/%d Target=%d/%d/%d"),
-			TopState, MidState, BotState, TargetTop, TargetMid, TargetBot);
-
+		
 		bSolved = true;
 		BP_OnSolved(Interactor);
 		OpenFogWall();
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[RunePillar] NotSolved. T/M/B=%d/%d/%d Target=%d/%d/%d bSolved=%d"),
-			TopState, MidState, BotState, TargetTop, TargetMid, TargetBot, bSolved?1:0);
-	}
+	
 }
 
 void ARSRunePillar::OnFocusBegin_Implementation(AActor* Interactor)
