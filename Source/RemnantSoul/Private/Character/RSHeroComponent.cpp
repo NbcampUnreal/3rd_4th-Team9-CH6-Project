@@ -432,18 +432,6 @@ void URSHeroComponent::DebugDumpInputState(const URSInputConfig* InputConfig, co
 		OverlayBindHandles.Num());
 }
 
-void URSHeroComponent::Input_Interaction(const FInputActionValue& Value)
-{
-	ARSCharacter* Char = GetOwnerCharacter();
-	if (!Char) return;
-
-	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Char);
-	if (!ASC) return;
-
-	FGameplayTagContainer Tags;
-	Tags.AddTag(FRSGameplayTags::Get().Ability_Interact); // Ability.Interact
-	ASC->TryActivateAbilitiesByTag(Tags, /*bAllowRemoteActivation*/ true);
-}
 
 void URSHeroComponent::Input_QuickSlotCycle(const FInputActionValue& Value)
 {

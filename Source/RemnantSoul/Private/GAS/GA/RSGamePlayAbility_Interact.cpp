@@ -12,6 +12,11 @@
 
 URSGamePlayAbility_Interact::URSGamePlayAbility_Interact()
 {
+	UE_LOG(LogTemp, Warning, TEXT("[Input] OnInteract frame=%llu time=%.3f this=%s"),
+	(unsigned long long)GFrameCounter,
+	GetWorld() ? GetWorld()->GetTimeSeconds() : -1.f,
+	*GetPathName());
+	
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;

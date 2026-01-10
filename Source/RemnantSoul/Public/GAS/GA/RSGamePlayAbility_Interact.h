@@ -30,6 +30,9 @@ private:
 		const FGameplayAbilityActorInfo* ActorInfo,
 		FHitResult& OutHit
 	) const;
+	
+	bool bInteractAbilityGiven = false;
+
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Interact|Trace", meta=(ClampMin="50.0"))
