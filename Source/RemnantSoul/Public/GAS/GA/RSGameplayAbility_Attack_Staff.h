@@ -47,6 +47,8 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<UAnimMontage> CachedAttackMontage = nullptr;
 
+	bool bComboInputConsumedThisSection = false;
+
 #pragma region ComboSpeed
 	float GetPlayRateForCombo(uint8 Combo) const;
 	FName GetSectionNameForCombo(uint8 Combo) const;

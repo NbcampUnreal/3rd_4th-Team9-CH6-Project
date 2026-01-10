@@ -81,6 +81,8 @@ void URSGameplayAbility_Attack_Slash::ActivateAbility(
 	PlayAttackTask->OnInterrupted.AddDynamic(this, &ThisClass::OnCanceled);
 	PlayAttackTask->ReadyForActivation();
 
+	IsNextComboInputPressed = false;
+
 	SendCheckHitEvent(1);
 
 	StartComboTimer();
@@ -154,7 +156,7 @@ void URSGameplayAbility_Attack_Slash::StartComboTimer()
 	const float EffectiveLength = (CurrentRate > 0.f) ? (SectionLength / CurrentRate) : SectionLength;
 
 	// 콤보 입력 윈도우: 섹션 체감 길이에 비례
-	const float ComboWindowTime = FMath::Clamp(EffectiveLength * 0.65f, 0.12f, 0.55f);
+	const float ComboWindowTime = FMath::Clamp(EffectiveLength * 0.90f, 0.20f, 1.10f);
 
 	GetWorld()->GetTimerManager().SetTimer(
 		ComboTimerHandle, this, &ThisClass::CheckComboInput, ComboWindowTime, false);
@@ -200,6 +202,8 @@ void URSGameplayAbility_Attack_Slash::CheckComboInput()
 
 	// 점프 후 PlayRate 갱신 (이게 핵심)
 	ApplyMontagePlayRate(AttackMontage, NextRate);
+
+	SendCheckHitEvent(CurrentCombo);
 
 	// 다음 입력 타이머
 	StartComboTimer();
