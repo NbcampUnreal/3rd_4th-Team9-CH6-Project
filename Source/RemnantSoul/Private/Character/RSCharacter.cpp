@@ -52,6 +52,7 @@
 // HPBar 위젯 로드에 필요한 헤더(프로젝트 환경에 따라 간접 포함이 안 될 수 있어 명시)
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/UserWidget.h"
+#include "GAS/GA/RSGamePlayAbility_Interact.h"
 
 #include "HAL/IConsoleManager.h"
 
@@ -125,6 +126,14 @@ ARSCharacter::ARSCharacter()
 void ARSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	TArray<UActorComponent*> Comps = K2_GetComponentsByClass(URSHeroComponent::StaticClass());
+
+	UE_LOG(LogTemp, Warning, TEXT("[HeroComp] Num=%d"), Comps.Num());
+	for (UActorComponent* C : Comps)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[HeroComp]  - %s"), *GetPathNameSafe(C));
+	}
 
 	if (IsPlayerControlledPawn())
 	{
@@ -179,6 +188,25 @@ void ARSCharacter::BeginPlay()
 		InteractTraceInterval,
 		true
 	);
+	
+	if (ASC)
+	{
+		const FGameplayTag InteractTag = FGameplayTag::RequestGameplayTag(TEXT("InputTag.Ability.Interact"));
+
+		int32 Count = 0;
+		for (const FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
+		{
+			if (Spec.DynamicAbilityTags.HasTagExact(InteractTag))
+			{
+				++Count;
+				UE_LOG(LogTemp, Warning, TEXT("[ASC] InteractTagSpec Handle=%s Class=%s Tags=%s"),
+					*Spec.Handle.ToString(),
+					*GetNameSafe(Spec.Ability),
+					*Spec.DynamicAbilityTags.ToString());
+			}
+		}
+		UE_LOG(LogTemp, Warning, TEXT("[ASC] InteractTag COUNT = %d"), Count);
+	}
 }
 
 void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -198,6 +226,10 @@ void ARSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	UE_LOG(LogTemp, Warning, TEXT("[Char] Calling HeroComp->SetupPIC"));
 	HeroComponent->SetupPlayerInputComponent(PlayerInputComponent);
+	
+	static int32 SetupCount = 0;
+	UE_LOG(LogTemp, Warning, TEXT("[SetupPIC] count=%d frame=%llu this=%s"),
+		++SetupCount, (unsigned long long)GFrameCounter, *GetPathNameSafe(this));
 }
 
 void ARSCharacter::OnOutOfHealth()
@@ -252,7 +284,7 @@ void ARSCharacter::EquipWeapon(const FGameplayEventData* EventData)
 			CurrentAttackDamage + WeaponAttackDamage
 		);
 
-		// 기존 InputID 방식 유지(내 코드 그대로)
+		
 		FGameplayAbilitySpec NewSkillSpec(SkillAbilityClass);
 		NewSkillSpec.InputID = 3;
 
