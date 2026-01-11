@@ -6,6 +6,8 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "Components/PrimitiveComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
 
 #include "Puzzle/RSRunePillarAnimInstance.h"
 
@@ -86,10 +88,14 @@ void ARSRunePillar::Interact_Implementation(AActor* Interactor)
 	AdvanceByBone(HitBone);
 	ApplyAnimRotations();
 
+	PlaySFX(Interactor, RotateSFX, RotateSFXVolume, RotateSFXPitch, bRotateSFX2D);
+
 	if (!bSolved && IsSolved())
 	{
-		
 		bSolved = true;
+
+		PlaySFX(Interactor, SolvedSFX, SolvedSFXVolume, SolvedSFXPitch, bSolvedSFX2D);
+
 		BP_OnSolved(Interactor);
 		OpenFogWall();
 	}
@@ -324,4 +330,38 @@ void ARSRunePillar::OpenFogWall() const
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("[RSRunePillar] FogWall opened: %s"), *GetNameSafe(FogWallActor));
+}
+
+bool ARSRunePillar::ShouldPlayLocalSFX(AActor* Interactor) const
+{
+	// 싱글이면 크게 상관없지만, 추후 네트워크 대비로 "로컬 조작자"만 재생하도록
+	if (const APawn* Pawn = Cast<APawn>(Interactor))
+	{
+		return Pawn->IsLocallyControlled();
+	}
+	if (const AController* C = Cast<AController>(Interactor))
+	{
+		return C->IsLocalController();
+	}
+	return true;
+}
+
+void ARSRunePillar::PlaySFX(AActor* Interactor, USoundBase* Sound, float Volume, float Pitch, bool b2D) const
+{
+	if (!Sound || !Interactor) return;
+
+	UWorld* World = GetWorld();
+	if (!World || World->GetNetMode() == NM_DedicatedServer) return;
+
+	// 로컬에서만 재생 (필요하면 여기 제거하면 주변도 들리게 가능)
+	if (!ShouldPlayLocalSFX(Interactor)) return;
+
+	if (b2D)
+	{
+		UGameplayStatics::PlaySound2D(World, Sound, Volume, Pitch);
+	}
+	else
+	{
+		UGameplayStatics::PlaySoundAtLocation(World, Sound, GetActorLocation(), Volume, Pitch);
+	}
 }
