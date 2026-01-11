@@ -1,8 +1,59 @@
-﻿#pragma once
+﻿//#pragma once
+//
+//#include "CoreMinimal.h"
+//#include "AbilitySystem/Abilities/Projectile/RSGA_Proj_Base.h"
+//#include "RSGA_Proj_Armageddon.generated.h"
+//
+//class AActor;
+//
+//UCLASS()
+//class REMNANTSOUL_API URSGA_Proj_Armageddon : public URSGA_Proj_Base
+//{
+//	GENERATED_BODY()
+//
+//public:
+//	URSGA_Proj_Armageddon();
+//
+//protected:
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Armageddon|Launch")
+//	float InitialSpeed = 1400.f;
+//
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Armageddon|Launch")
+//	float ImpulseStrength = 1500.f;
+//
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Armageddon|Target")
+//	bool bUseTriggerTarget = true;
+//
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Armageddon|Target")
+//	bool bUseHomingIfPossible = false;
+//
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Armageddon|Target")
+//	float HomingAcceleration = 8000.f;
+//
+//protected:
+//	virtual void ActivateAbility(
+//		const FGameplayAbilitySpecHandle Handle,
+//		const FGameplayAbilityActorInfo* ActorInfo,
+//		const FGameplayAbilityActivationInfo ActivationInfo,
+//		const FGameplayEventData* TriggerEventData
+//	) override;
+//
+//private:
+//	bool ExtractTargetLocation(
+//		const FGameplayEventData* TriggerEventData,
+//		FVector& OutTargetLocation,
+//		TWeakObjectPtr<AActor>& OutTargetActor
+//	) const;
+//};
+
+
+#pragma once
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/Projectile/RSGA_Proj_Base.h"
 #include "RSGA_Proj_Armageddon.generated.h"
+
+class UAnimMontage;
 
 UCLASS()
 class REMNANTSOUL_API URSGA_Proj_Armageddon : public URSGA_Proj_Base
@@ -32,6 +83,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Armageddon|Target")
 	float HomingAcceleration = 8000.f;
 
+	// RSCharacter에 설정된 몽타주를 재생할지
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Armageddon|Montage")
+	bool bPlaySkillMontage = true;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Armageddon|Montage")
+	float MontagePlayRate = 1.0f;
+
 protected:
 	virtual void ActivateAbility(
 		const FGameplayAbilitySpecHandle Handle,
@@ -47,4 +105,7 @@ private:
 		FVector& OutTargetLocation,
 		TWeakObjectPtr<AActor>& OutTargetActor
 	) const;
+
+	// (추가) 몽타주 재생만 담당 (기존 로직 영향 없음)
+	void TryPlayProjectileMontage(const FGameplayAbilityActorInfo* ActorInfo) const;
 };

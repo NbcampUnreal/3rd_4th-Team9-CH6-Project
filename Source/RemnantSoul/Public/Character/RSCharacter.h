@@ -95,10 +95,10 @@ public:
 	UAnimMontage* GetAttackThrustChargeMontage() const { return Attack_ThrustChargeMontage; }
 	UAnimMontage* GetAttackThrustReleaseMontage() const { return Attack_ThrustReleaseMontage; }
 
-	UAnimMontage* GetSkillDefaultCastMontage() const { return Skill_DefaultCastMontage; }
-	UAnimMontage* GetSkillProjectileMontage() const { return Skill_ProjectileMontage; }
-	UAnimMontage* GetSkillMeteorMontage() const { return Skill_MeteorMontage; }
-	UAnimMontage* GetSkillObstacleMontage() const { return Skill_ObstacleMontage; }
+	UAnimMontage* GetSkillInstallObstacleMontage() const { return Skill_InstallObstacle_Montage; }
+	UAnimMontage* GetSkillArmageddonMontage() const { return Skill_Armageddon_Montage; }
+	UAnimMontage* GetSkillClusterGrenadeMontage() const { return Skill_ClusterGrenade_Montage; }
+	UAnimMontage* GetSkillMeteorStrikeMontage() const { return Skill_MeteorStrike_Montage; }
 
 
 	void SetHeroData(const URSHeroData* InHeroData);
@@ -243,23 +243,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Attack")
 	TObjectPtr<UAnimMontage> Attack_ThrustReleaseMontage;
 
-	// Ability.Skill.*
-	// 스킬은 보통 "공통 캐스팅(상체)" + "액션(발사/소환)" 2단이 많아서,
-	// 캐스팅은 공통 1개 + 액션은 스킬별 1개를 추천
+	// GA.Install.Obstacle
 	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Skill")
-	TObjectPtr<UAnimMontage> Skill_DefaultCastMontage;
+	TObjectPtr<UAnimMontage> Skill_InstallObstacle_Montage;
 
-	// Ability.Skill.Projectile
+	// GA.Proj.Armageddon
 	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Skill")
-	TObjectPtr<UAnimMontage> Skill_ProjectileMontage;
+	TObjectPtr<UAnimMontage> Skill_Armageddon_Montage;
 
-	// Ability.Skill.Meteor
+	// GA.Proj.ClusterGrenade
 	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Skill")
-	TObjectPtr<UAnimMontage> Skill_MeteorMontage;
+	TObjectPtr<UAnimMontage> Skill_ClusterGrenade_Montage;
 
-	// Ability.Skill.Obstacle
+	// GA.Zone.MeteorStrike
 	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Skill")
-	TObjectPtr<UAnimMontage> Skill_ObstacleMontage;
+	TObjectPtr<UAnimMontage> Skill_MeteorStrike_Montage;
 
 
 	// -------------------------
