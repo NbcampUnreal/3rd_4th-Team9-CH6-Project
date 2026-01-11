@@ -2,8 +2,11 @@
 
 
 #include "GAS/GA/RSGameplayAbility_Attack_Slash.h"
+#include "RemnantSoul.h"
+#include "RSGameplayTags.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Character/RSCharacter.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 
@@ -33,6 +36,8 @@ void URSGameplayAbility_Attack_Slash::ActivateAbility(
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
+
+	CachedAttackMontage = AttackMontage;
 
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
@@ -76,6 +81,10 @@ void URSGameplayAbility_Attack_Slash::ActivateAbility(
 	PlayAttackTask->OnInterrupted.AddDynamic(this, &ThisClass::OnCanceled);
 	PlayAttackTask->ReadyForActivation();
 
+	IsNextComboInputPressed = false;
+
+	SendCheckHitEvent(1);
+
 	StartComboTimer();
 }
 
@@ -97,18 +106,62 @@ FName URSGameplayAbility_Attack_Slash::GetNextAnimMontageSection()
 	return NextSection;
 }
 
+//void URSGameplayAbility_Attack_Slash::StartComboTimer()
+//{
+//	if (ComboTimerHandle.IsValid() == true)
+//	{
+//		ComboTimerHandle.Invalidate();
+//	}
+//
+//	if (CurrentCombo <= 2)
+//	{
+//		GetWorld()->GetTimerManager().SetTimer(ComboTimerHandle, this, &ThisClass::CheckComboInput, 0.7f, false);
+//	}
+//}
+
 void URSGameplayAbility_Attack_Slash::StartComboTimer()
 {
-	if (ComboTimerHandle.IsValid() == true)
+	if (ComboTimerHandle.IsValid())
 	{
+		GetWorld()->GetTimerManager().ClearTimer(ComboTimerHandle);
 		ComboTimerHandle.Invalidate();
 	}
 
-	if (CurrentCombo <= 2)
+	if (CurrentCombo >= 3)
 	{
-		GetWorld()->GetTimerManager().SetTimer(ComboTimerHandle, this, &ThisClass::CheckComboInput, 0.7f, false);
+		return;
 	}
+
+	if (!IsValid(CachedAttackMontage))
+	{
+		// 안전장치: 캐시가 없으면 기존 값으로라도 동작
+		GetWorld()->GetTimerManager().SetTimer(ComboTimerHandle, this, &ThisClass::CheckComboInput, 0.35f, false);
+		return;
+	}
+
+	const FName SectionName = GetSectionNameForCombo(CurrentCombo);
+	const int32 SectionIndex = CachedAttackMontage->GetSectionIndex(SectionName);
+	if (SectionIndex == INDEX_NONE)
+	{
+		// 섹션 이름이 다르면 여기서부터 콤보가 절대 안 된다.
+		UE_LOG(LogRemnantSoul, Error, TEXT("[Slash] Montage section not found: %s"), *SectionName.ToString());
+		GetWorld()->GetTimerManager().SetTimer(ComboTimerHandle, this, &ThisClass::CheckComboInput, 0.35f, false);
+		return;
+	}
+
+	const float SectionLength = CachedAttackMontage->GetSectionLength(SectionIndex);
+
+	// 현재 콤보의 재생 속도 반영
+	const float CurrentRate = GetPlayRateForCombo(CurrentCombo);
+	const float EffectiveLength = (CurrentRate > 0.f) ? (SectionLength / CurrentRate) : SectionLength;
+
+	// 콤보 입력 윈도우: 섹션 체감 길이에 비례
+	const float ComboWindowTime = FMath::Clamp(EffectiveLength * 0.90f, 0.20f, 1.10f);
+
+	GetWorld()->GetTimerManager().SetTimer(
+		ComboTimerHandle, this, &ThisClass::CheckComboInput, ComboWindowTime, false);
 }
+
 
 void URSGameplayAbility_Attack_Slash::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
@@ -150,6 +203,8 @@ void URSGameplayAbility_Attack_Slash::CheckComboInput()
 	// 점프 후 PlayRate 갱신 (이게 핵심)
 	ApplyMontagePlayRate(AttackMontage, NextRate);
 
+	SendCheckHitEvent(CurrentCombo);
+
 	// 다음 입력 타이머
 	StartComboTimer();
 
@@ -185,9 +240,9 @@ float URSGameplayAbility_Attack_Slash::GetPlayRateForCombo(uint8 Combo) const
 {
 	switch (Combo)
 	{
-	case 1: return 1.10f;
-	case 2: return 1.40f;
-	case 3: return 1.55f;
+	case 1: return 0.90f;
+	case 2: return 1.00f;
+	case 3: return 1.10f;
 	default: return 1.0f;
 	}
 }
@@ -208,4 +263,21 @@ void URSGameplayAbility_Attack_Slash::ApplyMontagePlayRate(UAnimMontage* Montage
 	if (!AnimInst) return;
 
 	AnimInst->Montage_SetPlayRate(Montage, PlayRate);
+}
+
+void URSGameplayAbility_Attack_Slash::SendCheckHitEvent(int32 ComboIndex) const
+{
+	AActor* Avatar = GetAvatarActorFromActorInfo();
+	if (!IsValid(Avatar))
+	{
+		return;
+	}
+
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+
+	FGameplayEventData Data;
+	Data.EventTag = Tags.Event_Attack_CheckHit;   // 여기만 변경
+	Data.EventMagnitude = (float)ComboIndex;
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Avatar, Data.EventTag, Data);
 }

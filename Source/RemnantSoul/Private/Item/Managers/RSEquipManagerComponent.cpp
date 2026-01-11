@@ -23,6 +23,14 @@
 
 #include "Item/Managers/RSCosmeticManagerComponent.h"
 
+// 디버깅용 추후 삭제
+#include "GAS/GA/RSGameplayAbility_Attack_Slash.h"
+#include "Abilities/GameplayAbility.h"
+#include "Abilities/GameplayAbilityTypes.h"
+namespace
+{
+	static void RS_DebugDumpAbilitySpecsByClass(UAbilitySystemComponent* ASC, const UClass* AbilityClass);
+}
 
 
 
@@ -527,6 +535,13 @@ void URSEquipManagerComponent::HandleActiveWeaponChanged(
 	const URSCombatStyleData* NewStyle = ResolveCombatStyleForWeapon(NewItem);
 	ApplyCombatStyle(NewStyle);
 
+	UAbilitySystemComponent* ASC = GetASC();
+	if (ASC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] Dump Slash Specs After ApplyCombatStyle"));
+		RS_DebugDumpAbilitySpecsByClass(ASC, URSGameplayAbility_Attack_Slash::StaticClass());
+	}
+
 	// 4) (정책) 활성 무기만 패시브 적용
 	if (bApplyItemAbilitySetsAsPassive)
 	{
@@ -636,6 +651,8 @@ void URSEquipManagerComponent::RefreshCombatStateFromEquipment()
 	UE_LOG(LogTemp, Warning, TEXT("[EquipMgr] RefreshCombatStateFromEquipment Done. ActiveWeapon=%s Style=%s"),
 		*GetNameSafe(ActiveWeapon),
 		*GetNameSafe(Style));
+
+
 }
 
 void URSEquipManagerComponent::TryApplyInitialCombatState()
@@ -683,4 +700,50 @@ void URSEquipManagerComponent::HandleHeroDataReady(const URSHeroData* InHeroData
 {
 	bHeroDataReady = (InHeroData != nullptr);
 	TryApplyInitialCombatState();
+}
+
+namespace
+{
+	static void RS_DebugDumpAbilitySpecsByClass(UAbilitySystemComponent* ASC, const UClass* AbilityClass)
+	{
+		if (!IsValid(ASC) || !AbilityClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Dbg] Invalid ASC or AbilityClass"));
+			return;
+		}
+
+		int32 Count = 0;
+		const TArray<FGameplayAbilitySpec>& Specs = ASC->GetActivatableAbilities();
+
+		for (const FGameplayAbilitySpec& Spec : Specs)
+		{
+			const UGameplayAbility* AbilityCDO = Spec.Ability;
+			if (!AbilityCDO)
+			{
+				continue;
+			}
+
+			if (AbilityCDO->GetClass() == AbilityClass)
+			{
+				++Count;
+
+				UObject* SourceObj = Spec.SourceObject.Get();
+				const FString DynTagsStr = Spec.DynamicAbilityTags.ToStringSimple();
+
+				UE_LOG(LogTemp, Warning,
+					TEXT("[Dbg] SpecMatch #%d Ability=%s SourceObject=%s DynamicTags=%s"),
+					Count,
+					*GetNameSafe(AbilityCDO),
+					*GetNameSafe(SourceObj),
+					*DynTagsStr
+				);
+			}
+		}
+
+		UE_LOG(LogTemp, Warning,
+			TEXT("[Dbg] AbilityClass=%s TotalMatches=%d"),
+			*GetNameSafe(AbilityClass),
+			Count
+		);
+	}
 }

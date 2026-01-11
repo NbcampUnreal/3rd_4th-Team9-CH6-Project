@@ -89,6 +89,8 @@ public:
 	UAnimMontage* GetSkillActionMontage() const { return SkillActionMontage; }
 
 	UAnimMontage* GetAttackComboMontage() const { return Attack_ComboMontage; }
+	UAnimMontage* GetAttackStaffMontage() const { return Attack_StaffMontage; }
+	
 	UAnimMontage* GetAttackSlashComboMontage() const { return Attack_SlashComboMontage; }
 	UAnimMontage* GetAttackThrustChargeMontage() const { return Attack_ThrustChargeMontage; }
 	UAnimMontage* GetAttackThrustReleaseMontage() const { return Attack_ThrustReleaseMontage; }
@@ -225,6 +227,9 @@ protected:
 	// Ability.Attack.Combo
 	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Attack")
 	TObjectPtr<UAnimMontage> Attack_ComboMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Attack")
+	TObjectPtr<UAnimMontage> Attack_StaffMontage;
 
 	// Ability.Attack.Slash.Combo
 	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Attack")

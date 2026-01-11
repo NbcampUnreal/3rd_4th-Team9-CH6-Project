@@ -69,6 +69,8 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.Event_Equip_Weapon, "Event.Equip.Weapon", "Equip weapon event");
 	AddTag(Manager, GameplayTags.Event_Unequip_Weapon, "Event.Unequip.Weapon", "Unequip weapon event");
 	AddTag(Manager, GameplayTags.Event_Skill_CheckHit, "Event.Skill.CheckHit", "Skill check hit event");
+	AddTag(Manager, GameplayTags.Event_Attack_CheckHit, "Event.Attack.CheckHit", "Attack check hit event");
+
 	AddTag(Manager, GameplayTags.Event_Roll_End, "Event.Roll.End", "Roll End check hit event");
 	AddTag(Manager, GameplayTags.Event_Sprint_Active, "Event.Sprint.Active", "Event: Sprint Active request");
 
@@ -106,6 +108,7 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 
 	// InputTag.Ability.Attack.*
 	AddTag(Manager, GameplayTags.InputTag_Ability_Attack_Combo, "InputTag.Ability.Attack.Combo", "Input tag: Attack Combo");
+	AddTag(Manager, GameplayTags.InputTag_Ability_Attack_Staff, "InputTag.Ability.Attack.Staff", "Input tag: Attack Staff");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Attack_Slash, "InputTag.Ability.Attack.Slash", "Input tag: Attack Slash");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Attack_ThrustCharge, "InputTag.Ability.Attack.ThrustCharge", "Input tag: Attack Thrust Charge");
 

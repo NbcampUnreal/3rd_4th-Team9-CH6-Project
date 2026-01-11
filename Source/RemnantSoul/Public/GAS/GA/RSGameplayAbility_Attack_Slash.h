@@ -30,6 +30,9 @@ protected:
 
 	void CheckComboInput();
 
+	void SendCheckHitEvent(int32 ComboIndex) const;
+
+
 public:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
@@ -41,6 +44,9 @@ protected:
 	FTimerHandle ComboTimerHandle;
 
 	bool IsNextComboInputPressed = false;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UAnimMontage> CachedAttackMontage = nullptr;
 
 #pragma region ComboSpeed
 	float GetPlayRateForCombo(uint8 Combo) const;
