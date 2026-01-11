@@ -7,6 +7,7 @@
 
 class USkeletalMeshComponent;
 class URSRunePillarAnimInstance;
+class USoundBase;
 
 UCLASS()
 class REMNANTSOUL_API ARSRunePillar : public AActor, public IInteractable
@@ -21,6 +22,30 @@ public:
 	virtual void Interact_Implementation(AActor* Interactor) override;
 	virtual void OnFocusBegin_Implementation(AActor* Interactor) override;
 	virtual void OnFocusEnd_Implementation(AActor* Interactor) override;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Audio|RunePillar")
+	TObjectPtr<USoundBase> RotateSFX;
+
+	UPROPERTY(EditDefaultsOnly, Category="Audio|RunePillar")
+	TObjectPtr<USoundBase> SolvedSFX;
+
+	UPROPERTY(EditDefaultsOnly, Category="Audio|RunePillar", meta=(ClampMin="0.0"))
+	float RotateSFXVolume = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Audio|RunePillar", meta=(ClampMin="0.0"))
+	float RotateSFXPitch = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Audio|RunePillar", meta=(ClampMin="0.0"))
+	float SolvedSFXVolume = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Audio|RunePillar", meta=(ClampMin="0.0"))
+	float SolvedSFXPitch = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Audio|RunePillar")
+	bool bRotateSFX2D = false;
+
+	UPROPERTY(EditDefaultsOnly, Category="Audio|RunePillar")
+	bool bSolvedSFX2D = false;
 
 protected:
 	virtual void BeginPlay() override;
@@ -35,7 +60,6 @@ private:
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	TObjectPtr<USkeletalMeshComponent> Mesh = nullptr;
 
-private:
 	UPROPERTY(EditAnywhere, Category="Puzzle", meta=(ClampMin="1"))
 	int32 MaxState = 4;
 
@@ -69,7 +93,7 @@ private:
 	UPROPERTY(EditAnywhere, Category="Interact|Highlight", meta=(ClampMin="0", ClampMax="255", EditCondition="bHighlightOnFocus"))
 	int32 HighlightStencilValue = 252;
 
-private:
+
 	URSRunePillarAnimInstance* GetRuneAnim() const;
 	void ApplyAnimRotations() const;
 
@@ -92,12 +116,14 @@ private:
 	UPROPERTY(EditAnywhere, Category="Puzzle|FogWall")
 	bool bDisableFogCollisionOnSolved = true;
 
-private:
+
 	void OpenFogWall() const;
 
 	void SetHighlight(bool bEnable) const;
 
-private:
+	bool ShouldPlayLocalSFX(AActor* Interactor) const;
+	void PlaySFX(AActor* Interactor, USoundBase* Sound, float Volume, float Pitch, bool b2D) const;
+
 	static const FName BoneTop; 
 	static const FName BoneMid; 
 	static const FName BoneBot;

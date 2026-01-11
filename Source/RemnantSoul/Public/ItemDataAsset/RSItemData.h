@@ -10,6 +10,7 @@
 
 class UTexture2D;
 class UGameplayEffect;
+class USoundBase;
 
 UENUM(BlueprintType)
 enum class EItemCategory : uint8
@@ -53,23 +54,36 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Stack", meta=(ClampMin="1"))
 	int32 MaxStack = 1;
-
-	/* =========================
-	 * 사용(포션 등) 로직
-	 * ========================= */
-
-	// 사용 시 자기 자신에게 적용할 GameplayEffect (포션이면 보통 Heal GE)
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item|Use")
 	TSubclassOf<UGameplayEffect> UseGameplayEffect;
 
-	// 사용 성공 시 소비할지 여부(포션=대부분 true)
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item|Use")
 	bool bConsumeOnUse = true;
 
-	// 실제 사용 시도(성공/실패 반환)
+
 	UFUNCTION(BlueprintCallable, Category="Item|Use")
 	bool TryUse(AActor* User) const;
+	
+	
+	/* =========================
+ * 사운드 (아이템 사용 효과음)
+ * ========================= */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item|Audio")
+	TSoftObjectPtr<USoundBase> UseSFX;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item|Audio")
+	bool bPlayUseSFX2D = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item|Audio", meta=(ClampMin="0.0"))
+	float UseSFXVolume = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item|Audio", meta=(ClampMin="0.0"))
+	float UseSFXPitch = 1.0f;
 
 private:
+	void PlayUseSFX(AActor* User) const;
+	
 	bool ApplyGameplayEffectToUser(AActor* User) const;
 };
