@@ -102,7 +102,8 @@ void FRSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Manager, GameplayTags.InputTag_Ability_Interact, "InputTag.Ability.Interact", "Ability input: interaction ");
 
 	// InputTag.Ability.Skill.*
-	AddTag(Manager, GameplayTags.InputTag_Ability_Skill_Projectile, "InputTag.Ability.Skill.Projectile", "Input tag: Skill Projectile");
+	AddTag(Manager, GameplayTags.InputTag_Ability_Skill_Projectile_ClusterGrenade, "InputTag.Ability.Skill.Projectile.ClusterGrenade", "Input tag: Skill Projectile ClusterGrenade");
+	AddTag(Manager, GameplayTags.InputTag_Ability_Skill_Projectile_Armageddon, "InputTag.Ability.Skill.Projectile.Armageddon", "Input tag: Skill Armageddon");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Skill_Meteor, "InputTag.Ability.Skill.Meteor", "Input tag: Skill Meteor");
 	AddTag(Manager, GameplayTags.InputTag_Ability_Skill_Obstacle, "InputTag.Ability.Skill.Obstacle", "Input tag: Skill Obstacle");
 

@@ -278,7 +278,8 @@ public:
 	FGameplayTag InputTag_Ability_Crouch;
 	FGameplayTag InputTag_Ability_Roll;
 	FGameplayTag InputTag_Ability_Interact;
-	FGameplayTag InputTag_Ability_Skill_Projectile;
+	FGameplayTag InputTag_Ability_Skill_Projectile_ClusterGrenade;
+	FGameplayTag InputTag_Ability_Skill_Projectile_Armageddon;
 	FGameplayTag InputTag_Ability_Skill_Meteor;
 	FGameplayTag InputTag_Ability_Skill_Obstacle;
 	FGameplayTag InputTag_Ability_Attack_Combo;
@@ -286,6 +287,7 @@ public:
 	FGameplayTag InputTag_Ability_Attack_Slash;
 	FGameplayTag InputTag_Ability_Attack_ThrustCharge;
 
+	
 
 	// Slot.*
 	FGameplayTag Slot_Weapon_Main;
