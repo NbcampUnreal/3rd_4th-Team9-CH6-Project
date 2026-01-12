@@ -86,11 +86,20 @@ public:
 
 
 public:
-	// Attack
-	UAnimMontage* GetAttackMontage() const { return AttackMontage; }
-
-	// Skill
 	UAnimMontage* GetSkillActionMontage() const { return SkillActionMontage; }
+
+	UAnimMontage* GetAttackComboMontage() const { return Attack_ComboMontage; }
+	UAnimMontage* GetAttackStaffMontage() const { return Attack_StaffMontage; }
+	
+	UAnimMontage* GetAttackSlashComboMontage() const { return Attack_SlashComboMontage; }
+	UAnimMontage* GetAttackThrustChargeMontage() const { return Attack_ThrustChargeMontage; }
+	UAnimMontage* GetAttackThrustReleaseMontage() const { return Attack_ThrustReleaseMontage; }
+
+	UAnimMontage* GetSkillInstallObstacleMontage() const { return Skill_InstallObstacle_Montage; }
+	UAnimMontage* GetSkillArmageddonMontage() const { return Skill_Armageddon_Montage; }
+	UAnimMontage* GetSkillClusterGrenadeMontage() const { return Skill_ClusterGrenade_Montage; }
+	UAnimMontage* GetSkillMeteorStrikeMontage() const { return Skill_MeteorStrike_Montage; }
+
 
 	void SetHeroData(const URSHeroData* InHeroData);
 
@@ -203,13 +212,53 @@ protected:
 	// Attack / Skill
 	// -------------------------
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Attack")
-	TObjectPtr<UAnimMontage> AttackMontage;
+	TObjectPtr<UAnimMontage> AttackComboMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Skill")
 	TObjectPtr<UAnimMontage> SkillActionMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ARSCharacter|Skill")
 	TSubclassOf<UGameplayAbility> SkillAbilityClass;
+
+	// -------------------------
+	// Attack / Skill (Ability tag -> Montage mapping)
+	// -------------------------
+	
+	// Ability.Attack.Combo
+	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Attack")
+	TObjectPtr<UAnimMontage> Attack_ComboMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Attack")
+	TObjectPtr<UAnimMontage> Attack_StaffMontage;
+
+	// Ability.Attack.Slash.Combo
+	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Attack")
+	TObjectPtr<UAnimMontage> Attack_SlashComboMontage;
+
+	// Ability.Attack.ThrustCharge
+	// - 차지 시작~유지(루프) / 릴리즈를 분리하고 싶으면 2개로 쪼개는게 안정적
+	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Attack")
+	TObjectPtr<UAnimMontage> Attack_ThrustChargeMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Attack")
+	TObjectPtr<UAnimMontage> Attack_ThrustReleaseMontage;
+
+	// GA.Install.Obstacle
+	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Skill")
+	TObjectPtr<UAnimMontage> Skill_InstallObstacle_Montage;
+
+	// GA.Proj.Armageddon
+	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Skill")
+	TObjectPtr<UAnimMontage> Skill_Armageddon_Montage;
+
+	// GA.Proj.ClusterGrenade
+	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Skill")
+	TObjectPtr<UAnimMontage> Skill_ClusterGrenade_Montage;
+
+	// GA.Zone.MeteorStrike
+	UPROPERTY(EditDefaultsOnly, Category = "RSCharacter|Montage|Skill")
+	TObjectPtr<UAnimMontage> Skill_MeteorStrike_Montage;
+
 
 	// -------------------------
 	// Equip / Weapon Stats

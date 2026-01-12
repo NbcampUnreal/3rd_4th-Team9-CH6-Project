@@ -47,4 +47,8 @@ public:
 
 	/* Attributes의 값이 변경된 후에 호출되는 콜백 함수 */
 	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
+
+	/* AttributeSet의 초기 값을 조정하기 위한 함수 */
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	void InitializeHealth(float NewHealth, float NewMaxHealth);
 };

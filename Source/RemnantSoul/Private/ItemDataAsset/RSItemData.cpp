@@ -5,6 +5,8 @@
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayEffect.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
 
 bool URSItemData::TryUse(AActor* User) const
 {
@@ -13,14 +15,45 @@ bool URSItemData::TryUse(AActor* User) const
 		return false;
 	}
 
-	// 포션/소모품은 보통 GE로 처리
+	bool bSuccess = false;
+
 	if (UseGameplayEffect)
 	{
-		return ApplyGameplayEffectToUser(User);
+		bSuccess = ApplyGameplayEffectToUser(User);
+	}
+	else
+	{
+		bSuccess = false; 
 	}
 
-	// GE가 없으면 현재는 사용 불가(나중에 확장 가능)
-	return false;
+	if (bSuccess)
+	{
+		PlayUseSFX(User);
+	}
+
+	return bSuccess;
+}
+
+void URSItemData::PlayUseSFX(AActor* User) const
+{
+	if (!User) return;
+
+	UWorld* World = User->GetWorld();
+	if (!World || World->GetNetMode() == NM_DedicatedServer) return;
+
+	if (UseSFX.IsNull()) return;
+
+	USoundBase* Sound = UseSFX.LoadSynchronous();
+	if (!Sound) return;
+
+	if (bPlayUseSFX2D)
+	{
+		UGameplayStatics::PlaySound2D(World, Sound, UseSFXVolume, UseSFXPitch);
+	}
+	else
+	{
+		UGameplayStatics::PlaySoundAtLocation(World, Sound, User->GetActorLocation(), UseSFXVolume, UseSFXPitch);
+	}
 }
 
 bool URSItemData::ApplyGameplayEffectToUser(AActor* User) const

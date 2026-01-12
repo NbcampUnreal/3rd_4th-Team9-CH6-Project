@@ -220,6 +220,14 @@ public:
 	FGameplayTag Ability_Roll;
 	FGameplayTag Ability_Interact;
 
+	FGameplayTag Ability_Skill_Projectile;
+	FGameplayTag Ability_Skill_Meteor;
+	FGameplayTag Ability_Skill_Obstacle;
+	FGameplayTag Ability_Attack_Combo;
+	FGameplayTag Ability_Attack_Slash_Combo;
+	FGameplayTag Ability_Attack_ThrustCharge;
+
+
 	// State
 	FGameplayTag State_Activated_SteamParticle;
 	FGameplayTag State_IsJumping;
@@ -242,9 +250,11 @@ public:
 	// Event
 	FGameplayTag Event_Equip_Weapon;
 	FGameplayTag Event_Unequip_Weapon;
+	FGameplayTag Event_Attack_CheckHit;
 	FGameplayTag Event_Skill_CheckHit;
 	FGameplayTag Event_Roll_End;
 	FGameplayTag Event_Sprint_Active;
+	
 
 	// GameplayCue
 	FGameplayTag GameplayCue_Attack_Hit;
@@ -268,6 +278,16 @@ public:
 	FGameplayTag InputTag_Ability_Crouch;
 	FGameplayTag InputTag_Ability_Roll;
 	FGameplayTag InputTag_Ability_Interact;
+	FGameplayTag InputTag_Ability_Skill_Projectile_ClusterGrenade;
+	FGameplayTag InputTag_Ability_Skill_Projectile_Armageddon;
+	FGameplayTag InputTag_Ability_Skill_Meteor;
+	FGameplayTag InputTag_Ability_Skill_Obstacle;
+	FGameplayTag InputTag_Ability_Attack_Combo;
+	FGameplayTag InputTag_Ability_Attack_Staff;
+	FGameplayTag InputTag_Ability_Attack_Slash;
+	FGameplayTag InputTag_Ability_Attack_ThrustCharge;
+
+	
 
 	// Slot.*
 	FGameplayTag Slot_Weapon_Main;
@@ -310,6 +330,25 @@ public:
 	FGameplayTag Puzzle_Runes_PillarA_Top;
 	FGameplayTag Puzzle_Runes_PillarA_Mid;
 	FGameplayTag Puzzle_Runes_PillarA_Bot;
+
+
+	// =========================================================
+	// GameplayCue.SFX.* (사운드 전용 GameplayCue)
+	// =========================================================
+
+	// Attack
+	FGameplayTag GameplayCue_SFX_Skill_Projectile_Fire;
+	FGameplayTag GameplayCue_SFX_Skill_Projectile_Impact;
+	FGameplayTag GameplayCue_SFX_Skill_Meteor_Launch;
+	FGameplayTag GameplayCue_SFX_Skill_Meteor_Impact;
+	FGameplayTag GameplayCue_SFX_Skill_Obstacle_Spawn;
+
+	FGameplayTag GameplayCue_SFX_Attack_Swing;      
+	FGameplayTag GameplayCue_SFX_Attack_Punch;      
+	FGameplayTag GameplayCue_SFX_Attack_Impact;
+	FGameplayTag GameplayCue_SFX_Attack_Charge_Loop;
+	FGameplayTag GameplayCue_SFX_Attack_Thrust_Release;
+
 
 
 private:

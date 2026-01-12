@@ -1,19 +1,22 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-// RSRuneNode.h
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interface/Interactable.h"
-#include "Interface/RSItemSource.h"
+
 #include "RSRuneNode.generated.h"
 
 class UBoxComponent;
+class USceneComponent;
 class UStaticMeshComponent;
-class URSPuzzleNodeComponent;
 
+/**
+ * Simple interactable rune node.
+ * - Interact: cycles a local state and rotates the visual mesh.
+ * - Focus begin/end: optional custom-depth highlight.
+ *
+ * Note: This is intentionally decoupled from the Puzzle Manager system.
+ */
 UCLASS()
 class REMNANTSOUL_API ARSRuneNode : public AActor, public IInteractable
 {
@@ -25,41 +28,47 @@ public:
 	// IInteractable
 	virtual bool CanInteract_Implementation(AActor* Interactor) const override;
 	virtual void Interact_Implementation(AActor* Interactor) override;
-	virtual URSItemData* GetItemData_Implementation() const;
+	virtual void OnFocusBegin_Implementation(AActor* Interactor) override;
+	virtual void OnFocusEnd_Implementation(AActor* Interactor) override;
 
 protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(VisibleAnywhere, Category="Components")
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<USceneComponent> Root = nullptr;
 
-	UPROPERTY(VisibleAnywhere, Category="Components")
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> Visual = nullptr;
 
-	UPROPERTY(VisibleAnywhere, Category="Components")
+	/** Blocks visibility trace so your GA_Interact line trace can hit this actor reliably. */
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<UBoxComponent> Trigger = nullptr;
 
-	UPROPERTY(VisibleAnywhere, Category="Components")
-	TObjectPtr<URSPuzzleNodeComponent> PuzzleNode = nullptr;
+private:
+	/** Number of rune states to cycle through (0..MaxState-1). */
+	UPROPERTY(EditAnywhere, Category = "Rune", meta = (ClampMin = "1"))
+	int32 MaxState = 6;
+
+	/** Current state index. */
+	UPROPERTY(VisibleInstanceOnly, Category = "Rune")
+	int32 LocalState = 0;
+
+	/** Base rotation before applying state rotation. */
+	UPROPERTY(EditAnywhere, Category = "Rune")
+	FRotator BaseRotation = FRotator::ZeroRotator;
+
+	/** Rotation axis for the state step (default: Up). */
+	UPROPERTY(EditAnywhere, Category = "Rune")
+	FVector RotationAxis = FVector::UpVector;
+
+	UPROPERTY(EditAnywhere, Category = "Interact|Highlight")
+	bool bHighlightOnFocus = true;
+
+	UPROPERTY(EditAnywhere, Category = "Interact|Highlight", meta = (EditCondition = "bHighlightOnFocus", ClampMin = "0", ClampMax = "255"))
+	int32 HighlightStencilValue = 252;
 
 private:
-	// 액터 이름에 Top/Mid/Bot 들어가면 자동으로 그 노드로 동작.
-	// 예) BP_RuneNode_Top_01, RuneNode_Mid, RuneNode_Bot 등
-	void ApplyHardcodedTagsFromName();
-
-	// 퍼즐 정의(정답 포함) 하드코딩으로 생성해서 StartPuzzle에 넣는다.
-	const class URSPuzzleDefinition* GetOrCreateHardcodedDefinition() const;
-
-	void UpdateVisualByLocalState() const;
-
-private:
-	// 하드코딩 파라미터
-	static constexpr int32 MaxState_Hardcoded = 6;      // 룬 종류(0~5)
-	static constexpr int32 Target_Top = 2;
-	static constexpr int32 Target_Mid = 4;
-	static constexpr int32 Target_Bot = 1;
-
-	// 캐시(월드마다 하나 만들고 재사용)
-	mutable TObjectPtr<URSPuzzleDefinition> CachedDefinition = nullptr;
+	void ApplyVisualRotation() const;
+	void SetHighlight(bool bEnable) const;
 };

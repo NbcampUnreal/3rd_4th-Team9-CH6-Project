@@ -56,6 +56,11 @@ void URSAbilitySet::GiveToAbilitySystem(
 	UObject* SourceObject
 ) const
 {
+	UE_LOG(LogTemp, Warning, TEXT("[AbilitySet] GiveToASC Set=%s ASC=%s Owner=%s frame=%llu"),
+	*GetNameSafe(this),
+	*GetNameSafe(ASC),
+	*GetNameSafe(ASC->GetOwner()),
+	(unsigned long long)GFrameCounter);
 	if (!ASC)
 	{
 		return;

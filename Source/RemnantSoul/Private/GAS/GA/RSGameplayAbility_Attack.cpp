@@ -24,7 +24,7 @@ void URSGameplayAbility_Attack::ActivateAbility(
 		return;
 	}
 
-	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackMontage();
+	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackComboMontage();
 	if (!IsValid(AttackMontage))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -132,7 +132,7 @@ void URSGameplayAbility_Attack::CheckComboInput()
 		return;
 	}
 
-	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackMontage();
+	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackComboMontage();
 	if (!IsValid(AttackMontage))
 	{
 		return;
