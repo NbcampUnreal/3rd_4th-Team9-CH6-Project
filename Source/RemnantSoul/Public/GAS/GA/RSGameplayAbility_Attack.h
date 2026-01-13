@@ -6,9 +6,8 @@
 #include "Abilities/GameplayAbility.h"
 #include "RSGameplayAbility_Attack.generated.h"
 
-/**
- * 
- */
+class UGameplayEffect;
+
 UCLASS()
 class REMNANTSOUL_API URSGameplayAbility_Attack : public UGameplayAbility
 {
@@ -44,4 +43,20 @@ protected:
 	FTimerHandle ComboTimerHandle;
 
 	bool IsNextComboInputPressed = false;
+
+#pragma region ComboSpeed
+	float GetPlayRateForCombo(uint8 Combo) const;
+	FName GetSectionNameForCombo(uint8 Combo) const;
+
+	void ApplyMontagePlayRate(UAnimMontage* Montage, float PlayRate);
+#pragma endregion
+
+#pragma region StaminaCost
+	UPROPERTY(EditDefaultsOnly, Category = "RS|Cost")
+	TSubclassOf<UGameplayEffect> StaminaCostEffectClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "RS|Cost")
+	float StaminaCost = 15.0f;
+#pragma endregion
+
 };

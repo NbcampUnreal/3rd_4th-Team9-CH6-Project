@@ -1,42 +1,83 @@
 ﻿#include "Character/RSHeroComponent.h"
 #include "Character/RSCharacter.h"
+#include "PlayerState/RSPlayerState.h"
 #include "EnhancedInputSubsystems.h"
 #include "Input/RSEnhancedInputComponent.h"
 #include "Input/RSInputConfig.h"
 #include "AbilitySystemBlueprintLibrary.h" // 래퍼함수안 쓸 때 - 안쓰고서 그냥 HeroComponent와 InputConfig클래스를 이용할 예정임.
+#include "AbilitySystemComponent.h"
+#include "Character/RSHeroData.h"
+#include "Character/RSPawnData.h"
 #include "RSGameplayTags.h"
 
 #include "GameFramework/PlayerController.h" // PRMerge할때 Conflict생긴 부분 주석처리해도 잘 작동하면 삭제해도될듯.
 #include "GameFramework/Pawn.h"
 #include "Character/PlayerController/RSPlayerController.h"
 
+#include "Abilities/GameplayAbility.h"
+#include "Item/Managers/RSEquipManagerComponent.h"
+#include "Character/RSCombatStyleData.h"
+
+#include "Input/RSInputConfig.h"
+
+
 void URSHeroComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+
+	if (ARSCharacter* OwnerCharacter = GetOwnerCharacter())
+	{
+		EquipManager = OwnerCharacter->FindComponentByClass<URSEquipManagerComponent>();
+	}
 }
 
 void URSHeroComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] SetupPIC ENTER Owner=%s InputComp=%s"),
+		*GetNameSafe(GetOwner()),
+		*GetNameSafe(PlayerInputComponent));
+
+	// 0) 같은 InputComponent로 이미 세팅했으면 스킵
+	if (LastSetupInputComponent.Get() == PlayerInputComponent && bInputInitialized)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero] SetupPIC already done for this InputComponent. Skip."));
+		return;
+	}
+
 	APawn* Pawn = Cast<APawn>(GetOwner());
-	if (!Pawn) return;
+	if (!Pawn)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Hero] SetupPIC FAIL: Owner is not Pawn. Owner=%s"), *GetNameSafe(GetOwner()));
+		return;
+	}
 
 	APlayerController* PC = Pawn->GetController<APlayerController>();
-	if (!PC) return;
+	if (!PC)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Hero] SetupPIC FAIL: PC is null. Pawn=%s"), *GetNameSafe(Pawn));
+		return;
+	}
 
+	// 1) 여기서 실제 입력 초기화 수행
 	InitializePlayerInput(PlayerInputComponent, PC);
+
+	// 2) 성공적으로 끝났다면 캐시/플래그 갱신
+	if (bInputInitialized)
+	{
+		LastSetupInputComponent = PlayerInputComponent;
+		UE_LOG(LogTemp, Warning, TEXT("[Hero] SetupPIC DONE InputComp=%s"), *GetNameSafe(PlayerInputComponent));
+	}
 }
 
 void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent, APlayerController* PlayerController)
 {
-	UE_LOG(LogTemp, Warning, TEXT("[Hero] InputCompClass=%s"),
-		*GetNameSafe(PlayerInputComponent ? PlayerInputComponent->GetClass() : nullptr));
-
-	UE_LOG(LogTemp, Warning, TEXT("[Hero] Cast URSEnhancedInputComponent=%s"),
-		Cast<URSEnhancedInputComponent>(PlayerInputComponent) ? TEXT("OK") : TEXT("FAIL"));
-
-	UE_LOG(LogTemp, Warning, TEXT("[Hero] Cast UEnhancedInputComponent=%s"),
-		Cast<UEnhancedInputComponent>(PlayerInputComponent) ? TEXT("OK") : TEXT("FAIL"));
-
+	
+	if (bInputInitialized)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero] InitializePlayerInput already done. Skip."));
+		return;
+	}
 
 	ARSCharacter* Char = GetOwnerCharacter();
 	if (!Char) return;
@@ -47,21 +88,26 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	auto* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	if (!Subsystem) return;
 
-	Subsystem->ClearAllMappings();
 
-	const URSInputConfig* InputConfig = Char->GetInputConfig(); 
-	if (!InputConfig) return;
-
-	if (!Char->GetPawnData())
+	const URSInputConfig* InputConfig = Char->GetInputConfig();
+	if (!InputConfig)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[Hero] PawnData is null on %s"), *GetNameSafe(Char));
+		UE_LOG(LogTemp, Error, TEXT("[Hero] InputConfig is NULL (skip IMC rebuild)"));
 		return;
 	}
+
+	Subsystem->ClearAllMappings();
+
+	const int32 NumContexts = InputConfig->DefaultMappings.Num();
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] IMC rebuild: ClearAllMappings then Add %d contexts"), NumContexts);
 
 	for (const auto& Mapping : InputConfig->DefaultMappings)
 	{
 		if (UInputMappingContext* IMC = Mapping.InputMapping)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("[Hero] Add IMC: %s Priority=%d"),
+				*GetNameSafe(IMC), Mapping.Priority);
+
 			FModifyContextOptions Options;
 			Options.bIgnoreAllPressedKeysUntilRelease = false;
 			Subsystem->AddMappingContext(IMC, Mapping.Priority, Options);
@@ -78,12 +124,29 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 
 	UE_LOG(LogTemp, Warning, TEXT("[Hero] Cast URSEnhancedInputComponent = %s"), IC ? TEXT("OK") : TEXT("FAIL"));
 
+	// =========================
+	// 재초기화 안정화 패치(A)
+	// - SetupPIC/InitializePlayerInput이 여러 번 호출될 수 있으므로
+	//   기존 바인딩(특히 Base Ability)을 반드시 정리하고 다시 구축한다.
+	// - IMC는 아래에서 ClearAllMappings + AddMappingContext로 재구성되므로 여기서 손대지 않는다.
+	// =========================
+	ClearBaseAbilityBindings();
+
+	// Overlay는 Base가 완성된 이후에만 의미가 있으므로,
+	// 여기서는 "남아있을 수 있는 바인딩"만 안전하게 제거한다.
+	// (EquipManager는 OnInputReady 이후 ApplyOverlayInputConfig를 다시 호출하게 설계)
+	ClearOverlayInputConfig();
+
+	// 재초기화 시작이므로 InputReady 상태는 다시 false로 리셋
+	// (이후 정상적으로 끝나면 아래에서 true로 세팅되고 OnInputReady Broadcast 됨)
+	bInputInitialized = false;
+
+
 	// Ability 태그 바인딩
 	//TArray<uint32> Handles;
 	//IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityTagPressed, &ThisClass::Input_AbilityTagReleased, Handles);
 
-		// Ability 태그 바인딩
-
+	// Ability 태그 바인딩
 	BaseAbilityBindHandles.Reset();
 	IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityTagPressed, &ThisClass::Input_AbilityTagReleased, BaseAbilityBindHandles);
 
@@ -92,39 +155,86 @@ void URSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 	const FRSGameplayTags& RSGameplayTag = FRSGameplayTags::Get();
 	// Native 태그 바인딩
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] BindNativeAction: Move OK"));
 
 	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
+
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] BindNativeAction: Look OK"));
 	
-	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_Interaction,ETriggerEvent::Triggered, this, &ThisClass::Input_Interaction);
+
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Started, this, &ThisClass::Input_InventoryToggle);
+
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_QuickSlotCycle, ETriggerEvent::Started, this, &ThisClass::Input_QuickSlotCycle);
+
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_QuickSlotUse, ETriggerEvent::Started, this, &ThisClass::Input_QuickSlotUse);
+
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot1, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot1);
+
+	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_EquipSlot2, ETriggerEvent::Triggered, this, &ThisClass::Input_EquipSlot2);
 	
-	IC->BindNativeAction(InputConfig, RSGameplayTag.InputTag_Native_InventoryToggle, ETriggerEvent::Triggered, this, &ThisClass::Input_InventoryToggle);
+
+
+
+	bInputInitialized = true;
+	UE_LOG(LogTemp, Warning, TEXT("[Hero] InputReady Broadcast"));
+	OnInputReady.Broadcast();
 }
 
 void URSHeroComponent::Input_AbilityTagPressed(FGameplayTag InputTag)
 {
-	ARSCharacter* Char = GetOwnerCharacter();
-	if (!Char) return;
-
-	FGameplayEventData Payload;
-	Payload.EventTag = InputTag;
-	Payload.EventMagnitude = 1.f; // Pressed일때.
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+	if (ARSCharacter* Char = GetOwnerCharacter())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero][Input] Pressed Tag=%s"), *InputTag.ToString());
+		Char->AbilityInputTagPressed(InputTag);
+	}
 }
 
 void URSHeroComponent::Input_AbilityTagReleased(FGameplayTag InputTag)
 {
-	ARSCharacter* Char = GetOwnerCharacter();
-	if (!Char) return;
-
-	FGameplayEventData Payload;
-	Payload.EventTag = InputTag;
-	Payload.EventMagnitude = 0.f; // Released일떄.
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+	if (ARSCharacter* Char = GetOwnerCharacter())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero][Input] Released Tag=%s"), *InputTag.ToString());
+		Char->AbilityInputTagReleased(InputTag);
+	}
 }
+
+
+
+//void URSHeroComponent::Input_AbilityTagPressed(FGameplayTag InputTag)
+//{
+//	ARSCharacter* Char = GetOwnerCharacter();
+//	if (!Char) return;
+//
+//	FGameplayEventData Payload;
+//	Payload.EventTag = InputTag;
+//	Payload.EventMagnitude = 1.f; // Pressed일때.
+//	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+//}
+//
+//void URSHeroComponent::Input_AbilityTagReleased(FGameplayTag InputTag)
+//{
+//	ARSCharacter* Char = GetOwnerCharacter();
+//	if (!Char) return;
+//
+//	FGameplayEventData Payload;
+//	Payload.EventTag = InputTag;
+//	Payload.EventMagnitude = 0.f; // Released일떄.
+//	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Char, InputTag, Payload);
+//}
 
 ARSCharacter* URSHeroComponent::GetOwnerCharacter() const
 {
 	return Cast<ARSCharacter>(GetOwner());
+}
+
+void URSHeroComponent::HandleEquipInput(FGameplayTag InputTag)
+{
+	if (!EquipManager)
+	{
+		return;
+	}
+
+	EquipManager->HandleEquipSlotInput(InputTag);
 }
 
 void URSHeroComponent::Input_Move(const FInputActionValue& InputActionValue)
@@ -162,131 +272,99 @@ void URSHeroComponent::Input_Look(const FInputActionValue& InputActionValue)
 		Character->AddControllerPitchInput(Value.Y);
 }
 
-void URSHeroComponent::ApplyOverlayInputConfig(const URSInputConfig* Overlay)
+void URSHeroComponent::Input_EquipSlot1()
 {
-	// 0) Overlay가 없으면 Clear로 수렴
-	if (!Overlay)
+	if (!EquipManager)
+	{
+		return;
+	}
+
+	EquipManager->HandleEquipSlotInput(
+		FRSGameplayTags::Get().InputTag_Native_EquipSlot1
+	);
+}
+
+void URSHeroComponent::Input_EquipSlot2()
+{
+	if (!EquipManager)
+	{
+		return;
+	}
+
+	EquipManager->HandleEquipSlotInput(
+		FRSGameplayTags::Get().InputTag_Native_EquipSlot2
+	);
+}
+
+void URSHeroComponent::ApplyOverlayInputConfig(const URSInputConfig* NewConfig)
+{
+	if (!NewConfig)
 	{
 		ClearOverlayInputConfig();
 		return;
 	}
 
-	// 1) 동일 Overlay면 스킵
-	if (CurrentOverlayConfig == Overlay)
+	// 같은 오버레이면 재적용 금지 (중복 Apply 방지)
+	if (CurrentOverlayConfig == NewConfig)
 	{
 		return;
 	}
 
-	//  (추가) Subsystem / InputComp 먼저 획득 (실패하면 기존 상태 유지)
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = GetInputSubsystem();
 	URSEnhancedInputComponent* EIC = GetRSEnhancedInputComponent();
-	if (!Subsystem || !EIC)
+	if (!EIC)
 	{
 		return;
 	}
 
-	//  (이 위치로 이동) 기존 Overlay 정리(바인딩/IMC 모두)
+	// 기존 Overlay 바인딩만 제거 후 새로 적용
 	ClearOverlayInputConfig();
 
-	// 4) Overlay IMC 추가 + “추적”
-	OverlayAddedIMCs.Reset();
+	CurrentOverlayConfig = NewConfig;
 
-	for (const FRSInputMappingContextAndPriority& Mapping : Overlay->DefaultMappings)
-	{
-		if (!Mapping.InputMapping) continue;
-
-		FModifyContextOptions Options;
-		Options.bIgnoreAllPressedKeysUntilRelease = true; // ✅ 입력 꼬임 방지
-		Options.bForceImmediately = true;
-
-		Subsystem->AddMappingContext(Mapping.InputMapping, Mapping.Priority, Options);
-		OverlayAddedIMCs.Add(Mapping.InputMapping);
-	}
-
-	//  (여기) Base Ability 바인딩 제거(중복 이벤트 방지)
-	if (BaseAbilityBindHandles.Num() > 0)
-	{
-		for (uint32 Handle : BaseAbilityBindHandles)
-		{
-			EIC->RemoveBindingByHandle(Handle);
-		}
-		BaseAbilityBindHandles.Reset();
-	}
-
-	// 6) Overlay Ability 바인딩(핸들 추적)
 	OverlayBindHandles.Reset();
 	EIC->BindAbilityActions(
-		Overlay,
+		NewConfig,
 		this,
 		&ThisClass::Input_AbilityTagPressed,
 		&ThisClass::Input_AbilityTagReleased,
 		OverlayBindHandles
 	);
 
-	CurrentOverlayConfig = Overlay;
-
-	// 7) 디버그 로그
-	LogAbilityBindings(Overlay, TEXT("Overlay Applied"));
+	UE_LOG(LogTemp, Log, TEXT("[HeroInput] Overlay applied (Ability only). Handles=%d"),
+		OverlayBindHandles.Num());
 }
+
+
 
 
 
 void URSHeroComponent::ClearOverlayInputConfig()
 {
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = GetInputSubsystem();
-	URSEnhancedInputComponent* EIC = GetRSEnhancedInputComponent();
-
-	// 1) Overlay 바인딩 제거
-	if (EIC)
+	// 이미 비어있으면 조용히 return (중복 clear 로그 제거)
+	if (OverlayBindHandles.Num() == 0 && CurrentOverlayConfig == nullptr)
 	{
-		for (uint32 Handle : OverlayBindHandles)
-		{
-			EIC->RemoveBindingByHandle(Handle);
-		}
-	}
-	OverlayBindHandles.Reset();
-
-	// 2) Overlay IMC 제거(“추적 배열” 기준)
-	if (Subsystem)
-	{
-		for (const TWeakObjectPtr<UInputMappingContext>& IMCWeak : OverlayAddedIMCs)
-		{
-			if (UInputMappingContext* IMC = IMCWeak.Get())
-			{
-				Subsystem->RemoveMappingContext(IMC);
-			}
-		}
-	}
-	OverlayAddedIMCs.Reset();
-
-	CurrentOverlayConfig = nullptr;
-
-	// 3) Base Ability 바인딩 복구
-	//    (BaseConfig는 Char->GetInputConfig()로 가져옴)
-	ARSCharacter* Char = GetOwnerCharacter();
-	if (!Char) return;
-
-	const URSInputConfig* BaseConfig = Char->GetInputConfig();
-	if (!BaseConfig) return;
-
-	if (!EIC)
-	{
-		// InputComp가 없으면 복구 불가 (SetupPlayerInputComponent 호출 타이밍 문제)
 		return;
 	}
 
-	BaseAbilityBindHandles.Reset();
-	EIC->BindAbilityActions(
-		BaseConfig,
-		this,
-		&ThisClass::Input_AbilityTagPressed,
-		&ThisClass::Input_AbilityTagReleased,
-		BaseAbilityBindHandles
-	);
+	if (URSEnhancedInputComponent* EIC = GetRSEnhancedInputComponent())
+	{
+		EIC->RemoveBindingsByHandleArray(OverlayBindHandles);
+	}
+	else
+	{
+		OverlayBindHandles.Reset();
+	}
 
-	// 4) 디버그 로그
-	LogAbilityBindings(BaseConfig, TEXT("Overlay Cleared -> Base Restored"));
+	OverlayAddedIMCs.Reset();
+	CurrentOverlayConfig = nullptr;
+
+	UE_LOG(LogTemp, Log, TEXT("[HeroInput] Overlay cleared (Ability only)."));
 }
+
+
+
+
+
 
 UEnhancedInputLocalPlayerSubsystem* URSHeroComponent::GetInputSubsystem() const
 {
@@ -327,12 +405,58 @@ void URSHeroComponent::LogAbilityBindings(const URSInputConfig* Config, const TC
 		*Lines);
 }
 
-void URSHeroComponent::Input_Interaction(const FInputActionValue& Value)
+void URSHeroComponent::DebugDumpInputState(const URSInputConfig* InputConfig, const TCHAR* Label) const
 {
-	ARSCharacter* Char = GetOwnerCharacter();
-	if (!Char) return;
+	const TCHAR* SafeLabel = Label ? Label : TEXT("Unknown");
 
-	Char->TryInteract();
+	UE_LOG(LogTemp, Warning, TEXT("[Hero][Dbg:%s] Owner=%s"), SafeLabel, *GetNameSafe(GetOwner()));
+
+	if (!InputConfig)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Hero][Dbg:%s] InputConfig=NULL"), SafeLabel);
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[Hero][Dbg:%s] DefaultMappings=%d"), SafeLabel, InputConfig->DefaultMappings.Num());
+	for (const auto& Mapping : InputConfig->DefaultMappings)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Hero][Dbg:%s] Config IMC=%s Priority=%d"),
+			SafeLabel,
+			*GetNameSafe(Mapping.InputMapping),
+			Mapping.Priority);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[Hero][Dbg:%s] Handles: BaseAbility=%d OverlayAbility=%d"),
+		SafeLabel,
+		BaseAbilityBindHandles.Num(),
+		OverlayBindHandles.Num());
+}
+
+
+void URSHeroComponent::Input_QuickSlotCycle(const FInputActionValue& Value)
+{
+	(void)Value;
+
+	if (APawn* Pawn = Cast<APawn>(GetOwner()))
+	{
+		if (ARSPlayerController* RSPC = Cast<ARSPlayerController>(Pawn->GetController()))
+		{
+			RSPC->QuickSlotCycle(); 
+		}
+	}
+}
+
+void URSHeroComponent::Input_QuickSlotUse(const FInputActionValue& Value)
+{
+	(void)Value;
+
+	if (APawn* Pawn = Cast<APawn>(GetOwner()))
+	{
+		if (ARSPlayerController* RSPC = Cast<ARSPlayerController>(Pawn->GetController()))
+		{
+			RSPC->QuickSlotUse();
+		}
+	}
 }
 
 void URSHeroComponent::Input_InventoryToggle(const FInputActionValue& Value)
@@ -346,4 +470,23 @@ void URSHeroComponent::Input_InventoryToggle(const FInputActionValue& Value)
 	}
 
 }
+
+void URSHeroComponent::ClearBaseAbilityBindings()
+{
+	URSEnhancedInputComponent* EIC = GetRSEnhancedInputComponent();
+
+	if (EIC)
+	{
+		// RS 공용 유틸 사용: RemoveBindingByHandle 반복 제거 + Reset까지 일괄 처리
+		EIC->RemoveBindingsByHandleArray(BaseAbilityBindHandles);
+	}
+	else
+	{
+		// InputComponent가 아직 없더라도 상태 정합성 유지
+		BaseAbilityBindHandles.Reset();
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[HeroInput] Base ability bindings cleared. Handles reset."));
+}
+
 

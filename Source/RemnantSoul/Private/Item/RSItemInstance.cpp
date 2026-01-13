@@ -9,26 +9,13 @@ URSItemInstance::URSItemInstance(const FObjectInitializer& ObjectInitializer)
 {
 }
 
-void URSItemInstance::Initialize(URSItemTemplate* InTemplate, int32 InCount, AActor* InOwningActor)
+void URSItemInstance::InitializeFromTemplate(const URSItemTemplate* InTemplate, int32 InCount, AActor* InOwningActor)
 {
 	ItemTemplate = InTemplate;
 	OwningActor = InOwningActor;
 
-	// 최소 0 이상으로 정리
-	if (InCount < 0)
-	{
-		InCount = 0;
-	}
-
+	if (InCount < 0) { InCount = 0; }
 	Count = InCount;
-
-	// 나중에 Fragment에서 OnInstanceCreated 같은 훅을 쓰고 싶으면,
-	// 여기서 템플릿에게 위임하면 된다.
-	// 예:
-	// if (ItemTemplate)
-	// {
-	//     ItemTemplate->OnInstanceCreated(this);
-	// }
 }
 
 void URSItemInstance::SetCount(int32 NewCount)
@@ -70,4 +57,9 @@ bool URSItemInstance::IsStackFull() const
 bool URSItemInstance::IsValidInstance() const
 {
 	return (ItemTemplate != nullptr) && (Count > 0);
+}
+
+const URSCombatStyleData* URSItemInstance::GetItemCombatStyle() const
+{
+	return CombatStyle;
 }

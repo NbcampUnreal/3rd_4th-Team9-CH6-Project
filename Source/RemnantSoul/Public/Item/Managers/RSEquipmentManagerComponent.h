@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameplayTagContainer.h"
+#include "Animation/AnimNotify/RSAnimEquipAction.h"
 #include "RSEquipmentManagerComponent.generated.h"
 
 class URSItemInstance;
@@ -33,6 +34,20 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
 	URSItemInstance*, NewItem
 );
 
+DECLARE_MULTICAST_DELEGATE_FourParams(
+	FOnRSActiveWeaponChanged,
+	FGameplayTag,
+	FGameplayTag,
+	URSItemInstance*,
+	URSItemInstance*
+);
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(
+	FOnRSEquipAnimAction,
+	ERSAnimEquipAction /*Action*/,
+	URSItemInstance*   /*PendingItem*/
+);
+
 UCLASS(ClassGroup = (RS), meta = (BlueprintSpawnableComponent))
 class REMNANTSOUL_API URSEquipmentManagerComponent : public UActorComponent
 {
@@ -60,8 +75,8 @@ public:
 	bool UnequipItemFromSlot(const FGameplayTag& SlotTag);
 
 	/** 슬롯에 장착된 아이템 가져오기 */
-	UFUNCTION(BlueprintPure, Category = "RS|Equipment")
-	URSItemInstance* GetItemInSlot(const FGameplayTag& SlotTag) const;
+	//UFUNCTION(BlueprintPure, Category = "RS|Equipment")
+	//URSItemInstance* GetItemInSlot(const FGameplayTag& SlotTag) const;
 
 	/** 해당 슬롯이 존재하는 슬롯인지 여부 */
 	UFUNCTION(BlueprintPure, Category = "RS|Equipment")
@@ -78,17 +93,21 @@ public:
 	/** MainWeaponSlotTag Getter (ItemManager 등에서 사용) */
 	FGameplayTag GetMainWeaponSlotTag() const { return MainWeaponSlotTag; }
 
+	URSItemInstance* GetWeaponInSlot(int32 SlotIndex) const;
+
 public:
-	/** 장비 변경 알림 델리게이트 (UI 등에서 바인딩 용) */
-	UPROPERTY(BlueprintAssignable, Category = "RS|Equipment")
-	FRSEquipmentChangedSignature OnEquipmentChanged;
+	// AnimNotify에서 호출되는 진입점(캐릭터->EquipmentManager)
+	UFUNCTION(BlueprintCallable, Category = "RS|Equipment|Anim")
+	void HandleEquipAnimAction(ERSAnimEquipAction Action);
+
+
 
 protected:
-	/** 내부 헬퍼: 실제 장착 처리 (검증 완료 후 호출) */
-	void InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem);
+	///** 내부 헬퍼: 실제 장착 처리 (검증 완료 후 호출) */
+	//void InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem);
 
-	/** 내부 헬퍼: 실제 해제 처리 (검증 완료 후 호출) */
-	void InternalUnequip(const FGameplayTag& SlotTag);
+	///** 내부 헬퍼: 실제 해제 처리 (검증 완료 후 호출) */
+	//void InternalUnequip(const FGameplayTag& SlotTag);
 
 	/** 아이템 템플릿/Fragment 기반으로 슬롯 호환 여부 체크 */
 	bool CheckSlotCompatibility(const FGameplayTag& SlotTag, const URSItemTemplate* Template, FText& OutFailReason) const;
@@ -96,8 +115,8 @@ protected:
 	/** EquipRequirement Fragment 기준으로 요구 조건 체크 */
 	bool CheckEquipRequirements(const URSItemTemplate* Template, FText& OutFailReason) const;
 
-	/** 해당 슬롯이 “무기 슬롯”인지 여부 (무기 슬롯일 때만 CosmeticManager 호출) */
-	bool IsWeaponSlot(const FGameplayTag& SlotTag) const;
+	///** 해당 슬롯이 “무기 슬롯”인지 여부 (무기 슬롯일 때만 CosmeticManager 호출) */
+	//bool IsWeaponSlot(const FGameplayTag& SlotTag) const;
 
 
 protected:
@@ -125,6 +144,12 @@ protected:
 	UPROPERTY(Transient)
 	TWeakObjectPtr<URSCosmeticManagerComponent> CachedCosmeticManager;
 
+	/** 현재 사용 중인 HeroData */
+	UPROPERTY()
+	TObjectPtr<const URSHeroData> HeroData;
+
+
+
 
 
 protected:
@@ -144,5 +169,115 @@ private:
 	UPROPERTY(Transient)
 	TWeakObjectPtr<URSCombatStyleData> CachedAppliedStyle;
 
+private:
+	// ===== 장착/해제 진행 중 상태 =====
+	UPROPERTY(Transient)
+	bool bEquipTransactionActive = false;
+
+	UPROPERTY(Transient)
+	FGameplayTag PendingSlotTag;
+
+	UPROPERTY(Transient)
+	TObjectPtr<URSItemInstance> PendingOldItem = nullptr;
+
+	UPROPERTY(Transient)
+	TObjectPtr<URSItemInstance> PendingNewItem = nullptr;
+
+	// 트랜잭션 종료(정리)
+	void ClearEquipTransaction();
+
+
+
+#pragma region
+public:
+	// --- Active Weapon API ---
+	void SetActiveWeaponSlot(const FGameplayTag& NewActiveSlotTag);
+
+	FGameplayTag GetActiveWeaponSlot() const { return ActiveWeaponSlotTag; }
+	URSItemInstance* GetActiveWeaponItem() const;
+
+	UPROPERTY(BlueprintAssignable, Category = "RS|Equipment")
+	FRSEquipmentChangedSignature OnEquipmentChanged;
+
+	// 무기 습득: Main/Sub 자동 배치 + 선택적으로 자동 장착
+	UFUNCTION(BlueprintCallable, Category = "RS|Equipment|Weapon")
+	bool TryPickupWeaponToSlots(URSItemInstance* NewWeaponItem, bool bAutoEquip = true);
+
+	// 슬롯 버튼: 1/2 입력에 대응 (필요하면 스왑 후 Active 변경)
+	UFUNCTION(BlueprintCallable, Category = "RS|Equipment|Weapon")
+	void RequestActivateWeaponSlot(FGameplayTag RequestedSlot);
+
+	UFUNCTION(BlueprintCallable, Category = "RS|Equipment|Weapon")
+	void RequestEquipWeaponByIndex(int32 Index);
+
+public:
+	FOnRSActiveWeaponChanged OnActiveWeaponChanged;
+
+	FOnRSEquipAnimAction OnEquipAnimAction;
+
+	URSItemInstance* GetItemInSlot(const FGameplayTag& SlotTag) const;
+
+protected:
+	// 기존 구조(예시): EquippedItems / OnEquipmentChanged / InternalEquip / InternalUnequip 등 유지
+	// TMap<FGameplayTag, TObjectPtr<URSItemInstance>> EquippedItems;
+
+	bool IsWeaponSlot(const FGameplayTag& SlotTag) const;
+
+	void InternalEquip(const FGameplayTag& SlotTag, URSItemInstance* NewItem);
+	void InternalUnequip(const FGameplayTag& SlotTag);
+
+	// QuickSlot SSOT -> Slot.Main/Sub 투영(재구성)
+	void RebuildWeaponMainSubFromQuickSlots(bool bBroadcast);
+
+	// 내부 QuickSlot 저장 (SSOT)
+	void SetWeaponQuickSlotItem(int32 Index, URSItemInstance* Item);
+
+	// EquippedItems에 안전하게 쓰는 전용 setter (SetItemInSlot 오류 해결용)
+	void SetItemInSlot_Internal(const FGameplayTag& SlotTag, URSItemInstance* Item, bool bBroadcastEquipmentChanged);
+
+	// Index 선택에 따른 ActiveChanged 발생을 “단 1회”로 보장
+	bool TryEquipWeaponByIndex_Internal(int32 Index);
+
+	URSItemInstance* GetWeaponQuickSlotItem(int32 Index) const;
+
+
+private:
+	void BroadcastActiveWeaponChanged(
+		const FGameplayTag& OldSlot,
+		const FGameplayTag& NewSlot,
+		URSItemInstance* OldItem,
+		URSItemInstance* NewItem
+	);
+
+	void SwapWeaponSlots(const FGameplayTag& SlotA, const FGameplayTag& SlotB);
+	bool IsWeaponSlotFilled(const FGameplayTag& SlotTag) const;
+
+	void SwapMainAndSubIfNeeded(const FGameplayTag& NewSlot);
+
+
+
+private:
+
+
+
+
+private:
+	// 1/2 슬롯 네이밍 확정: Slot.Weapon.Main / Slot.Weapon.Sub
+	UPROPERTY(Transient)
+	FGameplayTag ActiveWeaponSlotTag;
+
+	UPROPERTY(Transient)
+	FGameplayTag LastRequestedWeaponSlotTag;
+
+
+private:
+	// QuickSlot SSOT
+	UPROPERTY(VisibleInstanceOnly, Category = "RS|Equipment|Weapon")
+	TArray<TObjectPtr<URSItemInstance>> WeaponQuickSlots; // size=2
+
+	UPROPERTY(VisibleInstanceOnly, Category = "RS|Equipment|Weapon")
+	int32 ActiveQuickSlotIndex = 0; // 0 or 1
+
+#pragma endregion
 
 };

@@ -62,3 +62,9 @@ void URSEnemyBaseAttributeSet::PostAttributeChange(const FGameplayAttribute& Att
 		GetOwningAbilitySystemComponent()->TryActivateAbilitiesByTag(DeathTagContainer);
 	}
 }
+
+void URSEnemyBaseAttributeSet::InitializeHealth(float NewHealth, float NewMaxHealth)
+{
+	InitHealth(NewHealth);
+	InitMaxHealth(NewMaxHealth);
+}

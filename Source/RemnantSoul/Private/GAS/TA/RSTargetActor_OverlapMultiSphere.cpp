@@ -8,28 +8,41 @@
 
 FGameplayAbilityTargetDataHandle ARSTargetActor_OverlapMultiSphere::MakeTargetData() const
 {
-	ACharacter* SourceCharacter = CastChecked<ACharacter>(SourceActor);
+	ACharacter* SourceCharacter = Cast<ACharacter>(SourceActor);
+	if (!IsValid(SourceCharacter))
+	{
+		UE_LOG(LogTemp, Error, TEXT("[TargetActor] SourceActor is not a Character or invalid"));
+		return FGameplayAbilityTargetDataHandle();
+	}
 
 	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(SourceActor);
-	if (IsValid(ASC) == false)
+	if (!IsValid(ASC))
 	{
-		UE_LOG(LogTemp, Error, TEXT("ASC is invalid."));
+		UE_LOG(LogTemp, Error, TEXT("[TargetActor] ASC is invalid."));
 		return FGameplayAbilityTargetDataHandle();
 	}
 
 	const URSAttributeSet_Skill* AttributeSet = ASC->GetSet<URSAttributeSet_Skill>();
-	if (IsValid(AttributeSet) == false)
+	if (!IsValid(AttributeSet))
 	{
-		UE_LOG(LogTemp, Error, TEXT("AttributeSet is invalid."));
+		UE_LOG(LogTemp, Error, TEXT("[TargetActor] AttributeSet is invalid."));
 		return FGameplayAbilityTargetDataHandle();
 	}
 
 	TArray<FOverlapResult> Overlaps;
 	const float SkillRadius = AttributeSet->GetSkillRadius();
 
-	FVector Origin = SourceCharacter->GetActorLocation();
+	const FVector Origin = SourceCharacter->GetActorLocation();
 	FCollisionQueryParams Params(FName(), false, SourceCharacter);
-	GetWorld()->OverlapMultiByChannel(Overlaps, Origin, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(SkillRadius), Params);
+
+	GetWorld()->OverlapMultiByChannel(
+		Overlaps,
+		Origin,
+		FQuat::Identity,
+		ECC_Pawn,
+		FCollisionShape::MakeSphere(SkillRadius),
+		Params
+	);
 
 	TArray<TWeakObjectPtr<AActor>> HitActors;
 	for (const FOverlapResult& Overlap : Overlaps)
@@ -45,13 +58,11 @@ FGameplayAbilityTargetDataHandle ARSTargetActor_OverlapMultiSphere::MakeTargetDa
 	ActorsData->SetActors(HitActors);
 
 #if ENABLE_DRAW_DEBUG
-
 	if (bShowDebug)
 	{
-		FColor DrawColor = HitActors.Num() > 0 ? FColor::Green : FColor::Red;
+		const FColor DrawColor = HitActors.Num() > 0 ? FColor::Green : FColor::Red;
 		DrawDebugSphere(GetWorld(), Origin, SkillRadius, 16, DrawColor, false, 5.0f);
 	}
-
 #endif
 
 	return FGameplayAbilityTargetDataHandle(ActorsData);

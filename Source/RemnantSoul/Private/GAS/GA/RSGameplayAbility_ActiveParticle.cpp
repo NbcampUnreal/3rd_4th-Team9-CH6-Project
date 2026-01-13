@@ -7,8 +7,9 @@
 
 URSGameplayAbility_ActiveParticle::URSGameplayAbility_ActiveParticle()
 {
-	AbilityTags.AddTag(ABILITY_COSMETIC_STEAMPARTICLE);
-	ActivationOwnedTags.AddTag(STATE_ACTIVATED_STEAMPARTICLE);
+	const FRSGameplayTags& Tags = FRSGameplayTags::Get();
+	AbilityTags.AddTag(Tags.Ability_Cosmetic_SteamParticle);
+	ActivationOwnedTags.AddTag(Tags.State_Activated_SteamParticle);
 }
 
 void URSGameplayAbility_ActiveParticle::ActivateAbility(const FGameplayAbilitySpecHandle Handle,

@@ -21,7 +21,11 @@ public class RemnantSoul : ModuleRules
 			"Slate",
 			"DLSSBlueprint",
 			"DLSS",
-            "MoviePlayer"
+            "MoviePlayer",
+            "MediaAssets",
+			// Niagara
+			"Niagara",
+            "PhysicsCore",
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayAbilities", "GameplayTags", "GameplayTasks" });

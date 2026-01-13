@@ -1,26 +1,4 @@
-﻿//// Fill out your copyright notice in the Description page of Project Settings.
-//
-//#pragma once
-//
-//#include "CoreMinimal.h"
-//#include "UObject/NoExportTypes.h"
-//#include "RSAbilitySet.generated.h"
-//
-///**
-// * 
-// */
-//UCLASS()
-//class REMNANTSOUL_API URSAbilitySet : public UObject
-//{
-//	GENERATED_BODY()
-//	
-//};
-
-
-
-// Public/GAS/AS/RSAbilitySet.h
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 //#include "UObject/Object.h"
@@ -120,6 +98,9 @@ public:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|AbilitySet", meta = (Categories = "InputTag"))
 	FGameplayTag InputTag;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Ability", meta = (Categories = "Event"))
+	FGameplayTag EventTag;
 };
 
 /**
@@ -162,7 +143,6 @@ public:
 	/** 이 AbilitySet이 ASC에 적용될 때 함께 부여할 Ability 목록 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|AbilitySet")
 	TArray<FRSAbilitySet_GameplayAbility> GrantedAbilities;
-
 	// v1에서는 Ability만 사용. 나중에 원하면 아래 두 개를 확장해서 사용할 수 있다.
 
 	/** 이 AbilitySet이 적용될 때 즉시 줄 GameplayEffect 목록 (버프/패시브 등) */

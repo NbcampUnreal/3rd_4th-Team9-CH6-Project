@@ -40,8 +40,8 @@ public:
 	URSItemTemplate_Weapon(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 public:
-	/** 무기 타입 태그 (예: Item.Weapon.Sword, Item.Weapon.Staff) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Weapon", meta = (Categories = "Item"))
+	/** 무기 타입 태그 (예: Weapon.Sword.OneHand, Weapon.Staff.TwoHand) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Weapon", meta = (Categories = "Weapon"))
 	FGameplayTag WeaponTypeTag;
 
 	/** 한손/양손/쌍수 등 무기 손 타입 */

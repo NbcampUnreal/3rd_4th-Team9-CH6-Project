@@ -11,6 +11,13 @@
 #include "Item/RSItemInstance.h"
 #include "Item/RSItemTemplate.h"
 
+
+#include "Item/Managers/RSEquipManagerComponent.h"
+#include "Character/RSCombatStyleData.h"
+#include "RSGameplayTags.h"
+#include "AbilitySystemComponent.h"
+
+
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RSItemManagerComponent)
 
 URSItemManagerComponent::URSItemManagerComponent()
@@ -206,7 +213,7 @@ bool URSItemManagerComponent::DropItemFromInventory(int32 InventoryIndex, int32 
 		return false;
 	}
 
-	URSItemTemplate* Template = Instance->GetTemplate();
+	const URSItemTemplate* Template = Instance->GetTemplate();
 	if (!Template)
 	{
 		return false;
@@ -236,7 +243,7 @@ bool URSItemManagerComponent::DropItemFromInventory(int32 InventoryIndex, int32 
 	return true;
 }
 
-AActor* URSItemManagerComponent::SpawnDropActor(URSItemTemplate* ItemTemplate, int32 CountToSpawn)
+AActor* URSItemManagerComponent::SpawnDropActor(const URSItemTemplate* ItemTemplate, int32 CountToSpawn)
 {
 	if (!ItemTemplate || CountToSpawn <= 0)
 	{

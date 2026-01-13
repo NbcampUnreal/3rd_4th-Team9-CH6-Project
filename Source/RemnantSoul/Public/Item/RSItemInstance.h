@@ -5,6 +5,7 @@
 #include "RSItemInstance.generated.h"
 
 class URSItemTemplate;
+class URSCombatStyleData;
 
 /**
  * RSItemInstance
@@ -27,17 +28,16 @@ public:
 
 	/** 템플릿, 개수, 소유 Actor로 인스턴스를 초기화 */
 	UFUNCTION(BlueprintCallable, Category = "RS|Item")
-	void Initialize(URSItemTemplate* InTemplate, int32 InCount, AActor* InOwningActor);
+	void InitializeFromTemplate(const URSItemTemplate* InTemplate, int32 InCount, AActor* InOwningActor);
 
-	/** 이 인스턴스가 참조하는 템플릿 */
 	UFUNCTION(BlueprintPure, Category = "RS|Item")
-	URSItemTemplate* GetTemplate() const { return ItemTemplate; }
+	const URSItemTemplate* GetTemplate() const { return ItemTemplate; }
 
 	/** 템플릿을 특정 타입으로 캐스팅해서 가져오는 헬퍼 (예: URSItemTemplate_Weapon) */
 	template<typename TTemplateClass>
-	TTemplateClass* GetTemplateTyped() const
+	const TTemplateClass* GetTemplateTyped() const
 	{
-		return Cast<TTemplateClass>(ItemTemplate);
+		return Cast<TTemplateClass>(ItemTemplate.Get());
 	}
 
 	/** 현재 스택 개수 */
@@ -71,7 +71,7 @@ public:
 protected:
 	/** 정적 데이터(아이콘/이름/Fragment 등)를 가진 템플릿 */
 	UPROPERTY()
-	TObjectPtr<URSItemTemplate> ItemTemplate;
+	TObjectPtr<const URSItemTemplate> ItemTemplate;
 
 	/** 현재 스택 개수 */
 	UPROPERTY()
@@ -80,4 +80,16 @@ protected:
 	/** 이 아이템 인스턴스를 소유한 Actor (Pawn/Character 등) */
 	UPROPERTY()
 	TWeakObjectPtr<AActor> OwningActor;
+
+
+#pragma region 
+public:
+	const URSCombatStyleData* GetItemCombatStyle() const;
+
+protected:
+	UPROPERTY()
+	TObjectPtr<const URSCombatStyleData> CombatStyle;
+
+#pragma endregion
+
 };

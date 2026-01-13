@@ -43,7 +43,7 @@ URSItemInstance* URSInventoryManagerComponent::GetItemAtIndex(int32 Index) const
 	return IsValidIndex(Index) ? Slots[Index] : nullptr;
 }
 
-bool URSInventoryManagerComponent::AddItemByTemplate(URSItemTemplate* ItemTemplate, int32 Count, int32& OutAddedCount)
+bool URSInventoryManagerComponent::AddItemByTemplate(const URSItemTemplate* ItemTemplate, int32 Count, int32& OutAddedCount)
 {
 	OutAddedCount = 0;
 
@@ -79,7 +79,7 @@ bool URSInventoryManagerComponent::AbsorbItemInstanceCount(URSItemInstance* Item
 		return false;
 	}
 
-	URSItemTemplate* Template = ItemInstance->GetTemplate();
+	const URSItemTemplate* Template = ItemInstance->GetTemplate();
 	if (!Template)
 	{
 		return false;
@@ -104,9 +104,9 @@ bool URSInventoryManagerComponent::AbsorbItemInstanceCount(URSItemInstance* Item
 		OutAddedCount += TmpAdded;
 	}
 
-	// YKJ Annotation : ItemInstance 자체는 Slots에 들어가지 않는다. "Count 흡수" 전용.
 	return OutAddedCount > 0;
 }
+
 
 bool URSInventoryManagerComponent::AddItemInstance(URSItemInstance* ItemInstance, int32& OutAddedCount)
 {
@@ -158,6 +158,23 @@ URSItemInstance* URSInventoryManagerComponent::FindFirstItemByTemplate(URSItemTe
 	return nullptr;
 }
 
+URSItemInstance* URSInventoryManagerComponent::CreateItemInstance(const URSItemTemplate* Template, int32 Count, AActor* OwningActor)
+{
+	if (!Template || Count <= 0 || !OwningActor)
+	{
+		return nullptr;
+	}
+
+	URSItemInstance* NewInst = NewObject<URSItemInstance>(OwningActor);
+	if (!NewInst)
+	{
+		return nullptr;
+	}
+
+	NewInst->InitializeFromTemplate(Template, Count, OwningActor); // 너 프로젝트의 실제 초기화 함수명에 맞춰
+	return NewInst;
+}
+
 void URSInventoryManagerComponent::FindItemsWithTag(FGameplayTag Tag, TArray<URSItemInstance*>& OutItems) const
 {
 	OutItems.Reset();
@@ -188,7 +205,7 @@ void URSInventoryManagerComponent::FindItemsWithTag(FGameplayTag Tag, TArray<URS
 	}
 }
 
-int32 URSInventoryManagerComponent::AddToExistingStacks(URSItemTemplate* Template, int32 Count)
+int32 URSInventoryManagerComponent::AddToExistingStacks(const URSItemTemplate* Template, int32 Count)
 {
 	if (!Template || Count <= 0)
 	{
@@ -232,7 +249,7 @@ int32 URSInventoryManagerComponent::AddToExistingStacks(URSItemTemplate* Templat
 	return Count - Remaining;
 }
 
-int32 URSInventoryManagerComponent::AddToEmptySlots(URSItemTemplate* Template, int32 Count)
+int32 URSInventoryManagerComponent::AddToEmptySlots(const URSItemTemplate* Template, int32 Count)
 {
 	if (!Template || Count <= 0)
 	{

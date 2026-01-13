@@ -3,17 +3,27 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameplayTagContainer.h"
-#include "GAS/AS/RSAbilitySet.h"          // FRSAbilitySet_GrantedHandles
-#include "Item/RSItemInstance.h"
+#include "GAS/AS/RSAbilitySet.h"
+#include "Item/Managers/RSEquipmentTypes.h"
 #include "RSEquipManagerComponent.generated.h"
 
+#ifndef RS_LEGACY_ENUM_SLOT_PIPELINE
+#define RS_LEGACY_ENUM_SLOT_PIPELINE 1
+#endif
+
+class ARSCharacter;
 class UAbilitySystemComponent;
-class URSAbilitySet;
 class URSCombatStyleData;
-class URSInputConfig;
 class URSHeroComponent;
-class URSItemFragment_AbilitySet;
-class URSItemFragment_CombatStyle;
+class URSHeroData;
+class URSItemInstance;
+class URSItemInstance_Weapon;
+class URSEquipmentManagerComponent;
+class URSCosmeticManagerComponent;
+class ARSPlayerState;
+
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnRSCombatStyleResolved, const URSCombatStyleData*);
 
 UCLASS(ClassGroup = (RS), meta = (BlueprintSpawnableComponent))
 class REMNANTSOUL_API URSEquipManagerComponent : public UActorComponent
@@ -23,86 +33,111 @@ class REMNANTSOUL_API URSEquipManagerComponent : public UActorComponent
 public:
 	URSEquipManagerComponent();
 
-	/** 무기/장비 변경 시 외부(EquipmentManager)에서 호출: "이제 이 ItemInstance가 메인 무기다" */
-	void OnMainWeaponChanged(URSItemInstance* OldWeapon, URSItemInstance* NewWeapon);
-
-public:
-	// EquipmentManager가 장비 변화(Old->New)를 알려주는 진입점
-	void HandleEquipmentChanged(const FGameplayTag& SlotTag, URSItemInstance* OldItem, URSItemInstance* NewItem);
-	void ApplyCombatStyle(URSCombatStyleData* NewStyle); 
-	void ApplyAnimStyleLayers(const URSCombatStyleData* Style);
-
-
 protected:
 	virtual void BeginPlay() override;
 
+public:
+	/* 외부 입력(EnhancedInput Tag) 진입점 */
+	void HandleEquipSlotInput(FGameplayTag InputTag);
+
+	/* SSOT 진입점: 슬롯 태그로 장착 요청 (EquipmentManager에게 위임) */
+	UFUNCTION(BlueprintCallable, Category = "RS|Equip|Weapon")
+	void EquipWeaponFromSlotTag(FGameplayTag SlotTag);
+
+	/* InputTag -> SlotTag 유틸 (CPP에서 사용 중) */
+	FGameplayTag ResolveWeaponSlotFromInputTag(FGameplayTag InputTag) const;
+
+	/* CombatStyle resolve 이벤트 (CPP에서 Broadcast 사용 중) */
+	FOnRSCombatStyleResolved OnCombatStyleResolved;
+
+	/* (레거시/호환용) Enum 기반 진입점: 내부 적용 금지, Tag 파이프라인으로 라우팅 */
+	UFUNCTION(BlueprintCallable, Category = "RS|Equip|Weapon|Legacy", meta = (DeprecatedFunction, DeprecationMessage = "Use EquipWeaponFromSlotTag"))
+	void EquipWeaponFromSlot(ERSWeaponSlot Slot);
+
+	/* (레거시/호환용) 픽업 라우팅 */
+	UFUNCTION(BlueprintCallable, Category = "RS|Equip|Weapon|Legacy")
+	void OnWeaponPickedUp(URSItemInstance* WeaponInstance);
+
 private:
-	// ===== 핵심: 스타일 트랜잭션 =====
+	// ===== refs / delegates =====
+	void CacheRefs();
+	void BindDelegates();
+
+	// ===== core style transaction =====
 	void ClearCurrentCombatStyle();
+	void ApplyCombatStyle(const URSCombatStyleData* NewStyle);
+	const URSCombatStyleData* ResolveCombatStyleForWeapon(const URSItemInstance* WeaponItem) const;
+	const URSCombatStyleData* GetDefaultUnarmedStyle() const;
 
-	// ===== 스타일 결정부(SSOT) =====
-	URSCombatStyleData* ResolveCombatStyleForWeapon(URSItemInstance* WeaponInstance) const;
-	URSCombatStyleData* GetDefaultUnarmedStyle() const;
-
-	// ===== GAS Apply helpers =====
+	// ===== GAS helpers =====
+	UAbilitySystemComponent* GetASC() const;
 	void GiveAbilitySetList(const TArray<TObjectPtr<const URSAbilitySet>>& Sets, TArray<FRSAbilitySet_GrantedHandles>& OutHandles);
 	void TakeAbilitySetList(TArray<FRSAbilitySet_GrantedHandles>& InOutHandles);
-
-	// ===== Input overlay helpers =====
-	URSHeroComponent* GetHeroComponent() const;
-	UAbilitySystemComponent* GetASC() const;
-
-	// ===== Item passive ability set (선택) =====
-	void ApplyItemPassiveAbilitySets(URSItemInstance* NewWeapon);
+	void ApplyItemPassiveAbilitySets(URSItemInstance* Item);
 	void ClearItemPassiveAbilitySets();
 
-	// ===== Anim style notify (최소) =====
-	void ApplyAnimStyleTags(URSCombatStyleData* Style);
-	void ClearAnimStyleTags();
-
+	// ===== input overlay / anim tags =====
+	URSHeroComponent* GetHeroComponent() const;
+	const URSHeroData* GetHeroData() const;
 	void ApplyStyleInputOverlay(const URSCombatStyleData* Style);
 	void ClearStyleInputOverlay();
+	void ApplyAnimStyleTags(const URSCombatStyleData* Style);
+	void ClearAnimStyleTags();
+	void ApplyAnimStyleLayers(const URSCombatStyleData* Style);
+
+	// ===== slots =====
+	bool IsWeaponSlot(const FGameplayTag& SlotTag) const;
+	bool IsMainWeaponSlot(const FGameplayTag& SlotTag) const;
+
+	// ===== event handlers =====
+	void HandleActiveWeaponChanged(FGameplayTag OldSlot, FGameplayTag NewSlot, URSItemInstance* OldItem, URSItemInstance* NewItem);
+
+	// ===== utility =====
+	void HandleInputReady();
+	ARSCharacter* GetOwnerCharacter() const;
+
+	void RefreshCombatStateFromEquipment();
+
+	void TryApplyInitialCombatState();
+
+	void HandleHeroDataReady(const URSHeroData* InHeroData);
+
+	
+
+
 
 private:
-	UPROPERTY(Transient)
-	TWeakObjectPtr<UAbilitySystemComponent> CachedASC;
+	FTimerHandle InitialGateTimer;
+	void TryApplyInitialCombatState_Poll();
 
-	// 현재 스타일
-	UPROPERTY(Transient)
-	TObjectPtr<URSCombatStyleData> CurrentStyle = nullptr;
 
-	// 현재 스타일이 부여한 AbilitySet 핸들들
-	UPROPERTY(Transient)
-	TArray<FRSAbilitySet_GrantedHandles> CurrentStyleGrantedHandles;
 
-	//UPROPERTY(Transient)
-	//FRSAbilitySet_GrantedHandles CurrentStyleHandles;
+private:
+	// Cached refs
+	UPROPERTY(Transient) TWeakObjectPtr<URSEquipmentManagerComponent> CachedEquipmentManager;
+	UPROPERTY(Transient) TWeakObjectPtr<URSCosmeticManagerComponent> CachedCosmeticManager;
+	UPROPERTY(Transient) TWeakObjectPtr<URSHeroComponent> CachedHeroComponent;
+	UPROPERTY(Transient) TWeakObjectPtr<UAbilitySystemComponent> CachedASC;
 
-	UPROPERTY(Transient)
-	TArray<FRSAbilitySet_GrantedHandles> ItemPassiveHandles;
+	// Style state
+	UPROPERTY(Transient) TObjectPtr<const URSCombatStyleData> CurrentCombatStyle = nullptr;
+	UPROPERTY(Transient) TArray<FRSAbilitySet_GrantedHandles> CurrentStyleGrantedHandles;
 
-	// 현재 무기(메인)
-	UPROPERTY(Transient)
-	TObjectPtr<URSItemInstance> CurrentMainWeapon = nullptr;
+	// Item passive handles (CPP에서 사용 중: ItemPassiveHandles)
+	UPROPERTY(Transient) TArray<FRSAbilitySet_GrantedHandles> ItemPassiveHandles;
 
-	// 무기 ItemFragment_AbilitySet(패시브)로 부여한 핸들들(선택)
-	UPROPERTY(Transient)
-	TArray<FRSAbilitySet_GrantedHandles> CurrentItemPassiveGrantedHandles;
+	// AnimStyleTags 캐시 (CPP에서 CachedAppliedAnimTags 사용 중)
+	UPROPERTY(Transient) FGameplayTagContainer CachedAppliedAnimTags;
 
-	// 애니 스타일 태그(ABP가 읽게 하려면 캐릭터/ASC에 전달해야 함. v1은 ASC LooseTags 권장)
 	UPROPERTY(EditDefaultsOnly, Category = "RS|Equip|Anim")
 	bool bApplyAnimStyleTagsToASC = true;
 
-	// 아이템 AbilitySet을 패시브로만 적용할지(정책)
 	UPROPERTY(EditDefaultsOnly, Category = "RS|Equip|Policy")
 	bool bApplyItemAbilitySetsAsPassive = true;
 
-	UPROPERTY(Transient)
-	FGameplayTagContainer CachedAppliedAnimTags;
+	bool bDelegatesBound = false;
+	bool bDefaultStyleApplied = false;
 
-
-
-private:
-
-
+	bool bInputReady = false;
+	bool bHeroDataReady = false;
 };

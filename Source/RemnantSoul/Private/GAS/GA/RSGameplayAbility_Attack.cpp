@@ -9,27 +9,73 @@ URSGameplayAbility_Attack::URSGameplayAbility_Attack()
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 
-void URSGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+void URSGameplayAbility_Attack::ActivateAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("URSGameplayAbility_Attack::ActivateAbility()")));
+	ARSCharacter* AvatarCharacter = ActorInfo ? Cast<ARSCharacter>(ActorInfo->AvatarActor.Get()) : nullptr;
+	if (!IsValid(AvatarCharacter))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
 
-	//EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackComboMontage();
+	if (!IsValid(AttackMontage))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
 
-	ARSCharacter* AvatarCharacter = CastChecked<ARSCharacter>(ActorInfo->AvatarActor.Get());
-	AvatarCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
 
-	//UAbilityTask_PlayMontageAndWait* PlayAttackTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("PlayAttack"), AvatarCharacter->AttackMontage);
-	UAbilityTask_PlayMontageAndWait* PlayAttackTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("PlayAttack"), AvatarCharacter->AttackMontage, 1.f, GetNextAnimMontageSection());
+	if (StaminaCostEffectClass)
+	{
+		const UGameplayEffect* GE = StaminaCostEffectClass->GetDefaultObject<UGameplayEffect>();
+		ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, GE, 1);
+	}
+
+	if (UCharacterMovementComponent* MoveComp = AvatarCharacter->GetCharacterMovement())
+	{
+		MoveComp->SetMovementMode(EMovementMode::MOVE_None);
+	}
+
+	CurrentCombo = 1;
+	const FName FirstSection = GetSectionNameForCombo(CurrentCombo);
+	const float FirstRate = GetPlayRateForCombo(CurrentCombo);
+
+	UAbilityTask_PlayMontageAndWait* PlayAttackTask =
+		UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
+			this,
+			TEXT("PlayAttack"),
+			AttackMontage,
+			FirstRate,          // 여기부터 1타 속도 적용
+			FirstSection        // Attack01
+		);
+
+	ApplyMontagePlayRate(AttackMontage, FirstRate);
+
+	if (!PlayAttackTask)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
 	PlayAttackTask->OnCompleted.AddDynamic(this, &ThisClass::OnCompleted);
 	PlayAttackTask->OnInterrupted.AddDynamic(this, &ThisClass::OnCanceled);
 	PlayAttackTask->ReadyForActivation();
 
 	StartComboTimer();
 }
+
 
 void URSGameplayAbility_Attack::OnCompleted()
 {
@@ -71,29 +117,92 @@ void URSGameplayAbility_Attack::InputPressed(const FGameplayAbilitySpecHandle Ha
 void URSGameplayAbility_Attack::CheckComboInput()
 {
 	ComboTimerHandle.Invalidate();
-	if (IsNextComboInputPressed == true)
+
+	if (!IsNextComboInputPressed)
 	{
-		MontageJumpToSection(GetNextAnimMontageSection());
-		StartComboTimer();
-		IsNextComboInputPressed = false;
+		return;
 	}
+
+	// 다음 콤보로 진행
+	CurrentCombo = FMath::Clamp<uint8>(CurrentCombo + 1, 1, 3);
+
+	ARSCharacter* AvatarCharacter = CurrentActorInfo ? Cast<ARSCharacter>(CurrentActorInfo->AvatarActor.Get()) : nullptr;
+	if (!IsValid(AvatarCharacter))
+	{
+		return;
+	}
+
+	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackComboMontage();
+	if (!IsValid(AttackMontage))
+	{
+		return;
+	}
+
+	const FName NextSection = GetSectionNameForCombo(CurrentCombo);
+	const float NextRate = GetPlayRateForCombo(CurrentCombo);
+
+	// 섹션 점프
+	MontageJumpToSection(NextSection);
+
+	// 점프 후 PlayRate 갱신 (이게 핵심)
+	ApplyMontagePlayRate(AttackMontage, NextRate);
+
+	// 다음 입력 타이머
+	StartComboTimer();
+
+	IsNextComboInputPressed = false;
 }
 
-void URSGameplayAbility_Attack::EndAbility(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-	bool bReplicateEndAbility, bool bWasCancelled)
+
+void URSGameplayAbility_Attack::EndAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	bool bReplicateEndAbility,
+	bool bWasCancelled)
 {
-	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	ARSCharacter* AvatarCharacter = ActorInfo ? Cast<ARSCharacter>(ActorInfo->AvatarActor.Get()) : nullptr;
+	if (IsValid(AvatarCharacter))
+	{
+		AvatarCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	}
 
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("URSGameplayAbility_Attack::EndAbility()")));
-
-	ARSCharacter* AvatarCharacter = CastChecked<ARSCharacter>(ActorInfo->AvatarActor.Get());
-	AvatarCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-
-	if (ComboTimerHandle.IsValid() == true)
+	if (ComboTimerHandle.IsValid())
 	{
 		ComboTimerHandle.Invalidate();
 	}
+
 	CurrentCombo = 0;
 	IsNextComboInputPressed = false;
+
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+float URSGameplayAbility_Attack::GetPlayRateForCombo(uint8 Combo) const
+{
+	switch (Combo)
+	{
+	case 1: return 1.10f;
+	case 2: return 1.40f;
+	case 3: return 1.55f;
+	default: return 1.0f;
+	}
+}
+
+FName URSGameplayAbility_Attack::GetSectionNameForCombo(uint8 Combo) const
+{
+	return *FString::Printf(TEXT("Attack%02d"), Combo); // Attack01, Attack02, Attack03
+}
+
+void URSGameplayAbility_Attack::ApplyMontagePlayRate(UAnimMontage* Montage, float PlayRate)
+{
+	if (!Montage) return;
+
+	const FGameplayAbilityActorInfo* Info = CurrentActorInfo;
+	if (!Info) return;
+
+	UAnimInstance* AnimInst = Info->GetAnimInstance();
+	if (!AnimInst) return;
+
+	AnimInst->Montage_SetPlayRate(Montage, PlayRate);
 }

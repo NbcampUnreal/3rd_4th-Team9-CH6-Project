@@ -32,4 +32,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ARSTargetActor_SweepSingleCapsule> TargetActorClass;
 
+private:
+	void SetupDamageSpec(FGameplayEffectSpecHandle& SpecHandle) const;
+
 };
+

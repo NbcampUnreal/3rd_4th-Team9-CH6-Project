@@ -9,6 +9,11 @@
 
 class URSInventoryWidget;
 class URSInventoryComponent;
+class URSEnhancedInputComponent;
+class URSQuickSlotWidget;
+class URSGameOverWidget;
+
+class UUserWidget; // [MENU 추가] forward declare
 
 UCLASS()
 class REMNANTSOUL_API ARSPlayerController : public APlayerController
@@ -16,7 +21,12 @@ class REMNANTSOUL_API ARSPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void UseItemFromSlot(int32 SlotIndex);
+
 	ARSPlayerController();
+
 	// 인벤 UI
 	UFUNCTION(BlueprintCallable)
 	void ToggleInventoryUI();
@@ -28,29 +38,101 @@ public:
 	void CloseInventoryUI();
 
 	bool IsInventoryOpen() const { return bInventoryOpen; }
-	
+
 	void OnPlayerDeath();
+
+	virtual void Tick(float DeltaSeconds) override;
+
+	void ShowGameOverUI();
+
+	void QuickSlotCycle();
+	void QuickSlotUse();
+
+	// ============================
+	// [MENU 추가] : ESC 메뉴 제어
+	// ============================
+	UFUNCTION(BlueprintCallable)
+	void ToggleMenu();
+
+	UFUNCTION(BlueprintCallable)
+	void OpenMenu();
+
+	UFUNCTION(BlueprintCallable)
+	void CloseMenu();
+
+	bool IsMenuOpen() const { return bMenuOpen; }
+	// ============================
 
 protected:
 	virtual void BeginPlay() override;
-	void OnPossess(APawn* InPawn);
+	virtual void OnPossess(APawn* InPawn) override;
+
+	// ============================
+	// [MENU 추가] : ESC 입력을 C++로 확정 바인딩
+	// ============================
+	virtual void SetupInputComponent() override;
+	// ============================
 
 	// 인벤 위젯 클래스(에디터에서 WBP_Inventory 지정)
-	UPROPERTY(EditDefaultsOnly, Category="UI")
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<URSInventoryWidget> InventoryWidgetClass;
 
 	UPROPERTY()
 	TObjectPtr<URSInventoryWidget> InventoryWidget;
-	
+
 	UPROPERTY()
 	TObjectPtr<URSInventoryComponent> InventoryComp;
 	bool bInventoryWidgetInited;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI|QuickSlot")
+	TSubclassOf<URSQuickSlotWidget> QuickSlotWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<URSQuickSlotWidget> QuickSlotWidget;
+
+	// “포션이 들어있는 인벤 슬롯 인덱스들”
+	UPROPERTY(Transient)
+	TArray<int32> QuickPotionSlots;
+
+	UPROPERTY(Transient)
+	int32 QuickPotionIndex = 0;
+
+	void HandleInventoryChanged();
+	void RebuildQuickPotionSlots();
+	void UpdateQuickSlotUI();
+
+	// 에디터에서 WBP_GameOver를 할당할 변수
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> GameOverWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> GameOverWidget;
+
+	// ============================
+	// [MENU 추가] : 메뉴 위젯
+	// ============================
+	UPROPERTY(EditDefaultsOnly, Category = "UI|Menu")
+	TSubclassOf<UUserWidget> MenuWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> MenuWidgetInstance;
+
+	UPROPERTY()
+	bool bMenuOpen = false;
+	// ============================
 
 private:
 	bool bInventoryOpen = false;
 
 	void EnsureInventoryWidgetCreated();
 	void ApplyInventoryInputMode(bool bOpen);
-	
-	
+
+	// QuickSlot
+	void EnsureQuickSlotWidgetCreated();
+
+	// ============================
+	// [MENU 추가] : 메뉴 입력 모드 처리
+	// ============================
+	void ApplyMenuInputMode(bool bOpen);
+	// ============================
 };

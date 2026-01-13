@@ -21,7 +21,7 @@ void URSAbilityTask_SweepSingleCapsule::Activate()
 {
 	Super::Activate();
 
-	if (!Ability)
+	if (!Ability || !Ability->GetCurrentActorInfo())
 	{
 		EndTask();
 		return;
@@ -30,6 +30,15 @@ void URSAbilityTask_SweepSingleCapsule::Activate()
 	if (!TargetActorClass)
 	{
 		UE_LOG(LogTemp, Error, TEXT("[SweepTask] TargetActorClass is NULL"));
+		EndTask();
+		return;
+	}
+
+	// UAbilityTask::AbilitySystemComponent는 상황에 따라 세팅이 늦거나 비어있을 수 있음
+	CachedASC = Ability->GetCurrentActorInfo()->AbilitySystemComponent.Get();
+	if (!CachedASC.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("[SweepTask] ASC is NULL (ActorInfo)"));
 		EndTask();
 		return;
 	}
@@ -49,21 +58,56 @@ void URSAbilityTask_SweepSingleCapsule::Activate()
 
 void URSAbilityTask_SweepSingleCapsule::SpawnAndInitializeTargetActor()
 {
-	TargetActorInstance = Cast<ARSTargetActor_SweepSingleCapsule>(Ability->GetWorld()->SpawnActorDeferred<AGameplayAbilityTargetActor>(TargetActorClass, FTransform::Identity, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn));
-	if (TargetActorInstance)
+	UWorld* World = Ability ? Ability->GetWorld() : nullptr;
+	if (!World)
 	{
-		TargetActorInstance->SetShowDebug(true);
-		TargetActorInstance->TargetDataReadyDelegate.AddUObject(this, &URSAbilityTask_SweepSingleCapsule::OnTargetDataReady);
+		UE_LOG(LogTemp, Error, TEXT("[SweepTask] World is NULL"));
+		return;
 	}
+
+	// Deferred spawn: 타입을 바로 TargetActor 타입으로 스폰 (캐스팅 실패 방지)
+	TargetActorInstance = World->SpawnActorDeferred<ARSTargetActor_SweepSingleCapsule>(
+		TargetActorClass,
+		FTransform::Identity,
+		nullptr,
+		nullptr,
+		ESpawnActorCollisionHandlingMethod::AlwaysSpawn
+	);
+
+	if (!IsValid(TargetActorInstance))
+	{
+		UE_LOG(LogTemp, Error, TEXT("[SweepTask] SpawnActorDeferred failed"));
+		return;
+	}
+
+	TargetActorInstance->SetShowDebug(false);
+
+	// 태스크가 먼저 죽을 수 있으니, OnDestroy에서 반드시 해제할 수 있게 AddUObject 유지 + Cleanup에서 RemoveAll 처리
+	TargetActorInstance->TargetDataReadyDelegate.AddUObject(this, &ThisClass::OnTargetDataReady);
+}
+
+void URSAbilityTask_SweepSingleCapsule::OnDestroy(bool AbilityEnded)
+{
+	CleanupTargetActor();
+	Super::OnDestroy(AbilityEnded);
+}
+
+void URSAbilityTask_SweepSingleCapsule::OnTargetDataReady(const FGameplayAbilityTargetDataHandle& DataHandle)
+{
+	if (ShouldBroadcastAbilityTaskDelegates())
+	{
+		OnComplete.Broadcast(DataHandle);
+	}
+
+	EndTask();
 }
 
 void URSAbilityTask_SweepSingleCapsule::FinalizeTargetActor()
 {
-	UAbilitySystemComponent* ASC = AbilitySystemComponent.Get();
-
+	UAbilitySystemComponent* ASC = CachedASC.Get();
 	if (!ASC)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[SweepTask] ASC is NULL"));
+		UE_LOG(LogTemp, Error, TEXT("[SweepTask] ASC is NULL in Finalize"));
 		EndTask();
 		return;
 	}
@@ -83,30 +127,45 @@ void URSAbilityTask_SweepSingleCapsule::FinalizeTargetActor()
 		return;
 	}
 
-	const FTransform SpawnTransform = Avatar->GetTransform();
-	TargetActorInstance->FinishSpawning(SpawnTransform);
+	TargetActorInstance->FinishSpawning(Avatar->GetTransform());
 
-	ASC->SpawnedTargetActors.Push(TargetActorInstance);
+	// SpawnedTargetActors에 넣었으면 반드시 Cleanup에서 제거해야 함
+	ASC->SpawnedTargetActors.Add(TargetActorInstance);
+
 	TargetActorInstance->StartTargeting(Ability);
+
+	// ConfirmTargeting() -> ConfirmTargetingAndContinue() 호출
 	TargetActorInstance->ConfirmTargeting();
 }
 
-void URSAbilityTask_SweepSingleCapsule::OnDestroy(bool AbilityEnded)
+void URSAbilityTask_SweepSingleCapsule::ExternalCancel()
 {
-	if (IsValid(TargetActorInstance) == true)
-	{
-		TargetActorInstance->Destroy();
-	}
-
-	Super::OnDestroy(AbilityEnded);
-}
-
-void URSAbilityTask_SweepSingleCapsule::OnTargetDataReady(const FGameplayAbilityTargetDataHandle& DataHandle)
-{
-	if (ShouldBroadcastAbilityTaskDelegates())
-	{
-		OnComplete.Broadcast(DataHandle);
-	}
-
+	CleanupTargetActor();
+	Super::ExternalCancel();
 	EndTask();
 }
+
+void URSAbilityTask_SweepSingleCapsule::CleanupTargetActor()
+{
+	if (bCleanedUp)
+	{
+		return;
+	}
+	bCleanedUp = true;
+
+	UAbilitySystemComponent* ASC = CachedASC.Get();
+
+	if (IsValid(TargetActorInstance))
+	{
+		TargetActorInstance->TargetDataReadyDelegate.RemoveAll(this);
+
+		if (ASC)
+		{
+			ASC->SpawnedTargetActors.Remove(TargetActorInstance);
+		}
+
+		TargetActorInstance->Destroy();
+		TargetActorInstance = nullptr;
+	}
+}
+
