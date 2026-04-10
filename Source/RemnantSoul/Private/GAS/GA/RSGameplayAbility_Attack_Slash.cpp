@@ -31,6 +31,9 @@ void URSGameplayAbility_Attack_Slash::ActivateAbility(
 	}
 
 	UAnimMontage* AttackMontage = AvatarCharacter->GetAttackSlashComboMontage();
+	UE_LOG(LogTemp, Warning, TEXT("[SlashGA] GetAttackSlashComboMontage=%s"), *GetNameSafe(AttackMontage));
+UE_LOG(LogTemp, Warning, TEXT("[SlashGA] Char=%s"), *GetNameSafe(AvatarCharacter));
+
 	if (!IsValid(AttackMontage))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -68,6 +71,25 @@ void URSGameplayAbility_Attack_Slash::ActivateAbility(
 			FirstRate,          // 여기부터 1타 속도 적용
 			FirstSection        // Attack01
 		);
+
+	UAnimInstance* AnimInst = ActorInfo ? ActorInfo->GetAnimInstance() : nullptr;
+	if (AnimInst)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[SlashGA] BeforePlay: Current=%s"),
+			*GetNameSafe(AnimInst->GetCurrentActiveMontage()));
+
+		const float TestRate = FirstRate;
+		const float PlayedLen = AnimInst->Montage_Play(AttackMontage, TestRate);
+		UE_LOG(LogTemp, Warning, TEXT("[SlashGA] Montage_Play Len=%.3f Montage=%s Rate=%.2f"),
+			PlayedLen, *GetNameSafe(AttackMontage), TestRate);
+
+		// 바로 Stop해서 “재생 가능/불가능”만 확인 (검증용)
+		AnimInst->Montage_Stop(0.0f, AttackMontage);
+
+		UE_LOG(LogTemp, Warning, TEXT("[SlashGA] AfterTestStop: Current=%s"),
+			*GetNameSafe(AnimInst->GetCurrentActiveMontage()));
+	}
+
 
 	ApplyMontagePlayRate(AttackMontage, FirstRate);
 

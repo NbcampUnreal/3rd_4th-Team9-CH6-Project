@@ -23,7 +23,7 @@ protected:
 
 	// 상승 시간
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Obstacle|Rise", meta = (ClampMin = "0.01"))
-	float RiseDuration = 0.25f;
+	float RiseDuration = 1.2f;
 
 	// 올라오는 동안 충돌을 끌지(권장)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RS|Obstacle|Rise")
